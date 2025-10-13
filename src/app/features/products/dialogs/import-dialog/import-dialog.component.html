@@ -1,0 +1,48 @@
+<div class="dialog-container">
+    <div class="dialog-header">
+        <h2 mat-dialog-title>Импорт файла</h2>
+        <button mat-icon-button (click)="onCancel()" aria-label="Закрыть диалог">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-dialog-content class="dialog-content">
+        <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)" [class.drag-over]="isDragOver" [class.loading]="isLoading">
+
+            <div *ngIf="!isLoading" class="upload-prompt">
+                <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                <p>Перетащите файлы сюда или</p>
+                <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()">Выбрать
+                    файлы</button>
+                <p class="file-info">XLSX, CSV до 10 МБ</p>
+                <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden
+                    accept=".xlsx, .xls, .csv">
+            </div>
+
+            <div *ngIf="isLoading" class="loading-indicator">
+                <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
+                <p>Идет обработка...</p>
+            </div>
+        </div>
+
+        <div class="file-list" *ngIf="files.length > 0">
+            <div *ngFor="let file of files" class="file-item">
+                <mat-icon>insert_drive_file</mat-icon>
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} МБ</span>
+                <button mat-icon-button (click)="removeFile(file)" aria-label="Удалить файл">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </div>
+        </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="dialog-actions">
+        <button mat-stroked-button (click)="onCancel()">Отмена</button>
+        <button mat-flat-button color="warn" (click)="onImport()" [disabled]="files.length === 0 || isLoading">
+            Импорт
+        </button>
+    </mat-dialog-actions>
+</div>

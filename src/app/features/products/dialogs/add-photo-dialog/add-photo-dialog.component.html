@@ -1,0 +1,24 @@
+<h1 mat-dialog-title>Добавить фото</h1>
+<div mat-dialog-content>
+    <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+        [class.drag-over]="isDragOver">
+        <mat-icon class="upload-icon">cloud_upload</mat-icon>
+        <p>Перетащите файлы сюда или нажмите, чтобы выбрать</p>
+        <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden accept="image/*">
+        <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()">Выбрать файлы</button>
+    </div>
+
+    <div class="preview-grid" *ngIf="previews.length > 0">
+        <div *ngFor="let preview of previews; let i = index" class="preview-item">
+            <img [src]="preview.url" alt="Preview">
+            <button mat-icon-button class="remove-btn" (click)="removeFile(i)">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>
+<div mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Отмена</button>
+    <button mat-flat-button color="primary" [mat-dialog-close]="previews"
+        [disabled]="previews.length === 0">Добавить</button>
+</div>

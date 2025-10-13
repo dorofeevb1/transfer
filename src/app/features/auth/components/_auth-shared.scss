@@ -1,0 +1,199 @@
+// SCSS переменные, которые компилятор понимает
+$primary-text-color: #0c0c0f;
+$secondary-text-color: #666;
+$link-color: #e60000;
+$error-color: #e60000;
+$primary-button-bg: #0c0c0f;
+$input-bg-color: #f5f5f5;
+$input-text-color: #8c8c8c;
+$border-color: #e0e0e0;
+$page-background: #ffffff;
+
+// Общий контейнер для всех страниц аутентификации
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: $page-background;
+}
+
+// Левая часть с формой
+.auth-form-wrapper {
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    position: relative;
+}
+
+// Логотип
+.logo-container {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+}
+
+// Контейнер самой формы
+.auth-form {
+    width: 100%;
+    max-width: 380px;
+
+    &.text-center {
+        text-align: center;
+    }
+}
+
+// Заголовки
+.auth-title {
+    font-weight: 700;
+    font-size: 28px;
+    color: $primary-text-color;
+    margin-bottom: 8px;
+}
+
+.auth-subtitle {
+    font-size: 14px;
+    color: $secondary-text-color;
+    margin-bottom: 32px;
+}
+
+// Группа полей формы
+.form-group {
+    margin-bottom: 20px;
+
+    label {
+        display: block;
+        font-size: 12px;
+        color: $secondary-text-color;
+        margin-bottom: 4px;
+    }
+}
+
+// Стилизация полей ввода
+.form-control {
+    width: 100%;
+    padding: 12px;
+    background-color: $input-bg-color;
+    border: 1px solid $input-bg-color;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: $input-text-color;
+    outline: none;
+    transition: all 0.2s ease-in-out;
+
+    &:focus,
+    &:active {
+        background-color: #fff;
+        // ИСПРАВЛЕНО: Теперь darken работает с SCSS-переменной
+        border-color: darken($border-color, 10%);
+        color: $primary-text-color;
+    }
+
+    &.is-invalid {
+        border-color: $error-color;
+    }
+}
+
+// Обертка для поля пароля (для иконки глаза)
+.password-wrapper {
+    position: relative;
+
+    .toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: $secondary-text-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+// Сообщение об ошибке валидации
+.invalid-feedback {
+    color: $error-color;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+// Ссылка "Забыли пароль?"
+.forgot-password-link {
+    display: block;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    color: $link-color;
+    text-decoration: none;
+    margin-top: -12px;
+    margin-bottom: 24px;
+}
+
+// Основная кнопка
+.btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 6px;
+    border: none;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background-color 0.2s ease;
+
+    &.btn-primary {
+        background-color: $primary-button-bg;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: lighten($primary-button-bg, 10%);
+        }
+    }
+
+    &.btn-secondary {
+        background-color: transparent;
+        color: $secondary-text-color;
+        border: 1px solid $border-color;
+
+        &:hover:not(:disabled) {
+            background-color: $input-bg-color;
+        }
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+// Правая часть с изображением
+.auth-image-wrapper {
+    flex: 1 1 45%;
+    background: url('/assets/transport-logistics-concept.png') no-repeat center center;
+    background-size: cover;
+    border-top-left-radius: 32px;
+    border-bottom-left-radius: 32px;
+}
+
+// Адаптивность для мобильных устройств
+@media (max-width: 992px) {
+    .auth-image-wrapper {
+        display: none;
+    }
+
+    .auth-form-wrapper {
+        flex: 1 1 100%;
+        padding: 20px;
+    }
+
+    .logo-container {
+        position: static;
+        margin-bottom: 40px;
+    }
+}

@@ -1,0 +1,43 @@
+<div class="auth-container">
+    <div class="auth-form-wrapper">
+        <div class="logo-container">
+            <img src="assets/logo.png" alt="PRO TRADE & LOGISTIC">
+        </div>
+        <div class="auth-form">
+            <h1 class="auth-title">Вход</h1>
+            <p class="auth-subtitle">Введите данные для авторизации</p>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input id="email" type="email" placeholder="Введите e-mail" formControlName="email"
+                        class="form-control" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
+                    <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                        <div *ngIf="f['email'].errors['required']">E-mail обязателен</div>
+                        <div *ngIf="f['email'].errors['email']">Введите корректный e-mail</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <div class="password-wrapper">
+                        <input id="password" [type]="passwordVisible ? 'text' : 'password'" placeholder="Введите пароль"
+                            formControlName="password" class="form-control"
+                            [ngClass]="{ 'is-invalid': submitted && f['password'].errors }">
+                        <button type="button" class="toggle-password" (click)="togglePasswordVisibility()">
+                            <mat-icon>{{ passwordVisible ? 'visibility_off' : 'visibility' }}</mat-icon>
+                        </button>
+                    </div>
+                    <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+                        <div *ngIf="f['password'].errors['required']">Пароль обязателен</div>
+                    </div>
+                </div>
+
+                <a class="forgot-password-link" routerLink="/auth/forgot-password">Забыли пароль?</a>
+
+                <button type="submit" class="btn btn-primary">ВОЙТИ</button>
+            </form>
+        </div>
+    </div>
+    <div class="auth-image-wrapper"></div>
+</div>

@@ -1,0 +1,69 @@
+<div class="table-controls-container">
+    <div class="table-controls-main">
+        <div class="search-filter-group">
+            <mat-form-field appearance="outline" class="search-input">
+                <mat-label>Глобальный поиск...</mat-label>
+                <input matInput (keyup)="globalFilterChange.emit($event)">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            <button mat-stroked-button class="control-button" (click)="toggleFilter.emit()">
+                <mat-icon>filter_list</mat-icon>
+                ФИЛЬТР
+                <span *ngIf="activeFilterCount > 0" class="filter-chip-count">{{ activeFilterCount }}</span>
+            </button>
+        </div>
+        <div class="actions-group">
+            <button mat-stroked-button class="control-button" [matMenuTriggerFor]="columnsMenu">ТАБЛИЦА</button>
+        </div>
+    </div>
+
+    <div class="applied-filters-bar" *ngIf="appliedFilters.length > 0">
+        <mat-chip-set aria-label="Applied filters">
+            <mat-chip *ngFor="let filter of appliedFilters" (removed)="removeFilter.emit(filter.key)"
+                [removable]="true">
+                {{ filter.key | titlecase }}: {{ filter.value }}
+                <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </mat-chip>
+        </mat-chip-set>
+    </div>
+
+    <div class="actions-toolbar" *ngIf="selectionHasValue">
+        <div class="selection-count">Выбрано: {{ selectionCount }}</div>
+        <div class="action-buttons">
+            <ng-container *ngIf="isBulkEditMode">
+                <button mat-raised-button color="primary" (click)="saveClick.emit()">Сохранить</button>
+                <button mat-button (click)="cancelClick.emit()">Отмена</button>
+            </ng-container>
+            <ng-container *ngIf="!isBulkEditMode">
+                <button mat-stroked-button color="primary" (click)="editClick.emit()">
+                    <mat-icon>edit</mat-icon>
+                    Редактировать
+                </button>
+                <button mat-stroked-button color="primary" [disabled]="!selectionHasValue">
+                    <mat-icon>visibility_off</mat-icon>
+                    Скрыть
+                </button>
+                <button mat-stroked-button color="warn" (click)="deleteClick.emit()">
+                    <mat-icon>delete</mat-icon>
+                    Удалить
+                </button>
+            </ng-container>
+        </div>
+    </div>
+</div>
+
+<mat-menu #columnsMenu="matMenu" class="columns-menu">
+    <div (click)="$event.stopPropagation()" [formGroup]="columnsForm" class="columns-menu-content">
+        <div class="columns-list">
+            <div *ngFor="let column of allColumns" class="column-option">
+                <mat-checkbox [formControlName]="column.id">{{ column.name | titlecase }}</mat-checkbox>
+            </div>
+        </div>
+        <div class="columns-menu-actions">
+            <button mat-menu-item class="apply-button" (click)="applyColumnChanges.emit()">Применить</button>
+            <button mat-menu-item class="close-button" mat-menu-item-close>Закрыть</button>
+        </div>
+    </div>
+</mat-menu>

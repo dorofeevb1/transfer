@@ -1,0 +1,19 @@
+<div class="filter-container" [formGroup]="form">
+    <div class="filter-header">
+        <h2>Фильтр</h2>
+    </div>
+
+    <mat-dialog-content class="filter-content">
+        <div *ngFor="let key of objectKeys(form.controls)" class="filter-row">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ key | titlecase }}</mat-label>
+                <input matInput [formControlName]="key" (keydown.enter)="apply.emit()">
+            </mat-form-field>
+        </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" class="filter-actions">
+        <button mat-stroked-button (click)="reset.emit()">Сбросить все</button>
+        <button mat-flat-button color="primary" (click)="apply.emit()">Применить</button>
+    </mat-dialog-actions>
+</div>

@@ -1,0 +1,40 @@
+<div class="edit-dialog-header">
+    <h1 mat-dialog-title>Редактирование товара</h1>
+    <button mat-icon-button class="close-button" (click)="onCancel()">
+        <mat-icon>close</mat-icon>
+    </button>
+</div>
+
+<div mat-dialog-content [formGroup]="form">
+    <!-- Галерея изображений -->
+    <div class="form-section">
+        <label class="form-section-label">Фотографии</label>
+        <div class="image-gallery">
+            <div *ngFor="let image of imagesControl.value; let i = index" class="image-preview">
+                <img [src]="image | safeUrl" alt="Product image">
+                <button mat-icon-button class="remove-btn" (click)="removeImage(i)">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </div>
+            <button mat-stroked-button class="add-image-btn" (click)="openAddPhotoDialog()">
+                <mat-icon>add_a_photo</mat-icon>
+                <span>Добавить</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Динамические поля формы -->
+    <ng-container *ngFor="let key of objectKeys(form.controls)">
+        <div *ngIf="key !== 'id' && key !== 'images'" class="form-row">
+            <mat-form-field appearance="outline">
+                <mat-label>{{ key | titlecase }}</mat-label>
+                <input matInput [formControlName]="key">
+            </mat-form-field>
+        </div>
+    </ng-container>
+</div>
+
+<div mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Отмена</button>
+    <button mat-flat-button color="primary" (click)="onSave()">Сохранить</button>
+</div>
