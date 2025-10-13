@@ -1,28 +1,83 @@
-# BrioTradeLogistic
+# BrioTradeLogistic — Frontend-приложение
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.11.
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![SCSS](https://img.shields.io/badge/SCSS-CC6699?style=for-the-badge&logo=sass&logoColor=white)
 
-## Development server
+Frontend-приложение для платформы управления торгово-логистическими процессами BrioTradeLogistic. Проект разработан на Angular с упором на чистую архитектуру, производительность и высокое качество пользовательского интерфейса, в точности соответствующего предоставленным UI/UX-макетам.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Ключевые возможности (Features)
 
-## Code scaffolding
+- **Модуль аутентификации**: Полнофункциональный процесс входа и восстановления пароля.
+  - Реактивные формы с асинхронной и синхронной валидацией.
+  - Пользовательский интерфейс, точно воссозданный по макетам.
+  - Страница подтверждения сброса пароля.
+- **Динамический лейаут**: Главный хедер приложения автоматически скрывается на страницах аутентификации для улучшения пользовательского опыта.
+- **Ленивая загрузка (Lazy Loading)**: Модули (в частности, `AuthModule`) загружаются по требованию, что ускоряет первоначальную загрузку приложения.
+- **Адаптивный дизайн**: Корректное отображение на всех типах устройств, от десктопов до мобильных телефонов.
+- **Строгая типизация**: Проект использует строгий режим TypeScript для минимизации ошибок во время выполнения.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Технологический стек
 
-## Build
+- **Framework**: Angular 17+
+- **Язык**: TypeScript 5.2+
+- **Стилизация**: SCSS с использованием переменных и модульной структуры.
+- **Асинхронность**: RxJS для управления потоками данных и событиями.
+- **Маршрутизация**: Angular Router с поддержкой lazy-loading.
+- **UI-компоненты**: Angular Material (для иконок и базовых элементов).
+- **Сборка**: Angular CLI.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Структура проекта
 
-## Running unit tests
+Проект следует лучшим практикам организации Angular-приложений, разделяя логику на функциональные модули (`features`).
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+- src/app/core/ - Основные сервисы, гварды (guards), интерсепторы
+- src/app/features/ - Функциональные модули приложения
+- src/app/shared/ - Переиспользуемые компоненты, директивы, пайпы
+- src/assets/ - Статические файлы (изображения, шрифты, иконки)
 
-## Running end-to-end tests
+## Быстрый старт
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+### Требования
 
-## Further help
+- Node.js (версия 18.x или выше)
+- Angular CLI (версия 17.x или выше)
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-"# BrioTradeLogistic" 
+### Установка и запуск
+
+1.  Клонируйте репозиторий:
+
+```
+git clone <your-repository-url>
+cd brio-trade-logistic-frontend
+```
+
+2.  Установите зависимости:
+
+```
+npm install
+```
+
+3.  Запустите dev-сервер:
+
+```
+ng serve
+```
+
+4.  Откройте приложение в браузере:
+
+Перейдите по адресу http://localhost:4200/. Приложение автоматически перезагрузится при изменении исходных файлов.
+
+## Доступные скрипты
+
+- ng serve — запуск сервера для разработки.
+- ng build — сборка production-версии приложения в папку dist/.
+- ng test — запуск юнит-тестов с помощью Karma.
+- ng lint — анализ кода на соответствие правилам из tslint.json.
+
+## Архитектурные решения
+
+- Feature-Sliced Design: Логика разделена на независимые функциональные модули (features), что упрощает поддержку и масштабирование проекта.
+- SCSS Variables & Shared Styles: Общие стили вынесены в _auth-shared.scss, что позволяет избежать дублирования кода и легко поддерживать единый стиль.
+- OnPush Change Detection: В большинстве компонентов используется стратегия ChangeDetectionStrategy.OnPush для оптимизации производительности.
+- Строгие правила линтинга: Проект настроен на использование строгих правил ESLint и Prettier для поддержания высокого качества и единообразия кодовой базы.
