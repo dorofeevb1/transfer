@@ -1,6 +1,7 @@
 <div class="table-wrapper">
     <table mat-table [dataSource]="dataSource" matSort>
-        <!-- Колонка с чекбоксами -->
+
+        <!-- Колонка выбора -->
         <ng-container matColumnDef="select" [sticky]="true">
             <th mat-header-cell *matHeaderCellDef>
                 <mat-checkbox *ngIf="dataSource && dataSource.data.length > 0" (change)="masterToggleClick.emit()"
@@ -15,58 +16,52 @@
             </td>
         </ng-container>
 
-        <!-- Динамическое создание колонок (без изменений) -->
+        <!-- Динамические колонки -->
         <ng-container *ngFor="let column of allColumns" [matColumnDef]="column.id">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
                 <div class="column-header">
-                    <span>{{ column.name | titlecase }}</span>
+                    <!-- Заголовок колонки по FIELDS -->
+                    <span>{{ ('FIELDS.' + (column.name | titlecase)) | translate }}</span>
+
                     <button mat-icon-button (click)="removeColumnClick.emit({ columnId: column.id, event: $event })"
-                        matTooltip="Удалить столбец">
+                        [matTooltip]="'PRODUCTS.REMOVE_COLUMN_TOOLTIP' | translate">
                         <mat-icon>close</mat-icon>
                     </button>
                 </div>
             </th>
+
             <td mat-cell *matCellDef="let element">
-
-                <!-- Главное условие: если режим массового редактирования И строка выбрана -->
                 <ng-container *ngIf="isBulkEditMode && selection.isSelected(element); else readOnlyCell">
-
-                    <!-- ТОГДА: показываем поле для ввода -->
                     <mat-form-field appearance="outline" class="inline-edit-field">
                         <input matInput [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()">
                     </mat-form-field>
-
                 </ng-container>
 
-                <!-- ИНАЧЕ: показываем ячейку только для чтения -->
                 <ng-template #readOnlyCell>
-
-                    <!-- Внутри этого блока уже идет ваша стандартная логика -->
                     <ng-container *ngIf="isImageArray(element[column.id]); else defaultCell">
-                        <!-- Показываем картинку -->
                         <div class="image-cell-container" (click)="photoViewerClick.emit(element[column.id])">
-                            <img [src]="element[column.id][0] | safeUrl" class="thumbnail-image" alt="Image">
+                            <img [src]="element[column.id][0] | safeUrl" class="thumbnail-image"
+                                [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
                             <span *ngIf="element[column.id].length > 1" class="photo-count">
                                 +{{ element[column.id].length - 1 }}
                             </span>
                         </div>
                     </ng-container>
 
-                    <!-- Или показываем обычный текст -->
                     <ng-template #defaultCell>
                         {{ element[column.id] }}
                     </ng-template>
-
                 </ng-template>
             </td>
-
         </ng-container>
 
-        <!-- Рендеринг строк (без изменений) -->
         <tr mat-header-row *matHeaderRowDef="columnsToRender; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: columnsToRender;" (click)="rowToggleClick.emit(row)"></tr>
+
         <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="columnsToRender.length">Нет данных.</td>
+            <td class="mat-cell" [attr.colspan]="columnsToRender.length">
+                {{ 'TABLE.NO_DATA' | translate }}
+            </td>
         </tr>
     </table>
 </div>

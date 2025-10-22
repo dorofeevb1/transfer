@@ -1,8 +1,32 @@
-<div>
-    logo
+<div class="logo-container">
+    <img src="../assets/logo.png" alt="">
 </div>
-<div>
-    <select name="translate" id="language"></select>
-    <button>settings</button>
-    <button>user</button>
+
+<div class="header-controls">
+    <mat-button-toggle-group #langToggleGroup="matButtonToggleGroup" [value]="currentLang"
+        (change)="switchLang(langToggleGroup.value)" aria-label="Language selection">
+        <mat-button-toggle value="ru">RU</mat-button-toggle>
+        <mat-button-toggle value="zh">中文</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <ng-container *ngIf="isAdmin$ | async">
+        <button mat-icon-button [matMenuTriggerFor]="adminMenu" [matTooltip]="'HEADER.SETTINGS' | translate"
+            aria-label="Settings button">
+            <mat-icon>settings</mat-icon>
+        </button>
+    </ng-container>
+
+    <button mat-icon-button [matTooltip]="'HEADER.USER' | translate" aria-label="User profile button">
+        <mat-icon>account_circle</mat-icon>
+    </button>
 </div>
+<mat-menu #adminMenu="matMenu">
+    <button mat-menu-item routerLink="/admin/products">
+        <mat-icon>inventory_2</mat-icon>
+        <span>Товары</span>
+    </button>
+    <button mat-menu-item routerLink="/admin/users">
+        <mat-icon>people</mat-icon>
+        <span>Пользователи</span>
+    </button>
+</mat-menu>

@@ -13,21 +13,27 @@ $header-font-size: 13px;
 $transition-duration: 0.2s;
 
 :host {
-  display: block;
-  padding: 24px;
-  background-color: #f8f9fa; // Светло-серый фон страницы
+    display: block;
+    padding: 24px;
+    background-color: #f8f9fa; // Светло-серый фон страницы
+    height: 100%;
+}
+
+.page-container {
+    height: 100%;
 }
 
 .table-page-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
 }
 
 // Стили для боковой панели фильтров (если необходимо)
 .filter-sidenav {
-  width: 300px;
-  padding: 16px;
+    width: 300px;
+    padding: 16px;
 }
 
 
@@ -35,8 +41,16 @@ $transition-duration: 0.2s;
     display: block;
 }
 
+app-products-table {
+    flex-grow: 1; // Заставляем саму таблицу расти и занимать место
+    overflow: auto; // Добавляем скролл, если таблица большая
+}
+
 // --- Обертка для таблицы ---
 .table-wrapper {
+    display: block;
+    height: 100%;
+    overflow: auto;
     border-radius: $table-border-radius;
     background-color: $background-color;
     border: 1px solid $border-color;

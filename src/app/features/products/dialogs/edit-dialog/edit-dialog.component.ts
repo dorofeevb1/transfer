@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { AddPhotoDialogComponent } from '../add-photo-dialog/add-photo-dialog.component';
+import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 
 @Component({
   selector: 'app-edit-dialog',
@@ -16,11 +17,12 @@ export class EditDialogComponent implements OnInit {
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<EditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    public productTableService: ProductTableService
   ) {
     this.form = this.fb.group({});
   }
-
+  
   ngOnInit(): void {
     // Инициализируем поле images, если его нет
     if (!this.data.images || !Array.isArray(this.data.images)) {

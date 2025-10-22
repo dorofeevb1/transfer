@@ -5,13 +5,15 @@ import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
-
+import { TranslateService } from '@ngx-translate/core';
 import { ImportDialogComponent } from '../../dialogs/import-dialog/import-dialog.component';
 import { SelectionModel } from '@angular/cdk/collections';
 import { PhotoViewerComponent } from '../../dialogs/photo-viewer/photo-viewer.component';
 import { EditDialogComponent } from '../../dialogs/edit-dialog/edit-dialog.component';
 import { ConfirmationDeleteComponent } from '../../dialogs/confirmation-delete/confirmation-delete.component';
 import { AddColumnDialogComponent } from '../../dialogs/add-column-dialog/add-column-dialog.component';
+import { ExportService } from 'src/app/core/services/export.service';
+import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 
 export interface AppliedFilter {
   key: string;
@@ -37,14 +39,20 @@ export class TableComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<any>();
   selection = new SelectionModel<any>(true, []);
 
+  isExporting = false;
+
   private editCache = new Map<string, any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('filterSidenav') filterSidenav!: MatSidenav;
 
+
   constructor(
     public dialog: MatDialog,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private exportService: ExportService,
+    private translate: TranslateService,
+    private productTableService: ProductTableService
   ) {
     this.filterForm = this.fb.group({});
     this.columnsForm = this.fb.group({});
@@ -52,7 +60,19 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.dataSource.filterPredicate = this.createFilterPredicate();
+
+    // Загрузка данных через сервис
+    this.productTableService.loadTableData();
+    this.productTableService.rows$.subscribe(data => {
+      this.updateTableData(data);
+    });
+    this.productTableService.columns$.subscribe(columns => {
+      this.allColumns = columns;
+      this.displayedColumns = ['select', ...columns.map(c => c.id)];
+      this.setupForms();
+    });
   }
+
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -115,6 +135,21 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   onSaveBulkChanges(): void {
+    const changedRows = this.selection.selected.map(item => {
+      // взять изменённые данные из editCache, если используете
+      return this.editCache.get(item.id) ?? item;
+    });
+
+    // Отправить обновления на сервер
+    changedRows.forEach(row => {
+      this.productTableService.updateRow(row.id, row).subscribe(updatedRow => {
+        const index = this.dataSource.data.findIndex(d => d.id === updatedRow.id);
+        if (index !== -1) {
+          this.dataSource.data[index] = updatedRow;
+        }
+      });
+    });
+
     this.isBulkEditMode = false;
     this.selection.clear();
     this.editCache.clear();
@@ -134,19 +169,57 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.editCache.clear();
   }
 
+  // onDeleteSelected(): void {
+  //   const selectedCount = this.selection.selected.length;
+  //   if (selectedCount === 0) return;
+
+  //   this.translate.get([
+  //     'DIALOGS.CONFIRM_DELETE_TITLE',
+  //     'DIALOGS.CONFIRM_DELETE_MESSAGE'
+  //   ], { count: selectedCount }).subscribe(translations => {
+  //     const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
+  //       width: '400px',
+  //       data: {
+  //         title: translations['DIALOGS.CONFIRM_DELETE_TITLE'],
+  //         message: translations['DIALOGS.CONFIRM_DELETE_MESSAGE']
+  //       }
+  //     });
+  //     dialogRef.afterClosed().subscribe(confirmed => {
+  //       if (confirmed) {
+  //         const idsToDelete = new Set(this.selection.selected.map(item => item.id));
+
+  //         this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.has(item.id));
+  //         this.selection.clear();
+  //       }
+  //     });
+  //   });
+  // }
+
   onDeleteSelected(): void {
     const selectedCount = this.selection.selected.length;
     if (selectedCount === 0) return;
-    const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
-      width: '400px',
-      data: { title: 'Удалить товары', message: `Вы уверены, что хотите удалить выбранные товары (${selectedCount} шт.)?` }
-    });
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        const idsToDelete = new Set(this.selection.selected.map(item => item.id));
-        this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.has(item.id));
-        this.selection.clear();
-      }
+
+    this.translate.get([
+      'DIALOGS.CONFIRM_DELETE_TITLE',
+      'DIALOGS.CONFIRM_DELETE_MESSAGE'
+    ], { count: selectedCount }).subscribe(translations => {
+      const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
+        width: '400px',
+        data: {
+          title: translations['DIALOGS.CONFIRM_DELETE_TITLE'],
+          message: translations['DIALOGS.CONFIRM_DELETE_MESSAGE']
+        }
+      });
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          const idsToDelete = this.selection.selected.map(item => item.id);
+          this.productTableService.deleteRows(idsToDelete).subscribe(() => {
+            // Обновляем локальные данные таблицы после удаления
+            this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.includes(item.id));
+            this.selection.clear();
+          });
+        }
+      });
     });
   }
 
@@ -188,12 +261,24 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.applySideNavFilters();
   }
 
+
   applyGlobalFilter(event: Event): void {
+
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
     if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+    if (filterValue.length > 0) {
+      this.productTableService.searchTableData(filterValue).subscribe({
+        next: (searchResults) => {
+          this.updateTableData(searchResults);
+        },
+        error: (err) => console.error('Ошибка поиска на сервере: ', err),
+      });
+    } else {
+      // Если строка поиска очищена, можно заново загрузить все данные
+      this.productTableService.loadTableData();
+    }
   }
-
   createFilterPredicate(): (data: any, filter: string) => boolean {
     return (data: any, filter: string): boolean => {
       try {
@@ -216,33 +301,66 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.displayedColumns.unshift('select');
   }
 
+  // addColumn(): void {
+  //   this.translate.get('DIALOGS.ADD_COLUMN_TITLE').subscribe(title => {
+  //     const dialogRef = this.dialog.open(AddColumnDialogComponent, {
+  //       width: '400px',
+  //       data: { title: title }
+  //     });
+
+  //     dialogRef.afterClosed().subscribe(newColumnName => {
+  //       if (newColumnName && !this.allColumns.some(c => c.id === newColumnName)) {
+  //         this.allColumns.push({ id: newColumnName, name: newColumnName });
+  //         this.dataSource.data.forEach(row => row[newColumnName] = '');
+  //         this.setupForms();
+  //         this.dataSource.data = [...this.dataSource.data];
+  //       }
+  //     });
+  //   });
+  // }
   addColumn(): void {
-    const dialogRef = this.dialog.open(AddColumnDialogComponent, { width: '400px' });
-    dialogRef.afterClosed().subscribe(newColName => {
-      if (newColName && !this.allColumns.some(c => c.id === newColName)) {
-        this.allColumns.push({ id: newColName, name: newColName });
-        this.dataSource.data.forEach(row => row[newColName] = '');
-        this.dataSource.data = [...this.dataSource.data];
-        this.setupForms();
-        this.applyColumnChanges();
-      }
+    this.translate.get('DIALOGS.ADD_COLUMN_TITLE').subscribe(title => {
+      const dialogRef = this.dialog.open(AddColumnDialogComponent, {
+        width: '400px',
+        data: { title: title }
+      });
+      dialogRef.afterClosed().subscribe(newColumnName => {
+        if (newColumnName && !this.allColumns.some(c => c.id === newColumnName)) {
+          this.allColumns.push({ id: newColumnName, name: newColumnName });
+          this.dataSource.data.forEach(row => row[newColumnName] = '');
+          this.setupForms();
+          this.dataSource.data = [...this.dataSource.data];
+          this.productTableService.sendNewColumnToBackend(newColumnName).subscribe({
+            next: () => console.log('Новый столбец успешно отправлен на сервер'),
+            error: (err: any) => console.error('Ошибка отправки нового столбца', err),
+          });
+        }
+      });
     });
   }
 
   removeColumn(columnName: string, event: MouseEvent): void {
     event.stopPropagation();
-    const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
-      width: '400px',
-      data: { title: 'Удалить колонку', message: `Вы уверены, что хотите удалить колонку "${columnName}"? Это действие нельзя будет отменить.` }
-    });
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.allColumns = this.allColumns.filter(c => c.id !== columnName);
-        this.displayedColumns = this.displayedColumns.filter(id => id !== columnName);
-        this.dataSource.data.forEach(row => delete row[columnName]);
-        this.setupForms();
-        this.dataSource.data = [...this.dataSource.data];
-      }
+    this.translate.get([
+      'DIALOGS.CONFIRM_DELETE_COLUMN_TITLE',
+      'DIALOGS.CONFIRM_DELETE_COLUMN_MESSAGE'
+    ], { columnName: columnName }).subscribe(translations => {
+      const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
+        width: '400px',
+        data: {
+          title: translations['DIALOGS.CONFIRM_DELETE_COLUMN_TITLE'],
+          message: translations['DIALOGS.CONFIRM_DELETE_COLUMN_MESSAGE']
+        }
+      });
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) {
+          this.allColumns = this.allColumns.filter(c => c.id !== columnName);
+          this.displayedColumns = this.displayedColumns.filter(id => id !== columnName);
+          this.dataSource.data.forEach(row => delete row[columnName]);
+          this.setupForms();
+          this.dataSource.data = [...this.dataSource.data];
+        }
+      });
     });
   }
 
@@ -259,4 +377,103 @@ export class TableComponent implements OnInit, AfterViewInit {
   masterToggle(): void {
     this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach(row => this.selection.select(row));
   }
+
+  async handleExportToExcel(): Promise<void> {
+    const dataToExport = this.dataSource.data;
+
+    if (!dataToExport || dataToExport.length === 0 || this.isExporting) {
+      if (this.isExporting) console.log('Экспорт уже выполняется...');
+      else console.warn('Нет данных для экспорта.');
+      return;
+    }
+
+    const imageKey = '_Images';
+    const specialKeysToExclude = ['select', 'actions', imageKey];
+
+    if (!this.allColumns) {
+      console.error(
+        'Конфигурация колонок (allColumns) не найдена. Экспорт невозможен.'
+      );
+      return;
+    }
+
+    const columnsConfig = this.allColumns
+      .filter((col) => !specialKeysToExclude.includes(col.id))
+      .map((col) => ({
+        key: col.id,
+        header: col.name,
+      }));
+
+    this.isExporting = true;
+    console.log('Начинается экспорт в Excel, формируем файл...');
+
+    try {
+      await this.exportService.exportAsExcelWithImages(
+        dataToExport,
+        'brio_trade_export',
+        columnsConfig,
+        imageKey
+      );
+      this.productTableService.sendExportDataToBackend(dataToExport).subscribe({
+        next: () => console.log('Данные успешно отправлены на сервер'),
+        error: (error) => console.error('Ошибка отправки данных на сервер', error),
+      });
+    } catch (error) {
+      console.error(
+        'Произошла критическая ошибка во время экспорта:',
+        error
+      );
+    } finally {
+      this.isExporting = false;
+      console.log('Экспорт в Excel завершен!');
+    }
+  }
+
+  handleExportToCsv(): void {
+    const dataToExport = this.dataSource.data;
+    if (dataToExport && dataToExport.length > 0) {
+      this.exportService.exportAsCsvFile(dataToExport, 'brio_trade_export');
+    } else {
+      console.warn('Нет данных для экспорта.');
+    }
+  }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

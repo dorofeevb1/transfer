@@ -1,14 +1,18 @@
-<h1 mat-dialog-title>Добавить новую колонку</h1>
+<h1 mat-dialog-title>{{ data.title }}</h1>
+
 <div mat-dialog-content [formGroup]="form">
-    <mat-form-field appearance="outline">
-        <mat-label>Название колонки</mat-label>
+    <mat-form-field appearance="outline" class="full-width">
+        <mat-label>{{ 'DIALOGS.COLUMN_NAME' | translate }}</mat-label>
         <input matInput formControlName="name" cdkFocusInitial>
+
         <mat-error *ngIf="form.get('name')?.hasError('required')">
-            Название не может быть пустым.
+            {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
         </mat-error>
     </mat-form-field>
 </div>
+
 <div mat-dialog-actions align="end">
-    <button mat-stroked-button (click)="onCancel()">Отмена</button>
-    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">Добавить</button>
+    <button mat-stroked-button (click)="onCancel()">{{ 'DIALOGS.CANCEL_BUTTON' | translate }}</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">{{ 'PRODUCTS.ADD_COLUMN' |
+        translate }}</button>
 </div>

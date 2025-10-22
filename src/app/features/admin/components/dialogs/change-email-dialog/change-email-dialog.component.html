@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>Изменить e-mail</h1>
+<div mat-dialog-content [formGroup]="form">
+    <p>Введите новый e-mail, он же будет служить логином для входа в личный кабинет</p>
+    <mat-form-field appearance="outline" style="width: 100%;">
+        <mat-label>E-mail</mat-label>
+        <input matInput formControlName="newEmail" cdkFocusInitial>
+    </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Отмена</button>
+    <button mat-flat-button color="warn" (click)="onSave()" [disabled]="form.invalid">Отправить</button>
+</div>

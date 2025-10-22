@@ -1,10 +1,12 @@
 <div class="page-header">
-    <h1>Товары</h1>
+    <h1>{{ 'PRODUCTS.PAGE_TITLE' | translate }}</h1>
     <div class="header-actions">
-        <button mat-flat-button color="warn" (click)="importClick.emit()">Импорт</button>
+        <button mat-flat-button color="warn" (click)="importClick.emit()">
+            {{ 'PRODUCTS.IMPORT' | translate }}
+        </button>
         <button mat-stroked-button (click)="addColumnClick.emit()">
             <mat-icon>add</mat-icon>
-            Добавить столбец
+            {{ 'PRODUCTS.ADD_COLUMN' | translate }}
         </button>
     </div>
 </div>

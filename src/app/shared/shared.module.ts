@@ -53,6 +53,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SafeUrlPipe } from './pipes/safe-url.pipe';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { TranslateModule } from '@ngx-translate/core';
 
 const materialModules = [
   A11yModule,
@@ -104,6 +105,7 @@ const materialModules = [
   MatTreeModule,
   ReactiveFormsModule,
   FormsModule,
+  TranslateModule
 ];
 
 @NgModule({

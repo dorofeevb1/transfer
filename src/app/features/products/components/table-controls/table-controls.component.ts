@@ -24,4 +24,6 @@ export class TableControlsComponent {
   @Output() toggleFilter = new EventEmitter<void>();
   @Output() applyColumnChanges = new EventEmitter<void>();
   @Output() removeFilter = new EventEmitter<string>();
+  @Output() exportToExcel = new EventEmitter<void>();
+  @Output() exportToCsv = new EventEmitter<void>();
 }

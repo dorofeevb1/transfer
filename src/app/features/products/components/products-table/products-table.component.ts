@@ -2,6 +2,7 @@ import { AfterViewInit, Component, EventEmitter, Input, Output, ViewChild } from
 import { MatTableDataSource } from '@angular/material/table';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatSort } from '@angular/material/sort';
+import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-products-table',
   templateUrl: './products-table.component.html',
@@ -12,17 +13,20 @@ export class ProductsTableComponent implements AfterViewInit {
   @Input() selection!: SelectionModel<any>;
   @Input() allColumns: { id: string, name: string }[] = [];
   @Input() columnsToRender: string[] = [];
-  @Input() isAllSelected = false; // Получаем готовое значение от родителя
+  @Input() isAllSelected = false;
   @Input() isBulkEditMode = false;
 
   @Output() removeColumnClick = new EventEmitter<{ columnId: string, event: MouseEvent }>();
   @Output() photoViewerClick = new EventEmitter<string[]>();
-  @Output() masterToggleClick = new EventEmitter<void>(); // Новое событие
-  @Output() rowToggleClick = new EventEmitter<any>();    // Новое событие
+  @Output() masterToggleClick = new EventEmitter<void>();
+  @Output() rowToggleClick = new EventEmitter<any>();
   @Output() sortChange = new EventEmitter<MatSort>();
 
   @ViewChild(MatSort) sort!: MatSort;
-
+  constructor(
+    private translate: TranslateService
+  ) { }
+  
   ngAfterViewInit() {
     this.sortChange.emit(this.sort);
   }
@@ -33,8 +37,10 @@ export class ProductsTableComponent implements AfterViewInit {
 
   checkboxLabel(row?: any): string {
     if (!row) {
-      return `${this.isAllSelected ? 'снять' : 'выбрать'} все`;
+      const labelKey = this.isAllSelected ? 'TABLE.DESELECT_ALL_ARIA' : 'TABLE.SELECT_ALL_ARIA';
+      return this.translate.instant(labelKey);
     }
-    return `${this.selection.isSelected(row) ? 'снять' : 'выбрать'} строку`;
+    const labelKey = this.selection.isSelected(row) ? 'TABLE.DESELECT_ROW_ARIA' : 'TABLE.SELECT_ROW_ARIA';
+    return this.translate.instant(labelKey);
   }
 }

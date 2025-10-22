@@ -4,12 +4,13 @@ import { RouterModule } from '@angular/router';
 
 import { HeaderComponent } from './components/header/header.component';
 import { SharedModule } from '../shared/shared.module';
+import { FooterComponent } from './components/footer/footer.component';
 
 @NgModule({
     // Компоненты, принадлежащие этому модулю
     declarations: [
         HeaderComponent,
-        // MainLayoutComponent
+        FooterComponent,
     ],
     // Модули, которые используются в шаблонах компонентов этого модуля
     imports: [
@@ -19,6 +20,7 @@ import { SharedModule } from '../shared/shared.module';
     ],
     // Компоненты, которые будут доступны другим модулям, импортирующим LayoutModule
     exports: [
+        FooterComponent,
         HeaderComponent
     ]
 })

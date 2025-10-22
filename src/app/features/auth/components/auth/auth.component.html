@@ -4,12 +4,11 @@
             <img src="assets/logo.png" alt="PRO TRADE & LOGISTIC">
         </div>
         <div class="auth-form">
-            <h1 class="auth-title">Вход</h1>
-            <p class="auth-subtitle">Введите данные для авторизации</p>
-
+            <h1 class="auth-title">{{ 'AUTH.LOGIN_TITLE' | translate }}</h1>
+            <p class="auth-subtitle">{{ 'AUTH.LOGIN_SUBTITLE' | translate }}</p>
             <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                 <div class="form-group">
-                    <label for="email">E-mail</label>
+                    <label for="email">{{ 'AUTH.EMAIL' | translate }}</label>
                     <input id="email" type="email" placeholder="Введите e-mail" formControlName="email"
                         class="form-control" [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
                     <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
@@ -34,7 +33,9 @@
                 </div>
 
                 <a class="forgot-password-link" routerLink="/auth/forgot-password">Забыли пароль?</a>
-
+                <div *ngIf="submitted && authError" class="invalid-feedback d-block text-center mb-3">
+                    Неверный логин или пароль.
+                </div>
                 <button type="submit" class="btn btn-primary">ВОЙТИ</button>
             </form>
         </div>

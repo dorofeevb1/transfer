@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 import { ExcelProcessingService } from 'src/app/core/services/excel-processing.service';
 
 
@@ -15,7 +16,8 @@ export class ImportDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ImportDialogComponent>,
-    private excelService: ExcelProcessingService
+    private excelService: ExcelProcessingService,
+    private productTableService: ProductTableService
   ) { }
 
   /**
@@ -84,8 +86,15 @@ export class ImportDialogComponent {
     try {
       // Получаем структурированный результат от сервиса
       const processingResult = await this.excelService.processFiles(this.files);
-      // Передаем весь объект при закрытии диалога
-      this.dialogRef.close(processingResult);
+      if (processingResult && processingResult.mergedData && processingResult.mergedData.length > 0) {
+        // Отправляем на бэк присланные данные
+        this.productTableService.sendImportDataToBackend(processingResult.mergedData).subscribe({
+          next: () => console.log('Данные импорта успешно отправлены на сервер'),
+          error: err => console.error('Ошибка отправки данных импорта', err),
+        });
+
+        this.dialogRef.close(processingResult);
+      }
     } catch (error) {
       console.error('Ошибка при обработке файлов:', error);
       // Можно добавить вывод ошибки пользователю

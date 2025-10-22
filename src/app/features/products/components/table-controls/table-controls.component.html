@@ -1,69 +1,92 @@
 <div class="table-controls-container">
+    <!-- Верхняя панель: Поиск, Фильтр, Экспорт, Столбцы -->
     <div class="table-controls-main">
         <div class="search-filter-group">
             <mat-form-field appearance="outline" class="search-input">
-                <mat-label>Глобальный поиск...</mat-label>
+                <mat-label>{{ 'PRODUCTS.SEARCH_PLACEHOLDER' | translate }}</mat-label>
                 <input matInput (keyup)="globalFilterChange.emit($event)">
                 <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
             <button mat-stroked-button class="control-button" (click)="toggleFilter.emit()">
                 <mat-icon>filter_list</mat-icon>
-                ФИЛЬТР
+                {{ 'PRODUCTS.FILTERS' | translate }}
                 <span *ngIf="activeFilterCount > 0" class="filter-chip-count">{{ activeFilterCount }}</span>
             </button>
         </div>
         <div class="actions-group">
-            <button mat-stroked-button class="control-button" [matMenuTriggerFor]="columnsMenu">ТАБЛИЦА</button>
+            <button mat-stroked-button class="control-button export-button" [matMenuTriggerFor]="exportMenu">
+                <mat-icon>upload</mat-icon>
+                <span>{{ 'PRODUCTS.EXPORT' | translate }}</span>
+                <mat-icon class="dropdown-arrow">expand_more</mat-icon>
+            </button>
+            <mat-menu #exportMenu="matMenu">
+                <button mat-menu-item (click)="exportToExcel.emit()">
+                    <span>{{ 'PRODUCTS.EXPORT_TO_EXCEL' | translate }}</span>
+                </button>
+                <button mat-menu-item (click)="exportToCsv.emit()">
+                    <span>{{ 'PRODUCTS.EXPORT_TO_CSV' | translate }}</span>
+                </button>
+            </mat-menu>
+            <button mat-stroked-button class="control-button" [matMenuTriggerFor]="columnsMenu">{{ 'PRODUCTS.COLUMNS' |
+                translate }}</button>
         </div>
     </div>
 
+    <!-- Панель с примененными фильтрами -->
     <div class="applied-filters-bar" *ngIf="appliedFilters.length > 0">
-        <mat-chip-set aria-label="Applied filters">
+        <mat-chip-set [attr.aria-label]="'DIALOGS.APPLIED_FILTERS_ARIA' | translate">
             <mat-chip *ngFor="let filter of appliedFilters" (removed)="removeFilter.emit(filter.key)"
                 [removable]="true">
-                {{ filter.key | titlecase }}: {{ filter.value }}
-                <button matChipRemove>
+                {{ ('FIELDS.' + filter.key.toUpperCase() | translate) | titlecase }}: {{ filter.value }}
+                <button matChipRemove [attr.aria-label]="'DIALOGS.REMOVE_FILTER_ARIA' | translate">
                     <mat-icon>cancel</mat-icon>
                 </button>
             </mat-chip>
         </mat-chip-set>
     </div>
 
+    <!-- Панель действий при выделении строк -->
     <div class="actions-toolbar" *ngIf="selectionHasValue">
-        <div class="selection-count">Выбрано: {{ selectionCount }}</div>
+        <div class="selection-count">{{ 'PRODUCTS.SELECTED' | translate }}: {{ selectionCount }}</div>
         <div class="action-buttons">
             <ng-container *ngIf="isBulkEditMode">
-                <button mat-raised-button color="primary" (click)="saveClick.emit()">Сохранить</button>
-                <button mat-button (click)="cancelClick.emit()">Отмена</button>
+                <button mat-raised-button color="primary" (click)="saveClick.emit()">{{ 'PRODUCTS.SAVE' | translate
+                    }}</button>
+                <button mat-button (click)="cancelClick.emit()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
             </ng-container>
             <ng-container *ngIf="!isBulkEditMode">
                 <button mat-stroked-button color="primary" (click)="editClick.emit()">
                     <mat-icon>edit</mat-icon>
-                    Редактировать
+                    {{ 'PRODUCTS.EDIT' | translate }}
                 </button>
                 <button mat-stroked-button color="primary" [disabled]="!selectionHasValue">
                     <mat-icon>visibility_off</mat-icon>
-                    Скрыть
+                    {{ 'PRODUCTS.HIDE' | translate }}
                 </button>
                 <button mat-stroked-button color="warn" (click)="deleteClick.emit()">
                     <mat-icon>delete</mat-icon>
-                    Удалить
+                    {{ 'PRODUCTS.DELETE' | translate }}
                 </button>
             </ng-container>
         </div>
     </div>
 </div>
 
+<!-- Выпадающее меню для выбора колонок -->
 <mat-menu #columnsMenu="matMenu" class="columns-menu">
     <div (click)="$event.stopPropagation()" [formGroup]="columnsForm" class="columns-menu-content">
         <div class="columns-list">
             <div *ngFor="let column of allColumns" class="column-option">
-                <mat-checkbox [formControlName]="column.id">{{ column.name | titlecase }}</mat-checkbox>
+                <mat-checkbox [formControlName]="column.id">
+                    {{ ('FIELDS.' + column.name) | translate }}
+                </mat-checkbox>
             </div>
         </div>
         <div class="columns-menu-actions">
-            <button mat-menu-item class="apply-button" (click)="applyColumnChanges.emit()">Применить</button>
-            <button mat-menu-item class="close-button" mat-menu-item-close>Закрыть</button>
+            <button mat-menu-item class="apply-button" (click)="applyColumnChanges.emit()">{{ 'PRODUCTS.APPLY' |
+                translate }}</button>
+            <button mat-menu-item class="close-button" mat-menu-item-close>{{ 'DIALOGS.CLOSE_BUTTON' | translate
+                }}</button>
         </div>
     </div>
 </mat-menu>

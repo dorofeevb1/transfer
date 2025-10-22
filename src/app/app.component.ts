@@ -25,4 +25,7 @@ export class AppComponent {
       }
     });
   }
+  ara(){
+    this.showHeader = false
+  }
 }

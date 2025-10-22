@@ -9,8 +9,6 @@
     <!-- Основной контент -->
     <mat-sidenav-content>
         <div class="table-page-container">
-
-            <!-- Компонент шапки -->
             <app-page-header (importClick)="openImportDialog()" (addColumnClick)="addColumn()">
             </app-page-header>
 
@@ -20,10 +18,9 @@
                 [isBulkEditMode]="isBulkEditMode" (globalFilterChange)="applyGlobalFilter($event)"
                 (toggleFilter)="filterSidenav.toggle()" (applyColumnChanges)="applyColumnChanges()"
                 (removeFilter)="onRemoveFilter($event)" (editClick)="onEditClick()" (saveClick)="onSaveBulkChanges()"
-                (cancelClick)="onCancelBulkEdit()" (deleteClick)="onDeleteSelected()">
+                (cancelClick)="onCancelBulkEdit()" (deleteClick)="onDeleteSelected()"
+                (exportToExcel)="handleExportToExcel()" (exportToCsv)="handleExportToCsv()">
             </app-table-controls>
-
-            <!-- Компонент таблицы -->
             <app-products-table [dataSource]="dataSource" [selection]="selection" [allColumns]="allColumns"
                 [isBulkEditMode]="isBulkEditMode" [columnsToRender]="columnsToRender" [isAllSelected]="isAllSelected()"
                 (sortChange)="setSort($event)" (removeColumnClick)="removeColumn($event.columnId, $event.event)"
