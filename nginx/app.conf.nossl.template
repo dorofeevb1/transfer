@@ -1,0 +1,37 @@
+# Upstream для проксирования запросов к Django Gunicorn
+upstream django_server {
+    # 'web' - это имя сервиса Django в docker-compose.yml
+    server web:8000;
+}
+
+# Основной сервер для HTTP (без SSL)
+server {
+    listen 80;
+    server_name ${DOMAIN_NAME};
+    charset utf-8;
+
+    # Обслуживание медиафайлов Django (загруженных пользователями)
+    location /media/ {
+        alias /app/mediafiles/;
+    }
+
+    # Обслуживание статических файлов Django (админка и т.д.)
+    location /static/ {
+        alias /app/staticfiles/;
+    }
+
+    # Проксирование API и админки Django
+    location ~ ^/(api|admin)/ {
+        proxy_pass http://django_server;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+    }
+    
+    # Обслуживание статических файлов frontend (Angular SPA)
+    location / {
+        root /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+    }
+}
