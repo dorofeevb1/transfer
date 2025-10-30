@@ -1,0 +1,34 @@
+<h1 mat-dialog-title>{{ isEditMode ? 'Редактировать пользователя' : 'Добавить пользователя' }}</h1>
+
+<div mat-dialog-content [formGroup]="form">
+    <mat-form-field appearance="outline">
+        <mat-label>ФИО</mat-label>
+        <input matInput formControlName="fio">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>Роль</mat-label>
+        <input matInput formControlName="role">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>Доступ</mat-label>
+        <input matInput formControlName="access">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input matInput formControlName="email">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>Пароль</mat-label>
+        <input matInput formControlName="password" type="password"
+            [placeholder]="isEditMode ? 'Оставьте пустым, чтобы не менять' : ''">
+    </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+    <button mat-stroked-button (click)="onCancel()">Отмена</button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">Сохранить</button>
+</div>

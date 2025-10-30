@@ -1,0 +1,206 @@
+$background-color: #ffffff;
+$header-bg-color: #0F121B;
+$header-text-color: #ffffff;
+$row-hover-bg-color: #0F121B;
+$row-selected-bg-color: #f0f3f5;
+$border-color: #eeeeee;
+$primary-text-color: #212529;
+$secondary-text-color: #6c757d;
+$table-border-radius: 8px;
+$thumbnail-border-radius: 4px;
+$base-font-size: 14px;
+$header-font-size: 13px;
+$transition-duration: 0.2s;
+
+:host {
+    display: block;
+    padding: 24px;
+    background-color: #f8f9fa; // Светло-серый фон страницы
+    height: 100%;
+}
+
+.page-container {
+    height: 100%;
+}
+
+.table-page-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 16px;
+}
+
+// Стили для боковой панели фильтров (если необходимо)
+.filter-sidenav {
+    width: 300px;
+    padding: 16px;
+}
+
+
+:host {
+    display: block;
+}
+
+app-products-table {
+    flex-grow: 1; // Заставляем саму таблицу расти и занимать место
+    overflow: auto; // Добавляем скролл, если таблица большая
+}
+
+// --- Обертка для таблицы ---
+.table-wrapper {
+    display: block;
+    height: 100%;
+    overflow: auto;
+    border-radius: $table-border-radius;
+    background-color: $background-color;
+    border: 1px solid $border-color;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+// --- Стилизация заголовка и ячеек ---
+.mat-header-cell,
+.mat-cell {
+    padding: 10px 16px;
+    white-space: nowrap;
+}
+
+.mat-header-row {
+    background-color: $header-bg-color;
+}
+
+.mat-header-cell {
+    color: $header-text-color;
+    font-weight: 500;
+    font-size: $header-font-size;
+    border-bottom: none;
+
+    .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .mat-icon-button {
+        opacity: 0;
+        transition: opacity $transition-duration;
+        color: $header-text-color;
+    }
+
+    &:hover .mat-icon-button {
+        opacity: 1;
+    }
+}
+
+// --- Стилизация строк ---
+.mat-row {
+    border-bottom: 1px solid $border-color;
+    transition: background-color $transition-duration, color $transition-duration;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $row-hover-bg-color;
+
+        // При наведении на строку, меняем цвет текста в ячейках
+        .mat-cell {
+            color: $header-text-color; // Используем тот же цвет, что и в шапке (белый)
+        }
+    }
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.mat-cell {
+    color: $primary-text-color;
+    font-size: $base-font-size;
+}
+
+.mat-row.mat-selected-row {
+    background-color: $row-selected-bg-color;
+    // Можно также добавить стиль для текста в выделенной строке, если нужно
+    // .mat-cell {
+    //   color: $primary-text-color; 
+    // }
+}
+
+// ... остальной код (sticky-колонка, ячейки с картинками и т.д.) без изменений ...
+// --- СТИЛИ ДЛЯ "ПРИКЛЕЕННОЙ" (STICKY) КОЛОНКИ С ЧЕКБОКСОМ ---
+.mat-column-select {
+    width: 60px;
+
+    &.mat-header-cell {
+        background-color: $header-bg-color;
+    }
+
+    &.mat-cell {
+        background-color: $background-color;
+        transition: background-color $transition-duration; // Плавный переход фона
+    }
+
+    .mat-row:hover & {
+        background-color: $row-hover-bg-color;
+    }
+
+    .mat-row.mat-selected-row & {
+        background-color: $row-selected-bg-color;
+    }
+}
+
+// --- Стилизация ячейки с изображениями ---
+.image-cell-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+
+    .thumbnail-image {
+        width: 40px;
+        height: 40px;
+        border-radius: $thumbnail-border-radius;
+        object-fit: cover;
+        border: 1px solid #dee2e6;
+    }
+
+    .photo-count {
+        position: absolute;
+        bottom: -5px;
+        left: 28px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: $thumbnail-border-radius;
+        padding: 2px 6px;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 1;
+    }
+}
+
+// --- Пагинатор ---
+.mat-paginator {
+    background-color: $background-color;
+    border-top: 1px solid $border-color;
+}
+
+// --- Сообщение "Нет данных" ---
+.mat-row.mat-no-data-row {
+    background-color: $background-color;
+    cursor: default;
+
+    &:hover {
+        background-color: $background-color;
+    }
+
+    .mat-cell {
+        text-align: center;
+        padding: 24px;
+        color: $secondary-text-color;
+    }
+}

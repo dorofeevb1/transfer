@@ -1,0 +1,37 @@
+:host {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    padding: 0 24px;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+mat-button-toggle-group {
+    height: 36px;
+    box-shadow: none;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+mat-button-toggle[value="zh"] .mat-button-toggle-label-content {
+    font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Heiti SC", "WenQuanYi Micro Hei", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 36px;
+}

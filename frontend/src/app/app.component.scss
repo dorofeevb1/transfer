@@ -1,0 +1,19 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; // Контейнер занимает минимум всю высоту экрана
+}
+
+app-header {
+    flex-shrink: 0; // Запрещаем хедеру сжиматься
+}
+
+.main-content {
+    flex-grow: 1; // Основной контент занимает всё доступное пространство
+    display: flex;
+    flex-direction: column;
+}
+
+app-footer {
+    flex-shrink: 0; // Запрещаем футеру сжиматься
+}
