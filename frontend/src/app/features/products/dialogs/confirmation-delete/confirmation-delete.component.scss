@@ -1,4 +1,66 @@
-p {
-    font-size: 16px;
-    line-height: 1.5;
+/* Заголовок с иконкой */
+.dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin-bottom: 8px;
+
+    .warning-icon {
+        color: #D91F26;
+        /* Красный цвет предупреждения */
+        font-size: 28px;
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* Контент */
+.dialog-content {
+    min-width: 350px;
+
+    .dialog-message {
+        font-size: 16px;
+        line-height: 1.5;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .dialog-subtext {
+        font-size: 14px;
+        color: #666;
+        /* Серый текст для пояснения */
+        margin: 0;
+    }
+}
+
+/* Кнопки */
+.dialog-actions {
+    padding: 16px 24px 24px;
+    gap: 12px;
+}
+
+.btn-cancel {
+    border-color: #E0E0E0 !important;
+    color: #333 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Кнопка Удалить (Ярко-красная) */
+.btn-delete {
+    background-color: #D91F26 !important;
+    color: white !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(217, 31, 38, 0.3);
+    /* Легкая красная тень */
+
+    &:hover {
+        background-color: #B91920 !important;
+        /* Чуть темнее при наведении */
+    }
 }

@@ -1,9 +1,16 @@
-<h1 mat-dialog-title>{{ data.title }}</h1>
+<h1 mat-dialog-title class="dialog-title">{{ data.title }}</h1>
 
-<div mat-dialog-content [formGroup]="form">
-    <mat-form-field appearance="outline" class="full-width">
+<div mat-dialog-content [formGroup]="form" class="dialog-content">
+    <p class="dialog-description">Введите название для нового столбца таблицы.</p>
+
+    <mat-form-field appearance="outline" class="full-width custom-input">
         <mat-label>{{ 'DIALOGS.COLUMN_NAME' | translate }}</mat-label>
-        <input matInput formControlName="name" cdkFocusInitial>
+        <input matInput formControlName="name" cdkFocusInitial placeholder="Например: Артикул поставщика">
+
+        <!-- Кнопка очистки -->
+        <button mat-icon-button matSuffix *ngIf="form.get('name')?.value" (click)="form.get('name')?.setValue('')">
+            <mat-icon>close</mat-icon>
+        </button>
 
         <mat-error *ngIf="form.get('name')?.hasError('required')">
             {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
@@ -11,8 +18,11 @@
     </mat-form-field>
 </div>
 
-<div mat-dialog-actions align="end">
-    <button mat-stroked-button (click)="onCancel()">{{ 'DIALOGS.CANCEL_BUTTON' | translate }}</button>
-    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">{{ 'PRODUCTS.ADD_COLUMN' |
-        translate }}</button>
+<div mat-dialog-actions align="end" class="dialog-actions">
+    <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+        {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+    </button>
+    <button mat-flat-button class="btn-save" (click)="onSave()" [disabled]="form.invalid">
+        {{ 'PRODUCTS.ADD_COLUMN' | translate }}
+    </button>
 </div>

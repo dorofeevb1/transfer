@@ -1,3 +1,65 @@
-mat-form-field {
+/* Заголовок */
+.dialog-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1A1A1A;
+}
+
+/* Контент */
+.dialog-content {
+    min-width: 400px;
+    /* Фиксированная ширина */
+    padding-top: 10px;
+
+    .dialog-description {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+}
+
+/* Поле ввода */
+.full-width {
     width: 100%;
+}
+
+/* Стилизация инпута под стиль проекта */
+::ng-deep .custom-input .mat-mdc-text-field-wrapper {
+    background-color: #FAFAFA;
+}
+
+::ng-deep .custom-input.mat-mdc-form-field-focus .mat-mdc-text-field-wrapper {
+    background-color: #fff;
+}
+
+/* Кнопки действий */
+.dialog-actions {
+    padding: 16px 24px 24px;
+    /* Больше отступ снизу */
+    gap: 12px;
+}
+
+/* Кнопка отмены (серая обводка) */
+.btn-cancel {
+    border-color: #E0E0E0 !important;
+    color: #333 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Кнопка сохранения (Красная или Черная - по брендбуку) */
+/* Вариант 1: Красная (акцентная) */
+.btn-save {
+    background-color: #D91F26 !important;
+    color: white !important;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    /* Стили для disabled состояния */
+    &:disabled {
+        background-color: #E0E0E0 !important;
+        color: #999 !important;
+    }
 }

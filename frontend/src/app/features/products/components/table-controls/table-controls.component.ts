@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { AppliedFilter } from '../table/table.component';
+import { AppliedFilter } from '../table/table.component'; // Проверьте путь импорта
 
 @Component({
   selector: 'app-table-controls',

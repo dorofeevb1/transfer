@@ -6,12 +6,16 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { TranslateService } from '@ngx-translate/core';
-import { ImportDialogComponent } from '../../dialogs/import-dialog/import-dialog.component';
 import { SelectionModel } from '@angular/cdk/collections';
+
+// Компоненты диалогов
+import { ImportDialogComponent } from '../../dialogs/import-dialog/import-dialog.component';
 import { PhotoViewerComponent } from '../../dialogs/photo-viewer/photo-viewer.component';
 import { EditDialogComponent } from '../../dialogs/edit-dialog/edit-dialog.component';
 import { ConfirmationDeleteComponent } from '../../dialogs/confirmation-delete/confirmation-delete.component';
 import { AddColumnDialogComponent } from '../../dialogs/add-column-dialog/add-column-dialog.component';
+
+// Сервисы
 import { ExportService } from 'src/app/core/services/export.service';
 import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 
@@ -40,12 +44,10 @@ export class TableComponent implements OnInit, AfterViewInit {
   selection = new SelectionModel<any>(true, []);
 
   isExporting = false;
-
   private editCache = new Map<string, any>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('filterSidenav') filterSidenav!: MatSidenav;
-
 
   constructor(
     public dialog: MatDialog,
@@ -61,18 +63,18 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.dataSource.filterPredicate = this.createFilterPredicate();
 
-    // Загрузка данных через сервис
     this.productTableService.loadTableData();
+
     this.productTableService.rows$.subscribe(data => {
       this.updateTableData(data);
     });
+
     this.productTableService.columns$.subscribe(columns => {
       this.allColumns = columns;
       this.displayedColumns = ['select', ...columns.map(c => c.id)];
       this.setupForms();
     });
   }
-
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -84,6 +86,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   openImportDialog(): void {
     const dialogRef = this.dialog.open(ImportDialogComponent, { width: '550px', disableClose: true });
+
     dialogRef.afterClosed().subscribe(result => {
       if (result && result.mergedData && result.mergedData.length > 0) {
         this.updateTableData([...this.dataSource.data, ...result.mergedData]);
@@ -91,10 +94,26 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // --- ОБНОВЛЕНИЕ ТАБЛИЦЫ ---
   updateTableData(data: any[]): void {
     if (data && data.length > 0) {
+      // Ключевые слова-мусор
+      const junkKeys = ['фотографии', 'фото', 'photo', 'image', 'img', 'picture', 'изображение'];
+
       const columns = data.reduce((acc: string[], obj: any) => {
-        Object.keys(obj).forEach(key => !acc.includes(key) && acc.push(key));
+        Object.keys(obj).forEach(key => {
+          const lowerKey = key.toLowerCase();
+
+          // Если уже добавили - пропускаем
+          if (acc.includes(key)) return;
+
+          // Фильтр мусора: если ключ похож на картинку, но это не наш стандарт 'photos' - не добавляем в колонки
+          if (junkKeys.some(junk => lowerKey.includes(junk)) && lowerKey !== 'photos') {
+            return;
+          }
+
+          acc.push(key);
+        });
         return acc;
       }, []);
 
@@ -110,6 +129,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
+  // ... (методы onEditClick, onSaveBulkChanges, onCancelBulkEdit, onDeleteSelected - без изменений) ...
   onEditClick(): void {
     const selectedItems = this.selection.selected;
     if (selectedItems.length === 1) {
@@ -136,11 +156,9 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   onSaveBulkChanges(): void {
     const changedRows = this.selection.selected.map(item => {
-      // взять изменённые данные из editCache, если используете
       return this.editCache.get(item.id) ?? item;
     });
 
-    // Отправить обновления на сервер
     changedRows.forEach(row => {
       this.productTableService.updateRow(row.id, row).subscribe(updatedRow => {
         const index = this.dataSource.data.findIndex(d => d.id === updatedRow.id);
@@ -169,32 +187,6 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.editCache.clear();
   }
 
-  // onDeleteSelected(): void {
-  //   const selectedCount = this.selection.selected.length;
-  //   if (selectedCount === 0) return;
-
-  //   this.translate.get([
-  //     'DIALOGS.CONFIRM_DELETE_TITLE',
-  //     'DIALOGS.CONFIRM_DELETE_MESSAGE'
-  //   ], { count: selectedCount }).subscribe(translations => {
-  //     const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
-  //       width: '400px',
-  //       data: {
-  //         title: translations['DIALOGS.CONFIRM_DELETE_TITLE'],
-  //         message: translations['DIALOGS.CONFIRM_DELETE_MESSAGE']
-  //       }
-  //     });
-  //     dialogRef.afterClosed().subscribe(confirmed => {
-  //       if (confirmed) {
-  //         const idsToDelete = new Set(this.selection.selected.map(item => item.id));
-
-  //         this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.has(item.id));
-  //         this.selection.clear();
-  //       }
-  //     });
-  //   });
-  // }
-
   onDeleteSelected(): void {
     const selectedCount = this.selection.selected.length;
     if (selectedCount === 0) return;
@@ -214,7 +206,6 @@ export class TableComponent implements OnInit, AfterViewInit {
         if (confirmed) {
           const idsToDelete = this.selection.selected.map(item => item.id);
           this.productTableService.deleteRows(idsToDelete).subscribe(() => {
-            // Обновляем локальные данные таблицы после удаления
             this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.includes(item.id));
             this.selection.clear();
           });
@@ -222,6 +213,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       });
     });
   }
+
 
   openPhotoViewer(photos: string[]): void {
     if (Array.isArray(photos) && photos.length > 0 && typeof photos[0] === 'string' && photos[0].startsWith('data:image')) {
@@ -261,9 +253,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.applySideNavFilters();
   }
 
-
   applyGlobalFilter(event: Event): void {
-
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
     if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
@@ -275,10 +265,10 @@ export class TableComponent implements OnInit, AfterViewInit {
         error: (err) => console.error('Ошибка поиска на сервере: ', err),
       });
     } else {
-      // Если строка поиска очищена, можно заново загрузить все данные
       this.productTableService.loadTableData();
     }
   }
+
   createFilterPredicate(): (data: any, filter: string) => boolean {
     return (data: any, filter: string): boolean => {
       try {
@@ -301,23 +291,6 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.displayedColumns.unshift('select');
   }
 
-  // addColumn(): void {
-  //   this.translate.get('DIALOGS.ADD_COLUMN_TITLE').subscribe(title => {
-  //     const dialogRef = this.dialog.open(AddColumnDialogComponent, {
-  //       width: '400px',
-  //       data: { title: title }
-  //     });
-
-  //     dialogRef.afterClosed().subscribe(newColumnName => {
-  //       if (newColumnName && !this.allColumns.some(c => c.id === newColumnName)) {
-  //         this.allColumns.push({ id: newColumnName, name: newColumnName });
-  //         this.dataSource.data.forEach(row => row[newColumnName] = '');
-  //         this.setupForms();
-  //         this.dataSource.data = [...this.dataSource.data];
-  //       }
-  //     });
-  //   });
-  // }
   addColumn(): void {
     this.translate.get('DIALOGS.ADD_COLUMN_TITLE').subscribe(title => {
       const dialogRef = this.dialog.open(AddColumnDialogComponent, {
@@ -378,6 +351,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
+  // --- ЭКСПОРТ EXCEL ---
   async handleExportToExcel(): Promise<void> {
     const dataToExport = this.dataSource.data;
 
@@ -387,13 +361,12 @@ export class TableComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const imageKey = '_Images';
+    // ВАЖНО: Ключ для картинок теперь 'photos'
+    const imageKey = 'photos';
     const specialKeysToExclude = ['select', 'actions', imageKey];
 
     if (!this.allColumns) {
-      console.error(
-        'Конфигурация колонок (allColumns) не найдена. Экспорт невозможен.'
-      );
+      console.error('Конфигурация колонок (allColumns) не найдена. Экспорт невозможен.');
       return;
     }
 
@@ -405,7 +378,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       }));
 
     this.isExporting = true;
-    console.log('Начинается экспорт в Excel, формируем файл...');
+    console.log('Начинается экспорт в Excel...');
 
     try {
       await this.exportService.exportAsExcelWithImages(
@@ -414,21 +387,21 @@ export class TableComponent implements OnInit, AfterViewInit {
         columnsConfig,
         imageKey
       );
+
       this.productTableService.sendExportDataToBackend(dataToExport).subscribe({
-        next: () => console.log('Данные успешно отправлены на сервер'),
-        error: (error) => console.error('Ошибка отправки данных на сервер', error),
+        next: () => console.log('Данные экспорта успешно отправлены на сервер'),
+        error: (error) => console.error('Ошибка отправки данных экспорта на сервер', error),
       });
+
     } catch (error) {
-      console.error(
-        'Произошла критическая ошибка во время экспорта:',
-        error
-      );
+      console.error('Критическая ошибка экспорта:', error);
     } finally {
       this.isExporting = false;
-      console.log('Экспорт в Excel завершен!');
+      console.log('Экспорт завершен!');
     }
   }
 
+  // --- ЭКСПОРТ CSV ---
   handleExportToCsv(): void {
     const dataToExport = this.dataSource.data;
     if (dataToExport && dataToExport.length > 0) {
@@ -437,43 +410,4 @@ export class TableComponent implements OnInit, AfterViewInit {
       console.warn('Нет данных для экспорта.');
     }
   }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

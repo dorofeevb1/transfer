@@ -27,20 +27,25 @@ export class AddPhotoDialogComponent {
     if (input.files) {
       this.addFiles(Array.from(input.files));
     }
+    // Сбрасываем value, чтобы можно было выбрать тот же файл повторно
+    input.value = '';
   }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
+    event.stopPropagation();
     this.isDragOver = true;
   }
 
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
+    event.stopPropagation();
     this.isDragOver = false;
   }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
+    event.stopPropagation();
     this.isDragOver = false;
     if (event.dataTransfer?.files) {
       this.addFiles(Array.from(event.dataTransfer.files));
@@ -54,7 +59,9 @@ export class AddPhotoDialogComponent {
         reader.onload = (e: any) => {
           this.previews.push({
             file: file,
+            // Используем sanitizer только для превью в HTML
             url: this.sanitizer.bypassSecurityTrustUrl(e.target.result),
+            // Сохраняем чистую строку base64 для отправки
             base64: e.target.result
           });
         };
@@ -69,5 +76,11 @@ export class AddPhotoDialogComponent {
 
   onCancel(): void {
     this.dialogRef.close();
+  }
+
+  onSave(): void {
+    // Возвращаем массив строк base64, чтобы таблица могла их отобразить
+    const result = this.previews.map(p => p.base64);
+    this.dialogRef.close(result);
   }
 }

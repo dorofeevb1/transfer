@@ -1,32 +1,65 @@
-<div class="logo-container">
-    <img src="../assets/logo.png" alt="">
+<div class="header-container">
+    <!-- Логотип -->
+    <div class="logo-section">
+        <img src="assets/logo.png" alt="Brio Trade & Logistic" class="logo">
+    </div>
+
+    <div class="header-actions">
+
+        <!-- 1. Переключатель языка (Стиль: Текст + галочка) -->
+        <div class="lang-switcher" [matMenuTriggerFor]="langMenu">
+            <span class="lang-text">{{ currentLang === 'ru' ? 'RU' : 'ZH' }}</span>
+            <mat-icon class="chevron">expand_more</mat-icon>
+        </div>
+        <mat-menu #langMenu="matMenu">
+            <button mat-menu-item (click)="switchLang('ru')">RU</button>
+            <button mat-menu-item (click)="switchLang('zh')">中文</button>
+        </mat-menu>
+
+        <!-- 2. Настройки (Скрыты, если не админ) -->
+        <ng-container *ngIf="isAdmin$ | async">
+            <button mat-icon-button class="action-btn settings-btn" [matMenuTriggerFor]="adminMenu"
+                [matTooltip]="'HEADER.SETTINGS' | translate">
+                <mat-icon>settings</mat-icon>
+            </button>
+        </ng-container>
+
+        <!-- Меню админа (оставил ваши ссылки) -->
+        <mat-menu #adminMenu="matMenu">
+            <button mat-menu-item routerLink="/admin/products">
+                <mat-icon>inventory_2</mat-icon>
+                <span>Товары</span>
+            </button>
+            <button mat-menu-item routerLink="/admin/users">
+                <mat-icon>people</mat-icon>
+                <span>Пользователи</span>
+            </button>
+        </mat-menu>
+
+        <!-- 3. Профиль пользователя (Новый дизайн: Аватар + Имя + Роль) -->
+        <div class="user-profile" [matMenuTriggerFor]="userMenu">
+            <div class="avatar-circle">
+                <mat-icon>person</mat-icon>
+            </div>
+            <div class="user-info">
+                <!-- Здесь можно привязать реальные данные: {{ userName }} -->
+                <span class="user-name">Елена</span>
+                <span class="user-role">Товаровед</span>
+            </div>
+            <mat-icon class="dropdown-arrow">expand_more</mat-icon>
+        </div>
+
+        <!-- Меню пользователя (Логаут) -->
+        <mat-menu #userMenu="matMenu">
+            <button mat-menu-item>
+                <mat-icon>account_circle</mat-icon>
+                <span>Профиль</span>
+            </button>
+            <button mat-menu-item (click)="logout()">
+                <mat-icon>logout</mat-icon>
+                <span>Выход</span>
+            </button>
+        </mat-menu>
+
+    </div>
 </div>
-
-<div class="header-controls">
-    <mat-button-toggle-group #langToggleGroup="matButtonToggleGroup" [value]="currentLang"
-        (change)="switchLang(langToggleGroup.value)" aria-label="Language selection">
-        <mat-button-toggle value="ru">RU</mat-button-toggle>
-        <mat-button-toggle value="zh">中文</mat-button-toggle>
-    </mat-button-toggle-group>
-
-    <ng-container *ngIf="isAdmin$ | async">
-        <button mat-icon-button [matMenuTriggerFor]="adminMenu" [matTooltip]="'HEADER.SETTINGS' | translate"
-            aria-label="Settings button">
-            <mat-icon>settings</mat-icon>
-        </button>
-    </ng-container>
-
-    <button mat-icon-button [matTooltip]="'HEADER.USER' | translate" aria-label="User profile button">
-        <mat-icon>account_circle</mat-icon>
-    </button>
-</div>
-<mat-menu #adminMenu="matMenu">
-    <button mat-menu-item routerLink="/admin/products">
-        <mat-icon>inventory_2</mat-icon>
-        <span>Товары</span>
-    </button>
-    <button mat-menu-item routerLink="/admin/users">
-        <mat-icon>people</mat-icon>
-        <span>Пользователи</span>
-    </button>
-</mat-menu>

@@ -7,136 +7,144 @@ import * as JSZip from 'jszip';
 })
 export class ExcelProcessingService {
 
-    private readonly IMAGE_FIELD_NAME = '__images';
+    private readonly TARGET_FIELD = 'photos';
 
     constructor() { }
 
-    public async processFiles(files: File[]): Promise<{ mergedData: any[], sourceData: { fileName: string, data: any[] }[] }> {
+    public async processFiles(files: File[]): Promise<{ mergedData: any[], sourceData: any[] }> {
         const sourceData: { fileName: string, data: any[] }[] = [];
+
         for (const file of files) {
             try {
-                const data = await this.readFile(file);
-                sourceData.push({ fileName: file.name, data });
+                const data = await this.readExcelFile(file);
+                if (data && data.length > 0) {
+                    sourceData.push({ fileName: file.name, data });
+                }
             } catch (error) {
-                console.error(`[FATAL] Ошибка при обработке файла ${file.name}:`, error);
+                console.error(`Ошибка файла ${file.name}:`, error);
             }
         }
-        const mergedData = sourceData.flatMap(source => source.data);
-        console.log('[FINAL] Итоговые объединенные данные:', mergedData);
+
+        const mergedData = sourceData.flatMap(s => s.data);
         return { mergedData, sourceData };
     }
 
-    private readFile(file: File): Promise<any[]> {
-        const fileExtension = file.name.split('.').pop()?.toLowerCase();
-        if (fileExtension === 'xlsx') {
-            return this.parseXlsxHybrid(file);
-        } else {
-            return Promise.reject(new Error(`Формат .${fileExtension} не поддерживается для этого парсера.`));
-        }
-    }
-
-    private async parseXlsxHybrid(file: File): Promise<any[]> {
+    private async readExcelFile(file: File): Promise<any[]> {
         const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
-        let data: any[] = []; // Используем let, так как будем переопределять массив
-        workbook.SheetNames.forEach(sheetName => {
-            const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-                raw: false,
-                defval: null,
-                blankrows: true
-            });
-            data.push(...jsonData);
-        });
-        const zip = await JSZip.loadAsync(arrayBuffer);
-        const relsFileNames = Object.keys(zip.files).filter(name => /xl\/drawings\/_rels\/drawing\d+\.xml\.rels/.test(name));
-        if (relsFileNames.length === 0) {
-            console.warn('[ПРЕДУПРЕЖДЕНИЕ] Файлы связей (.rels) не найдены. Картинки не могут быть сопоставлены.');
-            return data; // Возвращаем данные как есть, если картинок нет
+        const isCsv = file.name.toLowerCase().endsWith('.csv');
+        let workbook;
+
+        if (isCsv) {
+            const text = await file.text();
+            workbook = XLSX.read(text, { type: 'string' });
+        } else {
+            workbook = XLSX.read(arrayBuffer, { type: 'array', cellDates: true });
         }
 
-        const imageRels = new Map<string, string>();
-        for (const relsFileName of relsFileNames) {
-            const relsXml = await zip.file(relsFileName)!.async('string');
-            const parser = new DOMParser();
-            const relsDoc = parser.parseFromString(relsXml, 'application/xml');
-            const relationships = Array.from(relsDoc.getElementsByTagName('Relationship'));
-            relationships.forEach(rel => {
-                const rId = rel.getAttribute('Id');
-                const target = rel.getAttribute('Target');
-                if (rId && target && target.startsWith('../media/')) {
-                    const imagePath = 'xl' + target.substring(2);
-                    imageRels.set(rId, imagePath);
+        if (!workbook.SheetNames.length) return [];
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        // 1. Читаем "грязные" данные
+        const rawData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        if (rawData.length === 0) return [];
+
+        // 2. АГРЕССИВНАЯ ЧИСТКА
+        const imageKeywords = ['фотографии', 'фото', 'photo', 'image', 'img', 'picture', 'изображение'];
+
+        // Смотрим на первую строку, чтобы понять, какие ключи удалять
+        const firstRowKeys = Object.keys(rawData[0]);
+        console.log('Найдены колонки в файле:', firstRowKeys);
+
+        // Определяем ключи-кандидаты на удаление
+        const keysToRemove = firstRowKeys.filter(key => {
+            const lower = key.toLowerCase().trim();
+            // Если ключ похож на картинку И это не наш целевой 'photos'
+            return imageKeywords.some(w => lower.includes(w)) && lower !== this.TARGET_FIELD;
+        });
+
+        console.log('🔥 БУДУТ УДАЛЕНЫ КОЛОНКИ:', keysToRemove);
+
+        let data = rawData.map(row => {
+            const newRow: any = {};
+            newRow[this.TARGET_FIELD] = []; // Создаем массив под фотки
+
+            Object.keys(row).forEach(key => {
+                // Если ключ в черном списке - пропускаем его нахер
+                if (keysToRemove.includes(key)) {
+                    return;
                 }
+                newRow[key] = row[key];
             });
-        }
-        if (imageRels.size === 0) {
-            console.warn('[ПРЕДУПРЕЖДЕНИЕ] В файлах связей не найдено ни одной ссылки на изображения.');
+            return newRow;
+        });
+
+        if (isCsv || !file.name.toLowerCase().endsWith('.xlsx')) {
             return data;
         }
 
-        const drawingFileNames = Object.keys(zip.files).filter(name => /xl\/drawings\/drawing\d+\.xml/.test(name));
+        // 3. ДОСТАЕМ ФОТКИ ИЗ НЕДР XLSX
+        try {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const relsFiles = Object.keys(zip.files).filter(n => n.includes('drawings/_rels/drawing') && n.endsWith('.rels'));
 
-        for (const drawingFileName of drawingFileNames) {
-            const drawingXml = await zip.file(drawingFileName)!.async('string');
-            const parser = new DOMParser();
-            const drawingDoc = parser.parseFromString(drawingXml, 'application/xml');
-            const anchors = Array.from(drawingDoc.getElementsByTagNameNS('*', 'twoCellAnchor'));
-            console.log(`В файле ${drawingFileName} найдено ${anchors.length} "якорей" изображений.`);
+            if (relsFiles.length === 0) return data;
 
-            for (const anchor of anchors) {
-                const rIdEl = anchor.getElementsByTagNameNS('http://schemas.openxmlformats.org/drawingml/2006/main', 'blip')[0];
-                const rId = rIdEl?.getAttribute('r:embed');
-                if (!rId) continue;
-
-                const rowEl = anchor.getElementsByTagNameNS('http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing', 'row')[0];
-                const row = rowEl ? parseInt(rowEl.textContent || '-1', 10) : -1;
-                if (row === -1) continue;
-                const imagePath = imageRels.get(rId);
-                if (!imagePath) {
-                    console.warn(`[ПРЕДУПРЕЖДЕНИЕ] Для rId=${rId} не найдена связь в .rels файлах.`);
-                    continue;
-                }
-
-                const imageFile = zip.file(imagePath);
-                if (imageFile) {
-                    const base64 = await imageFile.async('base64');
-                    const extension = imagePath.split('.').pop()?.toLowerCase() || 'png';
-                    const imageSrc = `data:image/${extension};base64,${base64}`;
-                    const targetIndex = row - 1; // Компенсируем заголовок Excel (он не попадает в JSON)
-
-                    if (data[targetIndex]) {
-                        if (!data[targetIndex][this.IMAGE_FIELD_NAME]) {
-                            data[targetIndex][this.IMAGE_FIELD_NAME] = [];
-                        }
-                        data[targetIndex][this.IMAGE_FIELD_NAME].push(imageSrc);
-                    } else {
-                        console.error(`[КРИТИЧЕСКАЯ ОШИБКА] Попытка добавить картинку в несуществующую строку данных с индексом ${targetIndex}.`);
+            const imgMap = new Map<string, string>();
+            for (const rFile of relsFiles) {
+                const xml = await zip.file(rFile)?.async('string');
+                if (!xml) continue;
+                const rels = new DOMParser().parseFromString(xml, 'application/xml').getElementsByTagName('Relationship');
+                for (let i = 0; i < rels.length; i++) {
+                    const id = rels[i].getAttribute('Id');
+                    const target = rels[i].getAttribute('Target');
+                    if (id && target && target.includes('media/')) {
+                        imgMap.set(id, 'xl/media/' + target.split('/').pop());
                     }
                 }
             }
-        }
-        if (data.length > 0) {
-            const firstRow = data[0];
-            const imagePlaceholderKeys = Object.keys(firstRow).filter(key => {
-                const lowerKey = key.toLowerCase();
-                const imageKeywords = ['image', 'img', 'photo', 'picture', 'изображение', 'фото', 'картинка', 'Фотографии', 'фотки'];
-                return imageKeywords.some(keyword => lowerKey.includes(keyword)) && key !== this.IMAGE_FIELD_NAME;
-            });
-            if (imagePlaceholderKeys.length > 0) {
-                console.log('Найдены и будут удалены следующие пустые колонки:', imagePlaceholderKeys);
-                data = data.map(row => {
-                    const newRow = { ...row };
-                    for (const key of imagePlaceholderKeys) {
-                        delete newRow[key];
+
+            const drawFiles = Object.keys(zip.files).filter(n => n.includes('drawings/drawing') && n.endsWith('.xml'));
+            for (const dFile of drawFiles) {
+                const xml = await zip.file(dFile)?.async('string');
+                if (!xml) continue;
+                const doc = new DOMParser().parseFromString(xml, 'application/xml');
+
+                const anchors = [
+                    ...Array.from(doc.getElementsByTagName('xdr:twoCellAnchor')),
+                    ...Array.from(doc.getElementsByTagName('xdr:oneCellAnchor'))
+                ];
+
+                for (const anchor of anchors) {
+                    const fromNode = anchor.getElementsByTagName('xdr:from')[0];
+                    const rowNode = fromNode ? fromNode.getElementsByTagName('xdr:row')[0] : null;
+                    if (!rowNode) continue;
+
+                    const rowIndex = parseInt(rowNode.textContent || '-1');
+                    const blip = anchor.getElementsByTagName('a:blip')[0];
+                    const embedId = blip?.getAttribute('r:embed');
+
+                    if (!embedId || rowIndex < 0) continue;
+
+                    const imgPath = imgMap.get(embedId);
+                    if (!imgPath) continue;
+
+                    const imgFile = zip.file(imgPath);
+                    if (!imgFile) continue;
+
+                    const b64 = await imgFile.async('base64');
+                    const ext = imgPath.split('.').pop() || 'png';
+                    const src = `data:image/${ext};base64,${b64}`;
+
+                    const dataIndex = rowIndex - 1;
+                    if (data[dataIndex]) {
+                        data[dataIndex][this.TARGET_FIELD].push(src);
                     }
-                    return newRow;
-                });
-                console.log('Очистка завершена. Пример первой строки ПОСЛЕ очистки:', data[0]);
-            } else {
-                console.log('Пустых колонок из-под изображений не найдено, очистка не требуется.');
+                }
             }
+        } catch (e) {
+            console.warn('Ошибка парсинга картинок:', e);
         }
+
         return data;
     }
 }

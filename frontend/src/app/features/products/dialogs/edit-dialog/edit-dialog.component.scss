@@ -2,62 +2,63 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    background-color: #fff;
 }
 
+/* --- HEADER --- */
 .edit-dialog-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, .12);
+    padding: 20px 24px;
+    border-bottom: 1px solid #F0F0F0;
 
-    h1 {
+    .dialog-title {
         margin: 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1A1A1A;
+    }
+
+    .close-button {
+        color: #999;
+
+        &:hover {
+            color: #1A1A1A;
+        }
     }
 }
 
-mat-dialog-content {
+/* --- CONTENT --- */
+.dialog-scrollable-content {
     padding: 24px;
     flex-grow: 1;
+    overflow-y: auto;
 }
 
-mat-dialog-actions {
-    padding: 16px 24px;
-    border-top: 1px solid rgba(0, 0, 0, .12);
-}
-
-.form-row {
-    margin-bottom: 16px;
-}
-
-mat-form-field {
-    width: 100%;
-}
-
-.form-section {
-    margin-bottom: 24px;
-}
-
-.form-section-label {
+/* Секция фото */
+.section-label {
     display: block;
     font-size: 14px;
-    font-weight: 500;
-    color: rgba(0, 0, 0, .6);
-    margin-bottom: 16px;
+    font-weight: 600;
+    color: #1A1A1A;
+    margin-bottom: 12px;
 }
 
-.image-gallery {
+.photos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
 }
 
-.image-preview {
+.photo-item {
     position: relative;
-    border-radius: 8px;
+    aspect-ratio: 1;
+    border-radius: 6px;
     overflow: hidden;
-    border: 1px solid #ddd;
-    aspect-ratio: 1 / 1;
+    border: 1px solid #E0E0E0;
 
     img {
         width: 100%;
@@ -69,25 +70,103 @@ mat-form-field {
         position: absolute;
         top: 4px;
         right: 4px;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
+        width: 24px;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        padding: 0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            color: #D91F26;
+        }
+
+        &:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
     }
 }
 
-.add-image-btn {
+.add-photo-btn {
+    aspect-ratio: 1;
+    background: #FAFAFA;
+    border: 1px dashed #D0D0D0;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100%;
-    min-height: 120px;
-    width: 100%;
-    border-style: dashed;
+    cursor: pointer;
+    color: #666;
+    gap: 8px;
+    transition: all 0.2s;
 
-    mat-icon {
-        margin-bottom: 8px;
+    &:hover {
+        border-color: #D91F26;
+        color: #D91F26;
+        background: rgba(217, 31, 38, 0.04);
     }
+
+    span {
+        font-size: 12px;
+        font-weight: 500;
+    }
+}
+
+/* Поля ввода */
+.fields-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* Две колонки */
+    gap: 20px;
+
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-field-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    .field-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 6px;
+    }
+}
+
+::ng-deep .custom-field .mat-mdc-text-field-wrapper {
+    background-color: #FAFAFA;
+    /* Светлый фон инпутов */
+    height: 48px;
+    padding-top: 0;
+}
+
+/* --- FOOTER --- */
+.dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #F0F0F0;
+    gap: 12px;
+    background: #fff;
+}
+
+.btn-cancel {
+    border-color: #E0E0E0 !important;
+    color: #333 !important;
+}
+
+.btn-save {
+    background-color: #D91F26 !important;
+    color: white !important;
+    font-weight: 600;
 }

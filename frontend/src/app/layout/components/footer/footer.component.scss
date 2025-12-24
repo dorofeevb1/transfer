@@ -1,170 +1,166 @@
-/* Цвета и базовые настройки */
-
-$line-top: #0b6efd; // синяя линия сверху
-$text: #101820; // основной текст (почти белый)
-$muted: #101820; // вторичный текст
-$stroke: rgba(255, 255, 255, 0.16);
-$link: #101820;
+/* Переменные */
+$bg-color: #F5F7F9;
+$text-black: #1A1A1A;
+$text-grey: #666666;
+$text-light-grey: #999999;
+$font-family: 'Inter', sans-serif;
 
 :host {
     display: block;
+    margin-top: auto;
+    /* Прижимает футер к низу, если контента мало */
 }
 
 .brio-footer {
-
-    color: $text;
-    padding: 28px 32px 18px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: $bg-color;
+    padding: 60px 40px;
+    font-family: $font-family;
+    border-top: 1px solid #EAEAEA;
 
     &__container {
-        max-width: 1440px;
+        max-width: 1600px;
         margin: 0 auto;
     }
 
-    /* Верхний ряд */
-    &__upper {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        align-items: center;
-        column-gap: 32px;
+    &__content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 40px;
+    }
+}
+
+/* --- ЛЕВАЯ КОЛОНКА --- */
+.col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    .brand-logo {
+        height: 50px;
+        /* Размер логотипа */
+        width: auto;
+        object-fit: contain;
+        align-self: flex-start;
     }
 
-    /* Разделительная тонкая линия между рядами */
-    &__divider {
-        height: 1px;
-        background: $stroke;
-        margin: 16px 0 12px;
+    .person-block {
+        display: flex;
+        flex-direction: column;
+
+        .person-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: $text-black;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .person-title {
+            font-size: 13px;
+            color: $text-grey;
+        }
     }
 
-    /* Нижний ряд */
-    &__lower {
-        display: grid;
-        grid-template-columns: 1fr 1.8fr 1fr;
-        align-items: center;
-        font-size: 12px;
-        line-height: 1.35;
-        gap: 12px;
+    .contacts-block {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
 
-        .lower__left {
-            display: inline-flex;
-            align-items: center;
-            gap: 18px;
-            white-space: nowrap;
+        .contact-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: $text-black;
+            text-decoration: none;
+            transition: color 0.2s;
 
-            .contact {
-                color: $text;
-                text-decoration: none;
-                font-weight: 600;
-
-                &:hover {
-                    text-decoration: underline;
-                }
+            &:hover {
+                color: #D91F26;
+                /* Красный при наведении */
             }
 
-            .sep {
-                color: $muted;
+            &.email {
+                text-decoration: underline;
+                text-decoration-color: #ccc;
             }
-        }
-
-        .lower__center {
-            text-align: center;
-            color: $muted;
-            padding: 0 12px;
-        }
-
-        .lower__right {
-            text-align: right;
-            color: $muted;
         }
     }
 }
 
-/* Колонки верхнего ряда */
-.upper__col {
-    &--left {
-        .brand-logo {
-            display: block;
-            height: 48px; // точная высота логотипа под макет
-            width: auto;
-        }
-    }
+/* --- ПРАВАЯ КОЛОНКА --- */
+.col-right {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 24px;
+    max-width: 500px;
 
-    &--center {
-        border-left: 1px solid $stroke; // тонкий вертикальный разделитель
-        padding-left: 32px;
-
+    .strategy-block {
         .headline {
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
+            font-size: 14px;
             font-weight: 700;
-            font-size: 13px;
+            color: $text-black;
+            line-height: 1.4;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            line-height: 1.35;
-            color: $text;
-            white-space: nowrap;
         }
 
         .subline {
-            margin: 0 0 12px 0;
-            font-size: 12px;
-            color: $muted;
+            margin: 0;
+            font-size: 13px;
+            color: $text-light-grey;
         }
+    }
 
-        .person {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+    .site-block {
+        margin-top: 8px;
 
-            &__name {
-                font-weight: 700;
-                font-size: 12px;
-                text-transform: uppercase;
-                color: $text;
-            }
+        .site-link {
+            font-size: 16px;
+            font-weight: 800;
+            color: $text-black;
+            text-decoration: none;
+            text-transform: uppercase;
 
-            &__title {
-                font-size: 11px;
-                color: $muted;
+            &:hover {
+                color: #D91F26;
             }
         }
     }
 
-    &--right {
-        text-align: right;
-
-        .site-link {
-            color: $link;
-            text-decoration: none;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            font-size: 14px;
-
-            &:hover {
-                color: lighten($link, 4%);
-            }
-        }
+    .address-block {
+        font-size: 12px;
+        line-height: 1.5;
+        color: $text-grey;
+        max-width: 380px;
     }
 }
 
-/* Адаптив: поджимаем переносы, когда мало ширины */
-@media (max-width: 1200px) {
-    .brio-footer__upper {
-        align-items: start;
+/* Адаптив для мобильных */
+@media (max-width: 900px) {
+    .brio-footer {
+        padding: 40px 20px;
     }
 
-    .upper__col--center .headline {
-        white-space: normal;
+    .brio-footer__content {
+        flex-direction: column;
+        align-items: flex-start;
     }
 
-    .brio-footer__lower {
-        grid-template-columns: 1fr;
-        row-gap: 8px;
+    .col-right {
+        text-align: left;
+        align-items: flex-start;
+        margin-top: 20px;
 
-        .lower__left,
-        .lower__center,
-        .lower__right {
-            text-align: center;
-            justify-content: center;
+        .address-block {
+            max-width: 100%;
         }
+    }
+
+    .contacts-block {
+        flex-direction: column;
+        gap: 12px;
     }
 }

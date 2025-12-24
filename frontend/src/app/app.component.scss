@@ -1,19 +1,21 @@
 :host {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; // Контейнер занимает минимум всю высоту экрана
-}
-
-app-header {
-    flex-shrink: 0; // Запрещаем хедеру сжиматься
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
 }
 
 .main-content {
-    flex-grow: 1; // Основной контент занимает всё доступное пространство
+    flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
 }
 
+app-header,
 app-footer {
-    flex-shrink: 0; // Запрещаем футеру сжиматься
+    flex-shrink: 0;
 }

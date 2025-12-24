@@ -1,17 +1,64 @@
-.page-header {
+:host {
+    display: block;
+    background-color: #FFFFFF;
+    /* Большие отступы как на макете */
+    padding: 30px 40px;
+}
+
+.page-header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-h1 {
+.page-title {
+    font-family: 'Inter', 'Roboto', sans-serif;
+    font-size: 32px;
+    /* Крупный заголовок */
+    font-weight: 700;
+    color: #1A1A1A;
+    /* Глубокий черный */
     margin: 0;
-    font-size: 1.5rem;
+    line-height: 1.2;
 }
 
 .header-actions {
     display: flex;
-    gap: 1rem;
+    gap: 12px;
+    /* Отступ между кнопками */
+}
+
+/* Общие стили для кнопок */
+button.mat-mdc-button,
+button.mat-mdc-outlined-button,
+button.mat-mdc-flat-button {
+    height: 44px;
+    /* Высокие кнопки */
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-radius: 4px;
+}
+
+/* Красная кнопка ИМПОРТ */
+.btn-import {
+    background-color: #D91F26 !important;
+    /* Брендовый красный */
+    color: white !important;
+    padding: 0 24px;
+
+    mat-icon {
+        margin-right: 8px;
+    }
+}
+
+/* Второстепенная кнопка (Добавить колонку) */
+.btn-secondary {
+    border-color: #E0E0E0 !important;
+    color: #1A1A1A !important;
+
+    mat-icon {
+        color: #808080;
+    }
 }

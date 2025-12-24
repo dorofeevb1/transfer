@@ -1,128 +1,174 @@
-/* src/app/features/products/components/table-controls/table-controls.component.scss */
-
 :host {
     display: block;
+    background-color: #FFFFFF;
+    padding: 0 40px 24px 40px;
+    /* Отступы как у хедера */
 }
 
-.table-controls-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.table-controls-main {
+.controls-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+}
+
+.left-group,
+.right-group {
+    display: flex;
+    align-items: center;
     gap: 16px;
 }
 
-.search-filter-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .search-input {
-        width: 350px;
-    }
-}
-
-.actions-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-// Стилизация кнопок под макет
-.control-button {
-    border-color: #dee2e6; // Цвет рамки кнопок
-    color: #212529; // Цвет текста кнопок
-
-    .mat-icon {
-        color: #6c757d; // Цвет иконок
-    }
-}
-
-// Активный чип для фильтра
-.filter-chip {
-    background-color: #dc3545; // Красный цвет
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    margin-left: 8px;
+/* --- ПОИСК --- */
+.search-field {
     position: relative;
-    top: -10px;
-    right: 15px;
-}
-
-// Панель действий при выделении строк
-.actions-toolbar {
-    background-color: #f0f3f5;
-    border-radius: 8px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    width: 100%;
+    width: 320px;
+    /* Ширина инпута */
+    height: 44px;
 
-    .selection-count {
+    input {
+        width: 100%;
+        height: 100%;
+        padding: 0 50px 0 16px;
+        /* Место справа для кнопки */
+        border: 1px solid #E0E0E0;
+        /* Светлая рамка */
+        background-color: #FAFAFA;
+        /* Очень светлый фон */
+        border-radius: 4px;
+        /* Скругление */
         font-size: 14px;
-        color: #6c757d;
+        color: #1A1A1A;
+        outline: none;
+        transition: border-color 0.2s;
+
+        &:focus {
+            border-color: #B0B0B0;
+        }
+
+        &::placeholder {
+            color: #9E9E9E;
+        }
     }
 
-    .action-buttons {
+    /* Черная кнопка справа */
+    .search-btn {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 44px;
+        background-color: #1A1A1A;
+        /* Черный цвет */
+        color: white;
+        border: none;
+        border-radius: 0 4px 4px 0;
+        /* Скругление только справа */
         display: flex;
-        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
 
-        button {
-            min-width: auto;
-            padding: 0 12px;
+        mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
         }
     }
 }
 
-// Стили для выпадающего меню выбора колонок
-::ng-deep .columns-menu {
-    .columns-menu-content {
-        padding: 8px 16px;
+/* --- КНОПКИ (Белые с рамкой) --- */
+.btn-outline {
+    height: 44px;
+    background-color: white;
+    border: 1px solid #E0E0E0;
+    border-radius: 4px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #1A1A1A;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+        background-color: #F5F5F5;
     }
 
-    .columns-list {
-        display: flex;
-        flex-direction: column;
+    .icon-left {
+        color: #1A1A1A;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
     }
 
-    .columns-menu-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        padding: 8px 16px;
-        border-top: 1px solid #dee2e6;
+    .chevron {
+        color: #808080;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .badge {
+        background-color: #D91F26;
+        /* Красный бейдж */
+        color: white;
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-left: 4px;
     }
 }
 
-.export-button {
-    .mat-icon {
-        color: #595959; // Цвет иконок
+/* --- BULK ACTIONS (Панель выбранного) --- */
+.bulk-actions-bar {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background-color: #F0F7FF;
+    /* Светло-голубой фон для акцента */
+    border: 1px solid #B3D7FF;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .selected-label {
+        font-weight: 600;
+        color: #1A1A1A;
     }
 
-    span {
-        margin: 0 8px;
-        font-weight: 500;
-    }
+    .bulk-buttons {
+        display: flex;
+        gap: 8px;
 
-    // Стилизуем стрелку "вниз"
-    .dropdown-arrow {
-        transition: transform 0.2s ease-in-out;
-    }
+        .action-btn {
+            mat-icon {
+                margin-right: 4px;
+            }
+        }
 
-    // Поворачиваем стрелку, когда меню открыто
-    &[aria-expanded="true"] .dropdown-arrow {
-        transform: rotate(180deg);
+        .text-red {
+            color: #D91F26;
+        }
     }
+}
+
+/* --- МЕНЮ КОЛОНОК --- */
+.columns-menu-content {
+    padding: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.columns-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.column-option {
+    padding: 4px 16px;
 }

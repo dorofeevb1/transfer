@@ -35,4 +35,7 @@ export class HeaderComponent {
       this.currentLang = lang;
     }
   }
+  logout() {
+    this.auth.logout(); // Или ваш метод выхода
+  }
 }

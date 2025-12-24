@@ -1,23 +1,180 @@
-<div class="filter-container" [formGroup]="form">
+<div class="filter-container">
+    <!-- HEADER -->
     <div class="filter-header">
-        <h2>{{ 'PRODUCTS.FILTERS' | translate }}</h2>
+        <h2 class="filter-title">Фильтр</h2>
+        <button mat-icon-button (click)="onClose()" class="close-button">
+            <mat-icon>close</mat-icon>
+        </button>
     </div>
 
-    <mat-dialog-content class="filter-content">
-        <div *ngFor="let key of objectKeys(form.controls)" class="filter-row">
-            <mat-form-field appearance="outline">
-                <mat-label>{{ ('FIELDS.' + key) | translate }}</mat-label>
-                <input matInput [formControlName]="key" (keydown.enter)="apply.emit()">
-            </mat-form-field>
-        </div>
-    </mat-dialog-content>
+    <!-- CONTENT -->
+    <div class="filter-content">
+        <mat-accordion multi displayMode="flat">
 
-    <mat-dialog-actions align="end" class="filter-actions">
-        <button mat-stroked-button (click)="reset.emit()">
-            {{ 'DIALOGS.RESET_ALL' | translate }}
+            <!-- СЕКЦИЯ: Дата КП -->
+            <mat-expansion-panel [expanded]="true" class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Дата КП</mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <div class="panel-content">
+                    <mat-radio-group [(ngModel)]="dateFilterValue" class="custom-radio-group">
+                        <mat-radio-button value="all">Весь период</mat-radio-button>
+                        <mat-radio-button value="week">За неделю</mat-radio-button>
+                        <mat-radio-button value="month">За месяц</mat-radio-button>
+                        <mat-radio-button value="custom">Выбрать период</mat-radio-button>
+                    </mat-radio-group>
+
+                    <!-- Выбор даты (показываем только если выбрано 'custom') -->
+                    <div class="date-input-wrapper" *ngIf="dateFilterValue === 'custom'">
+                        <mat-form-field appearance="outline" class="full-width custom-field">
+                            <mat-label>Выберите дату</mat-label>
+                            <input matInput [matDatepicker]="picker" [(ngModel)]="customDate">
+                            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Категория 1 -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Категория. Уровень 1</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Выберите категорию</mat-label>
+                        <mat-select>
+                            <mat-option value="clothing">Одежда</mat-option>
+                            <mat-option value="shoes">Обувь</mat-option>
+                            <mat-option value="accessories">Аксессуары</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Категория 2 -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Категория. Уровень 2</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Выберите подкатегорию</mat-label>
+                        <mat-select>
+                            <mat-option value="men">Мужская</mat-option>
+                            <mat-option value="women">Женская</mat-option>
+                            <mat-option value="kids">Детская</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Фото -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Фото</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-radio-group [(ngModel)]="photoFilter" class="custom-radio-group">
+                        <mat-radio-button value="all">Все товары</mat-radio-button>
+                        <mat-radio-button value="with">С фото</mat-radio-button>
+                        <mat-radio-button value="without">Без фото</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Видео -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Видео</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-radio-group [(ngModel)]="videoFilter" class="custom-radio-group">
+                        <mat-radio-button value="all">Все товары</mat-radio-button>
+                        <mat-radio-button value="with">С видео</mat-radio-button>
+                        <mat-radio-button value="without">Без видео</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Состав -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Состав</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Например: хлопок</mat-label>
+                        <input matInput placeholder="Введите состав">
+                    </mat-form-field>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Размер товара -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Размер товара</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <div class="size-inputs-grid">
+                        <mat-form-field appearance="outline" class="custom-field">
+                            <mat-label>Длина</mat-label>
+                            <input matInput type="number" placeholder="см">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field">
+                            <mat-label>Ширина</mat-label>
+                            <input matInput type="number" placeholder="см">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="custom-field">
+                            <mat-label>Высота</mat-label>
+                            <input matInput type="number" placeholder="см">
+                        </mat-form-field>
+                    </div>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Упаковка -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Упаковка товара</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Тип упаковки</mat-label>
+                        <mat-select>
+                            <mat-option value="box">Коробка</mat-option>
+                            <mat-option value="bag">Пакет</mat-option>
+                            <mat-option value="pallet">Паллет</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+            </mat-expansion-panel>
+
+            <!-- СЕКЦИЯ: Загрузка короба -->
+            <mat-expansion-panel class="filter-panel">
+                <mat-expansion-panel-header>
+                    <mat-panel-title>Загрузка транспортного короба</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="panel-content">
+                    <mat-form-field appearance="outline" class="full-width custom-field">
+                        <mat-label>Количество единиц</mat-label>
+                        <input matInput type="number" placeholder="Введите число">
+                    </mat-form-field>
+                </div>
+            </mat-expansion-panel>
+
+        </mat-accordion>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="filter-footer">
+        <button mat-stroked-button class="btn-reset" (click)="onReset()">
+            Сбросить фильтр
         </button>
-        <button mat-flat-button color="primary" (click)="apply.emit()">
-            {{ 'PRODUCTS.APPLY' | translate }}
+        <button mat-flat-button class="btn-apply" (click)="onApply()">
+            Применить фильтр
         </button>
-    </mat-dialog-actions>
+    </div>
 </div>

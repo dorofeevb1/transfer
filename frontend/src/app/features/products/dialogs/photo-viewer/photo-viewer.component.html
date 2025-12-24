@@ -1,11 +1,33 @@
-<h2 mat-dialog-title>{{ 'DIALOGS.PHOTO_VIEWER_TITLE' | translate }}</h2>
-
-<mat-dialog-content class="photo-grid">
-    <div *ngFor="let photo of data.photos" class="photo-container">
-        <img [src]="photo | safeUrl" [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
+<div class="viewer-container">
+    <div class="viewer-header">
+        <h2 class="viewer-title">{{ 'DIALOGS.PHOTO_VIEWER_TITLE' | translate }}</h2>
+        <button mat-icon-button class="close-btn" mat-dialog-close>
+            <mat-icon>close</mat-icon>
+        </button>
     </div>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close cdkFocusInitial>{{ 'DIALOGS.CLOSE_BUTTON' | translate }}</button>
-</mat-dialog-actions>
+    <div class="viewer-content">
+        <div class="photo-grid">
+            <div *ngFor="let photo of data.photos" class="photo-item">
+                <img [src]="photo | safeUrl" [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
+
+                <!-- Оверлей при наведении (опционально) -->
+                <div class="photo-overlay">
+                    <mat-icon>zoom_in</mat-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Если фото нет -->
+        <div *ngIf="!data.photos?.length" class="empty-state">
+            <mat-icon>image_not_supported</mat-icon>
+            <p>Нет доступных изображений</p>
+        </div>
+    </div>
+
+    <div class="viewer-footer">
+        <button mat-stroked-button class="btn-close" mat-dialog-close cdkFocusInitial>
+            {{ 'DIALOGS.CLOSE_BUTTON' | translate }}
+        </button>
+    </div>
+</div>

@@ -1,29 +1,31 @@
-<div class="table-wrapper">
-    <table mat-table [dataSource]="dataSource" matSort>
+<div class="table-container">
+    <table mat-table [dataSource]="dataSource" matSort class="products-table">
 
-        <!-- Колонка выбора -->
-        <ng-container matColumnDef="select" [sticky]="true">
-            <th mat-header-cell *matHeaderCellDef>
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select" sticky>
+            <th mat-header-cell *matHeaderCellDef class="checkbox-col">
                 <mat-checkbox *ngIf="dataSource && dataSource.data.length > 0" (change)="masterToggleClick.emit()"
                     [checked]="selection.hasValue() && isAllSelected"
-                    [indeterminate]="selection.hasValue() && !isAllSelected" [aria-label]="checkboxLabel()">
+                    [indeterminate]="selection.hasValue() && !isAllSelected" [aria-label]="checkboxLabel()"
+                    color="primary"> <!-- Используем primary (черный в стилях) -->
                 </mat-checkbox>
             </th>
-            <td mat-cell *matCellDef="let row">
+            <td mat-cell *matCellDef="let row" class="checkbox-col">
                 <mat-checkbox (click)="$event.stopPropagation()" (change)="rowToggleClick.emit(row)"
-                    [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)">
+                    [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)" color="primary">
                 </mat-checkbox>
             </td>
         </ng-container>
 
-        <!-- Динамические колонки -->
+        <!-- Dynamic Columns -->
         <ng-container *ngFor="let column of allColumns" [matColumnDef]="column.id">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
-                <div class="column-header">
-                    <!-- Заголовок колонки по FIELDS -->
-                    <span>{{ ('FIELDS.' + (column.name | titlecase)) | translate }}</span>
+                <div class="header-content">
+                    <span class="header-text">{{ ('FIELDS.' + column.name) | translate }}</span>
 
-                    <button mat-icon-button (click)="removeColumnClick.emit({ columnId: column.id, event: $event })"
+                    <!-- Кнопка удаления (появляется только при ховере) -->
+                    <button mat-icon-button class="remove-col-btn"
+                        (click)="removeColumnClick.emit({ columnId: column.id, event: $event }); $event.stopPropagation()"
                         [matTooltip]="'PRODUCTS.REMOVE_COLUMN_TOOLTIP' | translate">
                         <mat-icon>close</mat-icon>
                     </button>
@@ -31,36 +33,49 @@
             </th>
 
             <td mat-cell *matCellDef="let element">
+                <!-- Режим редактирования -->
                 <ng-container *ngIf="isBulkEditMode && selection.isSelected(element); else readOnlyCell">
-                    <mat-form-field appearance="outline" class="inline-edit-field">
-                        <input matInput [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()">
-                    </mat-form-field>
+                    <div class="edit-cell-wrapper">
+                        <input class="table-input" [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()">
+                    </div>
                 </ng-container>
 
+                <!-- Режим просмотра -->
                 <ng-template #readOnlyCell>
-                    <ng-container *ngIf="isImageArray(element[column.id]); else defaultCell">
-                        <div class="image-cell-container" (click)="photoViewerClick.emit(element[column.id])">
-                            <img [src]="element[column.id][0] | safeUrl" class="thumbnail-image"
-                                [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
-                            <span *ngIf="element[column.id].length > 1" class="photo-count">
-                                +{{ element[column.id].length - 1 }}
-                            </span>
+                    <!-- Если это картинка -->
+                    <ng-container *ngIf="isImageArray(element[column.id]); else textCell">
+                        <div class="image-cell"
+                            (click)="photoViewerClick.emit(element[column.id]); $event.stopPropagation()">
+                            <img [src]="element[column.id][0] | safeUrl" class="thumb" alt="Product">
+                            <div class="photo-badge" *ngIf="element[column.id].length > 1">
+                                +{{ element[column.id].length }}
+                            </div>
                         </div>
                     </ng-container>
 
-                    <ng-template #defaultCell>
-                        {{ element[column.id] }}
+                    <!-- Обычный текст -->
+                    <ng-template #textCell>
+                        <span class="text-truncate" [matTooltip]="element[column.id]">
+                            {{ element[column.id] || '—' }}
+                        </span>
                     </ng-template>
                 </ng-template>
             </td>
         </ng-container>
 
+        <!-- Rows -->
         <tr mat-header-row *matHeaderRowDef="columnsToRender; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: columnsToRender;" (click)="rowToggleClick.emit(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnsToRender;" (click)="rowToggleClick.emit(row)"
+            [class.selected-row]="selection.isSelected(row)">
+        </tr>
 
+        <!-- No Data Row -->
         <tr class="mat-row" *matNoDataRow>
-            <td class="mat-cell" [attr.colspan]="columnsToRender.length">
-                {{ 'TABLE.NO_DATA' | translate }}
+            <td class="mat-cell no-data-cell" [attr.colspan]="columnsToRender.length">
+                <div class="no-data-content">
+                    <mat-icon>search_off</mat-icon>
+                    <span>{{ 'TABLE.NO_DATA' | translate }}</span>
+                </div>
             </td>
         </tr>
     </table>

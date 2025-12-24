@@ -22,17 +22,21 @@ export class EditDialogComponent implements OnInit {
   ) {
     this.form = this.fb.group({});
   }
-  
+
   ngOnInit(): void {
-    // Инициализируем поле images, если его нет
+    // Гарантируем наличие поля images
     if (!this.data.images || !Array.isArray(this.data.images)) {
       this.data.images = [];
     }
 
-    // Создаем форму, исключая нестандартные поля вроде id
+    // Создаем контролы для всех полей
     const formControls: { [key: string]: FormControl } = {};
+
+    // Сначала добавляем images явно, чтобы он попал в форму даже если его нет в ключах объекта
+    formControls['images'] = new FormControl(this.data.images);
+
     for (const key in this.data) {
-      if (Object.prototype.hasOwnProperty.call(this.data, key)) {
+      if (Object.prototype.hasOwnProperty.call(this.data, key) && key !== 'images') {
         formControls[key] = new FormControl(this.data[key]);
       }
     }
@@ -46,25 +50,36 @@ export class EditDialogComponent implements OnInit {
   openAddPhotoDialog(): void {
     const dialogRef = this.dialog.open(AddPhotoDialogComponent, {
       width: '600px',
+      // panelClass можно добавить для кастомных стилей диалога
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result && Array.isArray(result)) {
-        const newImageUrls = result.map(preview => preview.base64);
+    dialogRef.afterClosed().subscribe((result: string[]) => {
+      // Ожидаем массив base64 строк
+      if (result && Array.isArray(result) && result.length > 0) {
         const currentImages = this.imagesControl.value || [];
-        this.imagesControl.setValue([...currentImages, ...newImageUrls]);
+        // Объединяем текущие и новые (можно добавить проверку на дубликаты)
+        this.imagesControl.setValue([...currentImages, ...result]);
+        this.form.markAsDirty(); // Помечаем форму как измененную
       }
     });
   }
 
   removeImage(index: number): void {
-    const currentImages = this.imagesControl.value;
+    const currentImages = [...(this.imagesControl.value || [])];
     currentImages.splice(index, 1);
-    this.imagesControl.setValue([...currentImages]);
+    this.imagesControl.setValue(currentImages);
+    this.form.markAsDirty();
   }
 
   onSave(): void {
-    this.dialogRef.close(this.form.value);
+    if (this.form.valid) {
+      // Возвращаем ID вместе с формой, так как он часто нужен для апдейта
+      const result = {
+        id: this.data.id,
+        ...this.form.value
+      };
+      this.dialogRef.close(result);
+    }
   }
 
   onCancel(): void {

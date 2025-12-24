@@ -1,17 +1,24 @@
-<mat-sidenav-container class="page-container">
+<!-- Контейнер для страницы с боковой панелью (Sidenav) -->
+<mat-sidenav-container class="page-sidenav-container">
 
-    <!-- Компонент боковой панели (сам управляет своим состоянием) -->
-    <mat-sidenav #filterSidenav mode="over" position="end" class="filter-sidenav">
-        <app-filter-form [form]="filterForm" (apply)="applySideNavFilters()" (reset)="resetSideNavFilters()">
+    <!-- Сайдбар фильтров (Справа) -->
+    <mat-sidenav #filterSidenav mode="over" position="end" class="filter-sidenav" [fixedInViewport]="true"
+        [fixedTopGap]="0" [fixedBottomGap]="0">
+        <!-- Компонент формы фильтрации -->
+        <app-filter-form [form]="filterForm" (apply)="applySideNavFilters()" (reset)="resetSideNavFilters()"
+            (close)="filterSidenav.close()">
         </app-filter-form>
     </mat-sidenav>
 
-    <!-- Основной контент -->
-    <mat-sidenav-content>
-        <div class="table-page-container">
+    <!-- Основной контент страницы -->
+    <mat-sidenav-content class="page-content-wrapper">
+        <div class="table-page-layout">
+
+            <!-- 1. Заголовок страницы (Товары + Кнопки Импорта) -->
             <app-page-header (importClick)="openImportDialog()" (addColumnClick)="addColumn()">
             </app-page-header>
 
+            <!-- 2. Панель управления (Поиск, Фильтр, Экспорт) -->
             <app-table-controls [allColumns]="allColumns" [columnsForm]="columnsForm"
                 [activeFilterCount]="activeFilterCount" [appliedFilters]="appliedFilters"
                 [selectionHasValue]="selection.hasValue()" [selectionCount]="selection.selected.length"
@@ -21,13 +28,23 @@
                 (cancelClick)="onCancelBulkEdit()" (deleteClick)="onDeleteSelected()"
                 (exportToExcel)="handleExportToExcel()" (exportToCsv)="handleExportToCsv()">
             </app-table-controls>
-            <app-products-table [dataSource]="dataSource" [selection]="selection" [allColumns]="allColumns"
-                [isBulkEditMode]="isBulkEditMode" [columnsToRender]="columnsToRender" [isAllSelected]="isAllSelected()"
-                (sortChange)="setSort($event)" (removeColumnClick)="removeColumn($event.columnId, $event.event)"
-                (photoViewerClick)="openPhotoViewer($event)" (masterToggleClick)="masterToggle()"
-                (rowToggleClick)="selection.toggle($event)">
-            </app-products-table>
-            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+
+            <!-- 3. Таблица с данными -->
+            <div class="table-wrapper">
+                <app-products-table [dataSource]="dataSource" [selection]="selection" [allColumns]="allColumns"
+                    [isBulkEditMode]="isBulkEditMode" [columnsToRender]="columnsToRender"
+                    [isAllSelected]="isAllSelected()" (sortChange)="setSort($event)"
+                    (removeColumnClick)="removeColumn($event.columnId, $event.event)"
+                    (photoViewerClick)="openPhotoViewer($event)" (masterToggleClick)="masterToggle()"
+                    (rowToggleClick)="selection.toggle($event)">
+                </app-products-table>
+            </div>
+
+            <!-- 4. Пагинация (Закреплена внизу или идет следом) -->
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
+                class="sticky-paginator"></mat-paginator>
+
         </div>
     </mat-sidenav-content>
+
 </mat-sidenav-container>

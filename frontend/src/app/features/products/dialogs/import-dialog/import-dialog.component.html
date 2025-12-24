@@ -1,49 +1,69 @@
 <div class="dialog-container">
+    <!-- HEADER -->
     <div class="dialog-header">
-        <h2 mat-dialog-title>{{ 'DIALOGS.IMPORT_DATA_TITLE' | translate }}</h2>
-        <button mat-icon-button (click)="onCancel()" [attr.aria-label]="'DIALOGS.CLOSE_DIALOG_ARIA' | translate">
+        <h2 class="dialog-title">{{ 'DIALOGS.IMPORT_DATA_TITLE' | translate }}</h2>
+        <button mat-icon-button class="close-button" (click)="onCancel()"
+            [attr.aria-label]="'DIALOGS.CLOSE_DIALOG_ARIA' | translate">
             <mat-icon>close</mat-icon>
         </button>
     </div>
 
-    <mat-dialog-content class="dialog-content">
+    <!-- CONTENT -->
+    <div class="dialog-content">
+        <!-- Область загрузки -->
         <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)" [class.drag-over]="isDragOver" [class.loading]="isLoading">
+            (drop)="onDrop($event)" (click)="triggerFileUpload()" [class.drag-over]="isDragOver"
+            [class.loading]="isLoading">
 
-            <div *ngIf="!isLoading" class="upload-prompt">
+            <div *ngIf="!isLoading" class="upload-placeholder">
                 <mat-icon class="upload-icon">cloud_upload</mat-icon>
-                <p>{{ 'DIALOGS.DROP_FILES_HERE' | translate }}</p>
-                <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()">
+                <h3 class="upload-title">{{ 'DIALOGS.DROP_FILES_HERE' | translate }}</h3>
+                <p class="upload-subtitle">{{ 'DIALOGS.FILE_INFO' | translate }}</p>
+
+                <!-- Кнопка выбора файлов -->
+                <!-- stopPropagation важен, чтобы клик по кнопке не вызывал клик по родителю (upload-area) -->
+                <button type="button" class="btn-select-files" (click)="triggerFileUpload(); $event.stopPropagation()">
                     {{ 'DIALOGS.SELECT_FILES' | translate }}
                 </button>
-                <p class="file-info">{{ 'DIALOGS.FILE_INFO' | translate }}</p>
+
                 <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden
                     accept=".xlsx, .xls, .csv">
             </div>
 
-            <div *ngIf="isLoading" class="loading-indicator">
-                <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
-                <p>{{ 'DIALOGS.PROCESSING' | translate }}</p>
+            <!-- Индикатор загрузки -->
+            <div *ngIf="isLoading" class="loading-state">
+                <mat-spinner diameter="40" color="warn"></mat-spinner>
+                <p class="loading-text">{{ 'DIALOGS.PROCESSING' | translate }}...</p>
             </div>
         </div>
 
-        <div class="file-list" *ngIf="files.length > 0">
-            <div *ngFor="let file of files" class="file-item">
-                <mat-icon>insert_drive_file</mat-icon>
-                <span class="file-name">{{ file.name }}</span>
-                <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
-                <button mat-icon-button (click)="removeFile(file)"
-                    [attr.aria-label]="'DIALOGS.REMOVE_FILE_ARIA' | translate">
-                    <mat-icon>delete</mat-icon>
-                </button>
+        <!-- Список файлов -->
+        <div class="file-list-container" *ngIf="files.length > 0">
+            <h4 class="list-title">Выбранные файлы ({{ files.length }})</h4>
+            <div class="file-list">
+                <div *ngFor="let file of files" class="file-item">
+                    <div class="file-icon-wrapper">
+                        <mat-icon>description</mat-icon>
+                    </div>
+                    <div class="file-info">
+                        <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
+                        <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                    </div>
+                    <button mat-icon-button class="remove-btn" (click)="removeFile(file)">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                </div>
             </div>
         </div>
-    </mat-dialog-content>
+    </div>
 
-    <mat-dialog-actions align="end" class="dialog-actions">
-        <button mat-button (click)="onCancel()">{{ 'DIALOGS.CANCEL_BUTTON' | translate }}</button>
-        <button mat-flat-button color="primary" (click)="onImport()" [disabled]="!files.length">
+    <!-- ACTIONS -->
+    <div class="dialog-actions">
+        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+            {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+        </button>
+        <button mat-flat-button class="btn-process" (click)="onImport()" [disabled]="!files.length || isLoading">
             {{ 'DIALOGS.PROCESS_BUTTON' | translate }}
         </button>
-    </mat-dialog-actions>
+    </div>
 </div>

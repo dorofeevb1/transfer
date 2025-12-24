@@ -1,34 +1,240 @@
-:host,
+/* Основной контейнер */
 .filter-container {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
+    background: #ffffff;
+    font-family: 'Inter', sans-serif;
 }
 
+/* === HEADER === */
 .filter-header {
-    padding: 24px 24px 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    border-bottom: 1px solid #E0E0E0;
+    flex-shrink: 0;
+    /* Не сжимать заголовок */
+    background: #ffffff;
 
-    h2 {
-        margin: 0 0 16px 0;
-        font-size: 20px;
-        font-weight: 500;
+    .filter-title {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1A1A1A;
+        letter-spacing: -0.01em;
+    }
+
+    .close-button {
+        color: #999;
+        transition: color 0.2s;
+
+        &:hover {
+            color: #1A1A1A;
+            background-color: rgba(0, 0, 0, 0.04);
+        }
     }
 }
 
+/* === CONTENT === */
 .filter-content {
-    flex-grow: 1;
-    padding: 0 24px;
+    flex: 1;
+    /* Занимает все доступное пространство */
+    overflow-y: auto;
+    /* Скролл только здесь */
+    overflow-x: hidden;
+    padding: 0;
+    background: #ffffff;
+
+    /* Скроллбар */
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #F5F5F5;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #D0D0D0;
+        border-radius: 3px;
+    }
 }
 
-.filter-row {
-    margin-bottom: 16px;
+/* Стилизация панелей аккордеона */
+.filter-panel {
+    border-bottom: 1px solid #E0E0E0;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff;
+
+    /* Убираем стандартные отступы Material */
+    &.mat-expansion-panel-spacing {
+        margin: 0;
+    }
+
+    /* Хедер панели */
+    ::ng-deep .mat-expansion-panel-header {
+        padding: 0 32px;
+        height: 64px;
+        font-family: 'Inter', sans-serif;
+
+        &:hover {
+            background: #FAFAFA !important;
+        }
+
+        .mat-expansion-panel-header-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+
+        /* Индикатор (стрелочка) */
+        .mat-expansion-indicator::after {
+            color: #1A1A1A;
+            border-width: 0 1.5px 1.5px 0;
+        }
+    }
+
+    /* Тело панели */
+    ::ng-deep .mat-expansion-panel-body {
+        padding: 8px 32px 24px 32px;
+    }
 }
 
-mat-form-field {
+.panel-content {
+    padding-top: 8px;
+}
+
+/* Группы радио-кнопок */
+.custom-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    mat-radio-button {
+        ::ng-deep .mat-radio-label-content {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Кастомный цвет (Красный) */
+        &.mat-radio-checked ::ng-deep {
+            .mat-radio-outer-circle {
+                border-color: #D91F26;
+            }
+
+            .mat-radio-inner-circle {
+                background-color: #D91F26;
+            }
+        }
+    }
+}
+
+/* Поля ввода (Inputs & Selects) */
+.full-width {
     width: 100%;
 }
 
-.filter-actions {
-    padding: 16px 24px;
-    border-top: 1px solid rgba(0, 0, 0, .12);
+.date-input-wrapper {
+    margin-top: 16px;
+}
+
+.size-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+/* Переопределение стилей Material Form Field */
+::ng-deep .custom-field {
+    .mat-mdc-text-field-wrapper {
+        background-color: #fff;
+        border: 1px solid #E0E0E0;
+        border-radius: 4px;
+        padding: 0 12px;
+    }
+
+    /* Активное состояние */
+    &.mat-focused .mat-mdc-text-field-wrapper {
+        border-color: #1A1A1A;
+    }
+
+    /* Убираем подчеркивания и фоны Material */
+    .mat-mdc-form-field-focus-overlay {
+        opacity: 0;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+        color: #666;
+    }
+
+    input,
+    .mat-select-value {
+        color: #1A1A1A;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+}
+
+/* === FOOTER === */
+.filter-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 32px;
+    border-top: 1px solid #E0E0E0;
+    flex-shrink: 0;
+    background: #ffffff;
+
+    button {
+        flex: 1;
+        height: 48px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-radius: 4px;
+    }
+
+    .btn-reset {
+        border: 1px solid #E0E0E0 !important;
+        color: #333 !important;
+        background: #fff;
+
+        &:hover {
+            background: #F5F5F5;
+            border-color: #CCC !important;
+        }
+    }
+
+    .btn-apply {
+        background-color: #D91F26 !important;
+        color: #ffffff !important;
+        box-shadow: none !important;
+
+        &:hover {
+            background-color: #B91920 !important;
+        }
+    }
+}
+
+/* Адаптив для маленьких экранов */
+@media (max-width: 600px) {
+
+    .filter-header,
+    .filter-footer,
+    .filter-panel ::ng-deep .mat-expansion-panel-header,
+    .filter-panel ::ng-deep .mat-expansion-panel-body {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .size-inputs-grid {
+        grid-template-columns: 1fr;
+    }
 }
