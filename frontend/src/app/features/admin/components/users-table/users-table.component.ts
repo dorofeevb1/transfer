@@ -9,6 +9,7 @@ import { SuccessDialogComponent } from '../dialogs/success-dialog/success-dialog
 import { ChangePasswordDialogComponent } from '../dialogs/change-password-dialog/change-password-dialog.component';
 import { UserDialogComponent } from '../dialogs/user-dialog/user-dialog.component';
 import { UserService } from 'src/app/core/services/api-service/users-table-service';
+import { Observable } from 'rxjs';
 
 
 export interface UserData {
@@ -32,6 +33,9 @@ const USERS_DATA: UserData[] = [
   styleUrls: ['./users-table.component.scss']
 })
 export class UsersTableComponent implements OnInit, AfterViewInit {
+  roles$!: Observable<string[]>;
+  accessLevels$!: Observable<string[]>;
+
   displayedColumns: string[] = ['select', 'fio', 'role', 'access', 'email', 'password'];
   dataSource = new MatTableDataSource<UserData>(USERS_DATA);
   selection = new SelectionModel<UserData>(true, []);
@@ -56,6 +60,10 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
   }
   ngOnInit(): void {
     this.loadUsersPage(0, 5);
+
+    // ЗАГРУЖАЕМ СПИСКИ ПРИ ИНИЦИАЛИЗАЦИИ
+    this.roles$ = this.userService.getRoles();
+    this.accessLevels$ = this.userService.getAccessLevels();
   }
   ngAfterViewInit(): void {
     this.paginator.page.subscribe(() => {
@@ -227,7 +235,7 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
       }
     });
   }
-  
+
   deleteSelected(): void {
     const selectedIds = this.selection.selected.map(u => u.id);
     if (selectedIds.length === 0) return;

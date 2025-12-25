@@ -14,12 +14,6 @@
             </button>
         </div>
 
-        <!-- Кнопка Фильтр -->
-        <button class="btn-outline btn-filter" (click)="toggleFilter.emit()">
-            <mat-icon class="icon-left">tune</mat-icon>
-            {{ 'PRODUCTS.FILTERS' | translate }}
-            <span *ngIf="activeFilterCount > 0" class="badge">{{ activeFilterCount }}</span>
-        </button>
     </div>
 
     <!-- ПРАВАЯ ЧАСТЬ: Экспорт и Таблица -->
@@ -40,8 +34,9 @@
 
         <!-- Таблица / Колонки -->
         <button class="btn-outline" [matMenuTriggerFor]="columnsMenu">
-            <mat-icon class="icon-left">view_week</mat-icon>
-            {{ 'PRODUCTS.COLUMNS' | translate }}
+            <mat-icon class="icon-left">tune</mat-icon>
+            {{ 'PRODUCTS.FILTERS' | translate }}
+            <span *ngIf="activeFilterCount > 0" class="badge">{{ activeFilterCount }}</span>
         </button>
     </div>
 </div>
@@ -73,7 +68,7 @@
         <div class="columns-list">
             <div *ngFor="let column of allColumns" class="column-option">
                 <mat-checkbox [formControlName]="column.id" color="primary">
-                    {{ ('FIELDS.' + column.name) | translate }}
+                    {{ (column.name) | translate }}
                 </mat-checkbox>
             </div>
         </div>

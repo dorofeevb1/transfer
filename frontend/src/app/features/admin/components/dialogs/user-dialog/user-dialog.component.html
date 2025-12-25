@@ -1,34 +1,65 @@
-<h1 mat-dialog-title>{{ isEditMode ? 'Редактировать пользователя' : 'Добавить пользователя' }}</h1>
+<h1 mat-dialog-title>
+    {{ (isEditMode ? 'DIALOGS.USER_DIALOG_TITLE_EDIT' : 'DIALOGS.USER_DIALOG_TITLE_ADD') | translate }}
+</h1>
 
 <div mat-dialog-content [formGroup]="form">
+    <!-- ФИО -->
     <mat-form-field appearance="outline">
-        <mat-label>ФИО</mat-label>
+        <mat-label>{{ 'USERS_TABLE.COLUMNS.FIO' | translate }}</mat-label>
         <input matInput formControlName="fio">
+        <mat-error *ngIf="form.get('fio')?.hasError('required')">
+            {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
+        </mat-error>
     </mat-form-field>
 
+    <!-- Роль (SELECT) -->
     <mat-form-field appearance="outline">
-        <mat-label>Роль</mat-label>
-        <input matInput formControlName="role">
+        <mat-label>{{ 'USERS_TABLE.COLUMNS.ROLE' | translate }}</mat-label>
+        <mat-select formControlName="role">
+            <mat-option *ngFor="let role of roles$ | async" [value]="role">
+                {{ role| translate }}
+            </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('role')?.hasError('required')">
+            {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
+        </mat-error>
     </mat-form-field>
 
+    <!-- Доступ (SELECT) -->
     <mat-form-field appearance="outline">
-        <mat-label>Доступ</mat-label>
-        <input matInput formControlName="access">
+        <mat-label>{{ 'USERS_TABLE.COLUMNS.ACCESS' | translate }}</mat-label>
+        <mat-select formControlName="access">
+            <mat-option *ngFor="let access of accessLevels$ | async" [value]="access">
+                {{ access | translate}}
+            </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.get('access')?.hasError('required')">
+            {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
+        </mat-error>
     </mat-form-field>
 
+    <!-- E-mail -->
     <mat-form-field appearance="outline">
-        <mat-label>E-mail</mat-label>
+        <mat-label>{{ 'USERS_TABLE.COLUMNS.EMAIL' | translate }}</mat-label>
         <input matInput formControlName="email">
+        <mat-error *ngIf="form.get('email')?.hasError('required')">
+            {{ 'VALIDATION.REQUIRED_FIELD' | translate }}
+        </mat-error>
     </mat-form-field>
 
+    <!-- Пароль -->
     <mat-form-field appearance="outline">
-        <mat-label>Пароль</mat-label>
+        <mat-label>{{ 'USERS_TABLE.COLUMNS.PASSWORD' | translate }}</mat-label>
         <input matInput formControlName="password" type="password"
-            [placeholder]="isEditMode ? 'Оставьте пустым, чтобы не менять' : ''">
+            [placeholder]="isEditMode ? ('DIALOGS.LEAVE_EMPTY_PASSWORD_HINT' | translate) : ''">
     </mat-form-field>
 </div>
 
 <div mat-dialog-actions align="end">
-    <button mat-stroked-button (click)="onCancel()">Отмена</button>
-    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">Сохранить</button>
+    <button mat-stroked-button (click)="onCancel()">
+        {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+    </button>
+    <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid">
+        {{ 'DIALOGS.SAVE_BUTTON' | translate }}
+    </button>
 </div>

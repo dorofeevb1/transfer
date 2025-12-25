@@ -33,7 +33,7 @@
         <ng-container *ngFor="let key of objectKeys(form.controls)">
             <!-- Скрываем id, images и системные поля -->
             <div *ngIf="key !== 'id' && key !== 'images' && !key.startsWith('_')" class="form-field-wrapper">
-                <label class="field-label">{{ ('FIELDS.' + key) | translate }}</label>
+                <label class="field-label">{{ key | translate }}</label>
                 <mat-form-field appearance="outline" class="custom-field">
                     <input matInput [formControlName]="key">
                 </mat-form-field>

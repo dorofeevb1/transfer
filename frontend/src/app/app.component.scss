@@ -1,21 +1,14 @@
+/* src/app/app.component.scss */
 :host {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+    min-height: 100vh;
 }
 
 .main-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
+    flex: 1; // Pushes footer down
     width: 100%;
-}
-
-app-header,
-app-footer {
-    flex-shrink: 0;
+    max-width: 100%; // Rubber width
+    padding: 0; // Remove padding here, let child components handle it
+    overflow-x: hidden;
 }

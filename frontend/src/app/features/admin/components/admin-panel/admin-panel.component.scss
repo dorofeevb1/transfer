@@ -1,6 +1,5 @@
 .admin-panel-container {
-    width: 100%;
-    height: 100vh;
+
     padding: 0;
     margin: 0;
     background-color: #f8f9fa;
@@ -16,7 +15,7 @@
     ::ng-deep app-table {
         display: block;
         height: 100%;
-        padding: 24px;
+
     }
 
     ::ng-deep app-users-table {

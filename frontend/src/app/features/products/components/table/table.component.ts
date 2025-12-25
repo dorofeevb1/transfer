@@ -69,9 +69,20 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.updateTableData(data);
     });
 
+    // 👇 ИСПРАВЛЕНИЕ ЗДЕСЬ 👇
     this.productTableService.columns$.subscribe(columns => {
-      this.allColumns = columns;
-      this.displayedColumns = ['select', ...columns.map(c => c.id)];
+      const junkKeys = ['фотографии', 'фото', 'photo', 'image', 'img', 'picture', 'изображение'];
+
+      // Фильтруем колонки, пришедшие с сервера
+      const cleanColumns = columns.filter(col => {
+        const lowerKey = col.id.toLowerCase();
+        // Если ключ содержит запрещенное слово И это не наша правильная колонка 'photos'
+        const isJunk = junkKeys.some(junk => lowerKey.includes(junk)) && lowerKey !== 'photos';
+        return !isJunk; // Оставляем только хорошие
+      });
+
+      this.allColumns = cleanColumns;
+      this.displayedColumns = ['select', ...cleanColumns.map(c => c.id)];
       this.setupForms();
     });
   }
@@ -221,6 +232,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
+
   setupForms(): void {
     const filterControls: { [key: string]: FormControl } = {};
     const columnControls: { [key: string]: FormControl } = {};
@@ -231,6 +243,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.filterForm = this.fb.group(filterControls);
     this.columnsForm = this.fb.group(columnControls);
   }
+
 
   applySideNavFilters(): void {
     const values = this.filterForm.value;
@@ -243,15 +256,18 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.filterSidenav.close();
   }
 
+
   resetSideNavFilters(): void {
     this.filterForm.reset();
     this.applySideNavFilters();
   }
 
+
   onRemoveFilter(key: string): void {
     this.filterForm.get(key)?.setValue('');
     this.applySideNavFilters();
   }
+
 
   applyGlobalFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
@@ -269,6 +285,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
+
   createFilterPredicate(): (data: any, filter: string) => boolean {
     return (data: any, filter: string): boolean => {
       try {
@@ -284,12 +301,14 @@ export class TableComponent implements OnInit, AfterViewInit {
     };
   }
 
+
   applyColumnChanges(): void {
     this.displayedColumns = this.allColumns
       .filter(col => this.columnsForm.value[col.id])
       .map(col => col.id);
     this.displayedColumns.unshift('select');
   }
+
 
   addColumn(): void {
     this.translate.get('DIALOGS.ADD_COLUMN_TITLE').subscribe(title => {
@@ -311,6 +330,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       });
     });
   }
+
 
   removeColumn(columnName: string, event: MouseEvent): void {
     event.stopPropagation();
@@ -337,9 +357,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
   }
 
+
   get columnsToRender(): string[] {
     return this.displayedColumns;
   }
+
 
   isAllSelected(): boolean {
     const numSelected = this.selection.selected.length;
@@ -347,13 +369,16 @@ export class TableComponent implements OnInit, AfterViewInit {
     return numSelected === numRows;
   }
 
+
   masterToggle(): void {
     this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
+
   // --- ЭКСПОРТ EXCEL ---
   async handleExportToExcel(): Promise<void> {
     const dataToExport = this.dataSource.data;
+
 
     if (!dataToExport || dataToExport.length === 0 || this.isExporting) {
       if (this.isExporting) console.log('Экспорт уже выполняется...');
@@ -361,14 +386,17 @@ export class TableComponent implements OnInit, AfterViewInit {
       return;
     }
 
+
     // ВАЖНО: Ключ для картинок теперь 'photos'
     const imageKey = 'photos';
     const specialKeysToExclude = ['select', 'actions', imageKey];
+
 
     if (!this.allColumns) {
       console.error('Конфигурация колонок (allColumns) не найдена. Экспорт невозможен.');
       return;
     }
+
 
     const columnsConfig = this.allColumns
       .filter((col) => !specialKeysToExclude.includes(col.id))
@@ -377,8 +405,10 @@ export class TableComponent implements OnInit, AfterViewInit {
         header: col.name,
       }));
 
+
     this.isExporting = true;
     console.log('Начинается экспорт в Excel...');
+
 
     try {
       await this.exportService.exportAsExcelWithImages(
@@ -388,10 +418,12 @@ export class TableComponent implements OnInit, AfterViewInit {
         imageKey
       );
 
+
       this.productTableService.sendExportDataToBackend(dataToExport).subscribe({
         next: () => console.log('Данные экспорта успешно отправлены на сервер'),
         error: (error) => console.error('Ошибка отправки данных экспорта на сервер', error),
       });
+
 
     } catch (error) {
       console.error('Критическая ошибка экспорта:', error);
@@ -400,6 +432,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       console.log('Экспорт завершен!');
     }
   }
+
 
   // --- ЭКСПОРТ CSV ---
   handleExportToCsv(): void {

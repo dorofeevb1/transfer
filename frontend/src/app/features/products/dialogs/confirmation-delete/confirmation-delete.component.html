@@ -1,18 +1,24 @@
 <h1 mat-dialog-title class="dialog-title">
-    <mat-icon class="warning-icon">warning_amber</mat-icon>
+    <!-- Меняем иконку на warn только если цвет кнопки warn (красный) -->
+    <mat-icon [class.warning-icon]="data.confirmColor === 'warn'" class="dialog-icon">
+        {{ data.confirmColor === 'warn' ? 'warning_amber' : 'info_outline' }}
+    </mat-icon>
     {{ data.title }}
 </h1>
 
 <div mat-dialog-content class="dialog-content">
     <p class="dialog-message">{{ data.message }}</p>
-    <p class="dialog-subtext">Это действие нельзя будет отменить.</p>
+    <!-- Показываем подтекст только если он передан -->
+    <p class="dialog-subtext" *ngIf="data.subtext">{{ data.subtext }}</p>
 </div>
 
 <div mat-dialog-actions align="end" class="dialog-actions">
     <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
-        {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+        {{ data.cancelText || ('DIALOGS.CANCEL_BUTTON' | translate) }}
     </button>
-    <button mat-flat-button class="btn-delete" [mat-dialog-close]="true" cdkFocusInitial>
-        {{ 'PRODUCTS.DELETE' | translate }}
+
+    <!-- Цвет и текст кнопки берем из data, либо дефолтные значения -->
+    <button mat-flat-button [color]="data.confirmColor || 'warn'" [mat-dialog-close]="true" cdkFocusInitial>
+        {{ data.confirmText || ('PRODUCTS.DELETE' | translate) }}
     </button>
 </div>

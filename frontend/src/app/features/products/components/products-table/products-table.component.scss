@@ -1,42 +1,90 @@
+/* src/app/features/products/components/products-table/products-table.component.scss */
+
+/* =========================================
+   ПЕРЕМЕННЫЕ
+   ========================================= */
+$header-bg: #1A1A1A; // Черный
+$header-text: #FFFFFF; // Белый
+$row-border: #F0F0F0;
+$row-hover: #FAFAFA;
+$row-selected: #F5F9FF;
+$text-main: #333333;
+$text-muted: #999999;
+
+/* =========================================
+   HOST & LAYOUT
+   ========================================= */
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    width: 100%;
     overflow: hidden;
+    /* Важно для скролла */
 }
 
 .table-container {
-    height: 100%;
+    flex: 1;
     overflow: auto;
+    /* Скролл только внутри контейнера */
     background: #fff;
+    position: relative;
+    width: 100%;
+}
+
+/* Кастомный скроллбар */
+.table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 1000px;
 }
 
-/* --- HEADER --- */
+/* =========================================
+   HEADER (ЗАГОЛОВОК) - ЧЕРНЫЙ
+   ========================================= */
 th.mat-header-cell {
-    background-color: #1A1A1A;
-    /* Черный хедер */
-    color: #FFFFFF;
+    background-color: $header-bg !important;
+    color: $header-text !important;
     font-size: 12px;
     font-weight: 500;
     height: 48px;
     padding: 0 16px;
-    border-bottom: none;
+    border-bottom: none !important;
     white-space: nowrap;
 
-    /* Стили для стрелочки сортировки (делаем белой) */
+    /* Стрелка сортировки - белая */
     ::ng-deep .mat-sort-header-arrow {
         color: rgba(255, 255, 255, 0.7) !important;
+        opacity: 1 !important;
+    }
+
+    /* Текст заголовка - белый */
+    ::ng-deep .mat-sort-header-content {
+        color: $header-text !important;
     }
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
 
     .header-text {
@@ -45,14 +93,15 @@ th.mat-header-cell {
     }
 }
 
-/* Кнопка удаления колонки (скрыта по умолчанию, видна при наведении) */
+/* Кнопка удаления колонки (крестик) */
 .remove-col-btn {
     width: 24px;
     height: 24px;
     line-height: 24px;
+    border-radius: 50%;
     opacity: 0;
     transition: opacity 0.2s;
-    color: #999;
+    color: rgba(255, 255, 255, 0.6);
 
     mat-icon {
         font-size: 16px;
@@ -62,7 +111,7 @@ th.mat-header-cell {
 
     &:hover {
         color: #fff;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.2);
     }
 }
 
@@ -70,30 +119,30 @@ th.mat-header-cell:hover .remove-col-btn {
     opacity: 1;
 }
 
-/* --- ROWS & CELLS --- */
+/* =========================================
+   ROWS (СТРОКИ)
+   ========================================= */
 tr.mat-row {
     height: 60px;
-    /* Чуть выше для фото */
-    border-bottom: 1px solid #F0F0F0;
-    transition: background-color 0.2s;
+    border-bottom: 1px solid $row-border;
+    transition: background-color 0.15s;
 
     &:hover {
-        background-color: #FAFAFA;
+        background-color: $row-hover;
         cursor: pointer;
     }
 
     &.selected-row {
-        background-color: #F5F9FF;
-        /* Легкая подсветка выбранного */
+        background-color: $row-selected;
     }
 }
 
 td.mat-cell {
-    font-size: 13px;
-    color: #333;
     padding: 0 16px;
+    font-size: 13px;
+    color: $text-main;
+    vertical-align: middle;
 
-    /* Обрезаем длинный текст */
     .text-truncate {
         display: block;
         max-width: 200px;
@@ -103,31 +152,117 @@ td.mat-cell {
     }
 }
 
-/* --- CHECKBOXES --- */
+/* =========================================
+   CHECKBOXES (CUSTOM STYLE)
+   ========================================= */
 .checkbox-col {
-    width: 48px;
-    padding: 0 0 0 16px !important;
+    width: 50px;
+    padding-left: 16px !important;
     box-sizing: content-box;
+    text-align: left;
 }
 
-/* Перекрашиваем чекбокс в хедере в белый */
-th.mat-header-cell ::ng-deep .mat-checkbox-frame {
-    border-color: rgba(255, 255, 255, 0.7);
+/* 
+   Стилизация через ::ng-deep чтобы пробить ViewEncapsulation 
+   и глобальные стили Material 
+*/
+
+/* --- 1. HEADER CHECKBOX (На черном фоне) --- */
+th.mat-header-cell ::ng-deep .mat-mdc-checkbox {
+
+    /* Невыбранный: Белая рамка, прозрачный фон */
+    .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate)~.mdc-checkbox__background {
+        border-color: rgba(255, 255, 255, 0.9) !important;
+        background-color: transparent !important;
+    }
+
+    /* Выбранный: Белый фон */
+    .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+    .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+        background-color: #FFFFFF !important;
+        border-color: #FFFFFF !important;
+    }
+
+    /* Галочка: Черная */
+    .mdc-checkbox__checkmark-path {
+        stroke: #1A1A1A !important;
+        stroke-width: 3px !important;
+    }
+
+    /* Indeterminate (минус): Черный */
+    .mdc-checkbox__mixedmark {
+        border-color: #1A1A1A !important;
+    }
+
+    /* Ripple эффект */
+    .mat-mdc-checkbox-ripple .mat-ripple-element {
+        background-color: rgba(255, 255, 255, 0.2) !important;
+    }
 }
 
-/* --- IMAGES --- */
+/* --- 2. BODY CHECKBOX (На белом фоне) --- */
+td.mat-cell ::ng-deep .mat-mdc-checkbox {
+
+    /* Невыбранный: Черная рамка */
+    .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate)~.mdc-checkbox__background {
+        border-color: #1A1A1A !important;
+        background-color: transparent !important;
+    }
+
+    /* Выбранный: Черный фон */
+    .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+    .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+        background-color: #1A1A1A !important;
+        border-color: #1A1A1A !important;
+    }
+
+    /* Галочка: Белая */
+    .mdc-checkbox__checkmark-path {
+        stroke: #FFFFFF !important;
+        stroke-width: 3px !important;
+    }
+
+    /* Убираем синий Ripple */
+    .mat-mdc-checkbox-ripple .mat-ripple-element {
+        background-color: rgba(26, 26, 26, 0.1) !important;
+    }
+}
+
+/* Sticky Header Background Fix */
+th.mat-header-cell.mat-table-sticky {
+    background-color: $header-bg !important;
+}
+
+/* Sticky Cell Background Fixes */
+tr.mat-row td.mat-cell.mat-table-sticky {
+    background-color: #fff;
+}
+
+tr.mat-row:hover td.mat-cell.mat-table-sticky {
+    background-color: $row-hover;
+}
+
+tr.mat-row.selected-row td.mat-cell.mat-table-sticky {
+    background-color: $row-selected;
+}
+
+/* =========================================
+   IMAGE CELL
+   ========================================= */
 .image-cell {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    cursor: pointer;
 
     .thumb {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 48px;
+        /* Вертикальная ориентация */
         border-radius: 4px;
         object-fit: cover;
         background-color: #eee;
-        border: 1px solid #eee;
+        border: 1px solid #e0e0e0;
     }
 
     .photo-badge {
@@ -140,25 +275,35 @@ th.mat-header-cell ::ng-deep .mat-checkbox-frame {
     }
 }
 
-/* --- EDIT MODE INPUT --- */
+/* =========================================
+   EDIT INPUT
+   ========================================= */
+.edit-cell-wrapper {
+    width: 100%;
+}
+
 .table-input {
     width: 100%;
-    padding: 8px;
+    height: 36px;
+    padding: 6px 8px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 13px;
+    background: #fff;
+    outline: none;
 
     &:focus {
         border-color: #1A1A1A;
-        outline: none;
     }
 }
 
-/* --- NO DATA --- */
+/* =========================================
+   NO DATA
+   ========================================= */
 .no-data-cell {
     text-align: center;
-    padding: 40px;
-    color: #999;
+    padding: 48px 16px;
+    color: $text-muted;
 
     .no-data-content {
         display: flex;
@@ -170,7 +315,35 @@ th.mat-header-cell ::ng-deep .mat-checkbox-frame {
             font-size: 48px;
             width: 48px;
             height: 48px;
-            opacity: 0.5;
+            opacity: 0.35;
         }
+    }
+}
+
+/* =========================================
+   MEDIA QUERIES
+   ========================================= */
+@media (max-width: 900px) {
+    th.mat-header-cell {
+        padding: 0 12px;
+    }
+
+    td.mat-cell {
+        padding: 0 12px;
+
+        .text-truncate {
+            max-width: 160px;
+        }
+    }
+
+    .checkbox-col {
+        padding-left: 12px !important;
+        width: 52px;
+    }
+}
+
+@media (max-width: 600px) {
+    td.mat-cell .text-truncate {
+        max-width: 120px;
     }
 }

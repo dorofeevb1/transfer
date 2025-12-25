@@ -1,61 +1,78 @@
 :host {
     display: block;
-    height: 100%;
     width: 100%;
+    /* 
+       РАСЧЕТ ВЫСОТЫ РАБОЧЕЙ ОБЛАСТИ:
+       100vh (Весь экран)
+       - 81px (Шапка сайта, файл 9)
+       - 301px (Футер сайта, файл 10)
+       = ~382px отступов
+       
+       Примечание: Если на широких экранах футер снова станет 220px, 
+       внизу может появиться пустое место. Это нормально.
+    */
+    height: calc(100vh - 382px);
+
+    /* Минимальная высота, чтобы таблица совсем не схлопнулась на ноутбуках */
+    min-height: 400px;
 }
 
 .page-sidenav-container {
+    width: 100%;
     height: 100%;
-    /* На всю высоту экрана */
     background-color: #F5F7F9;
-    /* Светло-серый фон страницы (как футер) */
 }
 
 .page-content-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
+    /* Запрещаем скролл здесь, чтобы скроллилась только таблица */
+    overflow: hidden;
 }
 
 .table-page-layout {
     display: flex;
     flex-direction: column;
     height: 100%;
-    /* Отступов padding здесь нет, они внутри компонентов */
+    width: 100%;
+    overflow: hidden;
 }
 
-/* Компоненты идут друг за другом */
+/* --- ФИКСИРОВАННЫЕ БЛОКИ (НЕ СЖИМАЮТСЯ) --- */
 app-page-header,
-app-table-controls {
+app-table-controls,
+.sticky-paginator {
     flex-shrink: 0;
-    /* Не сжимаются */
+    /* Запрещаем сжатие */
     z-index: 10;
 }
 
-/* Обертка таблицы для скролла */
+/* --- ОБЕРТКА ТАБЛИЦЫ (РАСТЯГИВАЕТСЯ) --- */
 .table-wrapper {
+    /* Flex: 1 заставляет блок занять всё пространство 
+       между .header-actions (сверху) и .sticky-paginator (снизу) */
     flex: 1;
-    /* Занимает все оставшееся место */
-    overflow: auto;
-    /* Внутренний скролл для таблицы */
-    background: white;
-    /* Фон под таблицей */
 
-    /* Отступы для самой таблицы, чтобы она не прилипала к краям экрана при скролле */
-    padding-bottom: 0;
-}
+    /* Скрываем скролл на обертке, передаем его внутрь компонента таблицы */
+    overflow: hidden;
 
-/* Пагинатор */
-.sticky-paginator {
-    flex-shrink: 0;
-    border-top: 1px solid #E0E0E0;
     background: white;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Стилизация сайдбара фильтров */
 .filter-sidenav {
     width: 400px;
-    /* Широкий сайдбар */
+    height: 100%;
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
     border-left: none;
+}
+
+/* Пагинатор прибит к низу области контента */
+.sticky-paginator {
+    background: white;
+    border-top: 1px solid #E0E0E0;
 }

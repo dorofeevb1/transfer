@@ -1,6 +1,6 @@
-// styles.scss
-@import '@angular/material/prebuilt-themes/indigo-pink.css'; // Или ваша тема
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* 2. Глобальные переменные */
 :root {
   --primary-red: #D91F26;
   --primary-black: #1A1A1A;
@@ -11,17 +11,115 @@
   --white: #FFFFFF;
 }
 
+/* 3. Базовые настройки страницы */
+html,
+body {
+  height: 100%;
+}
+
 body {
   font-family: 'Inter', 'Roboto', sans-serif;
   background-color: var(--white);
   color: var(--text-dark);
   margin: 0;
+  overflow-x: hidden;
+  /* Убираем горизонтальный скролл страницы */
 }
 
-// Сброс отступов для Material кнопок, чтобы они выглядели как на макете
+/* 4. Сброс стилей кнопок Material (для соответствия макету) */
 .mat-mdc-button,
 .mat-mdc-outlined-button,
-.mat-mdc-flat-button {
+.mat-mdc-flat-button,
+.mat-mdc-raised-button {
   letter-spacing: normal !important;
   font-weight: 500 !important;
+  text-transform: none !important;
+  /* Убираем CAPS LOCK */
+}
+
+/* 5. Адаптивность диалоговых окон */
+.mat-mdc-dialog-container {
+  max-width: 95vw !important;
+}
+
+/* =========================================================
+   ГЛОБАЛЬНЫЕ СТИЛИ ДЛЯ ТАБЛИЦЫ ТОВАРОВ
+   Селектор: .custom-products-table
+   (Добавьте этот класс к тегу <table> в HTML)
+   ========================================================= */
+
+/* --- 1. ХЕДЕР (ЧЕРНЫЙ ФОН) --- */
+.custom-products-table th.mat-header-cell {
+  background-color: #1A1A1A !important;
+  color: #FFFFFF !important;
+}
+
+/* Цвет стрелочек сортировки и контента */
+.custom-products-table th.mat-header-cell .mat-sort-header-arrow {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important;
+}
+
+.custom-products-table th.mat-header-cell .mat-sort-header-content {
+  color: #FFFFFF !important;
+}
+
+/* --- 2. ЧЕКБОКСЫ В ХЕДЕРЕ (БЕЛЫЙ КОНТУР НА ЧЕРНОМ) --- */
+
+/* Невыбранный: Белая рамка, прозрачный фон */
+.custom-products-table th.mat-header-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate)~.mdc-checkbox__background {
+  border-color: #FFFFFF !important;
+  background-color: transparent !important;
+}
+
+/* Выбранный / Частичный: Белый фон, белая рамка */
+.custom-products-table th.mat-header-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+.custom-products-table th.mat-header-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+  background-color: #FFFFFF !important;
+  border-color: #FFFFFF !important;
+}
+
+/* Галочка / Минус: Черные */
+.custom-products-table th.mat-header-cell .mat-mdc-checkbox .mdc-checkbox__checkmark-path {
+  stroke: #1A1A1A !important;
+  stroke-width: 3px !important;
+}
+
+.custom-products-table th.mat-header-cell .mat-mdc-checkbox .mdc-checkbox__mixedmark {
+  border-color: #1A1A1A !important;
+}
+
+/* --- 3. ЧЕКБОКСЫ В СТРОКАХ (ЧЕРНЫЙ КОНТУР НА БЕЛОМ) --- */
+
+/* Невыбранный: Черная рамка */
+.custom-products-table td.mat-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate)~.mdc-checkbox__background {
+  border-color: #1A1A1A !important;
+  background-color: transparent !important;
+}
+
+/* Выбранный: Черный фон */
+.custom-products-table td.mat-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background,
+.custom-products-table td.mat-cell .mat-mdc-checkbox .mdc-checkbox__native-control:enabled:indeterminate~.mdc-checkbox__background {
+  background-color: #1A1A1A !important;
+  border-color: #1A1A1A !important;
+}
+
+/* Галочка: Белая */
+.custom-products-table td.mat-cell .mat-mdc-checkbox .mdc-checkbox__checkmark-path {
+  stroke: #FFFFFF !important;
+  stroke-width: 3px !important;
+}
+
+/* Убираем стандартный Ripple (круг при нажатии) */
+.custom-products-table .mat-mdc-checkbox .mat-mdc-checkbox-ripple .mat-ripple-element {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* --- 4. СТИЛИ СТРОК ПРИ НАВЕДЕНИИ/ВЫБОРЕ --- */
+.custom-products-table tr.mat-row:hover {
+  background-color: #FAFAFA !important;
+}
+
+.custom-products-table tr.mat-row.selected-row {
+  background-color: #F5F9FF !important;
 }

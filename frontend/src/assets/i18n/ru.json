@@ -5,22 +5,24 @@
     },
     "AUTH": {
         "LOGIN_TITLE": "Вход",
-        "LOGIN_SUBTITLE": "Введите данные для авторизации",
+        "LOGIN_SUBTITLE": "Введите свои данные для входа",
         "EMAIL": "E-mail",
         "PASSWORD": "Пароль",
         "FORGOT_PASSWORD": "Забыли пароль?",
         "LOGIN_BUTTON": "Войти",
         "RECOVER_PASSWORD_TITLE": "Восстановление пароля",
-        "RECOVER_PASSWORD_SUBTITLE": "Введите e-mail, и мы вышлем инструкцию",
+        "RECOVER_PASSWORD_SUBTITLE": "Введите свой e-mail, и мы отправим вам инструкции",
         "SEND_BUTTON": "Отправить",
         "BACK_BUTTON": "Назад",
         "CONFIRMATION_TITLE": "Письмо отправлено",
         "CONFIRMATION_SUBTITLE": "Инструкции по сбросу пароля отправлены на",
-        "TO_LOGIN_BUTTON": "На страницу входа"
+        "TO_LOGIN_BUTTON": "Вернуться на страницу входа"
     },
     "PRODUCTS": {
         "REMOVE_COLUMN_TOOLTIP": "Удалить столбец",
-        "PAGE_TITLE": "Товары",
+        "HIDE": "Скрыть",
+        "SELECTED": "Выбрано",
+        "PAGE_TITLE": "Продукты",
         "IMPORT": "Импорт",
         "ADD_COLUMN": "Добавить столбец",
         "SEARCH_PLACEHOLDER": "Поиск...",
@@ -33,26 +35,72 @@
         "SAVE": "Сохранить",
         "CANCEL": "Отмена",
         "DELETE": "Удалить",
-        "APPLY": "Применить",
-        "HIDE": "Скрыть",
-        "SELECTED": "Выбрано"
+        "APPLY": "Применить"
+    },
+    "USERS_TABLE": {
+        "PAGE_TITLE": "Пользователи",
+        "ADD_USER_BUTTON": "Добавить пользователя",
+        "SEARCH_PLACEHOLDER": "Поиск по любому из полей таблицы",
+        "FILTER_BUTTON": "Фильтр",
+        "SELECTED_COUNT": "Выбрано {{count}}",
+        "EDIT_BUTTON": "Редактировать",
+        "DELETE_BUTTON": "Удалить",
+        "SAVE_BULK_BUTTON": "Сохранить",
+        "CANCEL_BULK_BUTTON": "Отмена",
+        "COLUMNS": {
+            "FIO": "ФИО",
+            "ROLE": "Роль",
+            "ACCESS": "Доступ",
+            "EMAIL": "E-mail",
+            "PASSWORD": "Пароль"
+        },
+        "CELL_ACTIONS": {
+            "CHANGE_EMAIL": "Изменить",
+            "CHANGE_PASSWORD": "Изменить",
+            "PASSWORD_HIDDEN": "********"
+        },
+        "ROLES": {
+            "MANAGER": "Менеджер",
+            "CLIENT": "Клиент",
+            "MERCHANDISER": "Товаровед",
+            "ADMINISTRATOR": "Администратор"
+        },
+        "ACCESS_LEVELS": {
+            "VIEW_EDIT": "Просмотр и редактирование",
+            "VIEW_ONLY": "Только просмотр"
+        },
+        "MESSAGES": {
+            "NO_DATA": "Нет данных",
+            "UPDATE_SUCCESS": "Пользователь успешно обновлен",
+            "DELETE_SUCCESS": "Пользователи успешно удалены",
+            "EMAIL_CHANGE_TITLE": "E-mail успешно изменен",
+            "EMAIL_CHANGE_MESSAGE": "Новый E-mail для входа: {{email}}",
+            "PASSWORD_CHANGE_TITLE": "Пароль успешно изменен",
+            "PASSWORD_CHANGE_MESSAGE": "Вы можете использовать новый пароль для входа."
+        }
     },
     "VALIDATION": {
-        "REQUIRED_FIELD": "Это поле не может быть пустым."
+        "REQUIRED_FIELD": "Это поле обязательно для заполнения.",
+        "PASSWORDS_MISMATCH": "Пароли не совпадают"
     },
     "DIALOGS": {
+        "CHANGE_PASSWORD_INSTRUCTION": "Введите новый пароль, он должен содержать не менее 6 любых символов",
+        "CONFIRM_PASSWORD_LABEL": "Подтвердите пароль",
+        "CHANGE_EMAIL_INSTRUCTION": "Введите новый e-mail, он же будет служить логином для входа в личный кабинет",
+        "SEND_BUTTON": "Отправить",
+        "LEAVE_EMPTY_PASSWORD_HINT": "Оставьте пустым, чтобы не менять",
         "APPLIED_FILTERS_ARIA": "Примененные фильтры",
         "REMOVE_FILTER_ARIA": "Удалить фильтр",
         "CONFIRM_DELETE_TITLE": "Удалить элементы",
-        "CONFIRM_DELETE_MESSAGE": "Вы уверены, что хотите удалить выбранные элементы ({count} шт.)?",
-        "CONFIRM_DELETE_COLUMN_TITLE": "Удалить колонку",
-        "CONFIRM_DELETE_COLUMN_MESSAGE": "Вы уверены, что хотите удалить колонку \"{columnName}\"? Это действие нельзя будет отменить.",
-        "ADD_COLUMN_TITLE": "Добавить новую колонку",
-        "COLUMN_NAME": "Название колонки",
         "RESET_ALL": "Сбросить все",
-        "EDIT_ITEM_TITLE": "Редактирование товара",
+        "CONFIRM_DELETE_MESSAGE": "Вы уверены, что хотите удалить выбранные {count} элемента(ов)?",
+        "CONFIRM_DELETE_COLUMN_TITLE": "Удалить столбец",
+        "CONFIRM_DELETE_COLUMN_MESSAGE": "Вы уверены, что хотите удалить столбец “{columnName}”? Это действие нельзя отменить.",
+        "ADD_COLUMN_TITLE": "Добавить новый столбец",
+        "COLUMN_NAME": "Название столбца",
+        "EDIT_ITEM_TITLE": "Редактировать продукт",
         "IMPORT_DATA_TITLE": "Импорт данных",
-        "DROP_FILES_HERE": "Перетащите файлы сюда или кликните для выбора",
+        "DROP_FILES_HERE": "Перетащите файлы сюда или нажмите для загрузки",
         "PROCESS_BUTTON": "Обработать",
         "CANCEL_BUTTON": "Отмена",
         "SAVE_BUTTON": "Сохранить",
@@ -60,24 +108,28 @@
         "YES_BUTTON": "Да",
         "NO_BUTTON": "Нет",
         "ADD_PHOTO_TITLE": "Добавить фото",
-        "DRAG_DROP_FILES": "Перетащите файлы сюда или нажмите, чтобы выбрать",
+        "DRAG_DROP_FILES": "Перетащите файлы сюда или нажмите для выбора",
         "ADD_PHOTO": "Добавить",
         "PHOTOS_LABEL": "Фотографии",
         "ADD_BUTTON": "Добавить",
-        "FILE_INFO": "XLSX, CSV до 10 МБ",
-        "PROCESSING": "Идет обработка...",
+        "FILE_INFO": "Файлы XLSX, CSV, макс 10MB",
+        "PROCESSING": "Обработка...",
         "CLOSE_DIALOG_ARIA": "Закрыть диалог",
         "REMOVE_FILE_ARIA": "Удалить файл",
         "SELECT_FILES": "Выбрать файлы",
-        "PHOTO_VIEWER_TITLE": "Просмотр изображений",
-        "PRODUCT_IMAGE_ALT": "Изображение товара"
+        "PHOTO_VIEWER_TITLE": "Просмотр изображения",
+        "PRODUCT_IMAGE_ALT": "Изображение продукта",
+        "USER_DIALOG_TITLE_ADD": "Добавление пользователя",
+        "USER_DIALOG_TITLE_EDIT": "Редактирование пользователя",
+        "CHANGE_EMAIL_TITLE": "Смена E-mail",
+        "CHANGE_PASSWORD_TITLE": "Смена пароля"
     },
     "TABLE": {
         "NO_DATA": "Нет данных для отображения",
-        "SELECT_ALL_ARIA": "Выбрать все элементы",
-        "DESELECT_ALL_ARIA": "Снять выделение со всех элементов",
-        "SELECT_ROW_ARIA": "Выбрать элемент",
-        "DESELECT_ROW_ARIA": "Снять выделение с элемента"
+        "SELECT_ALL_ARIA": "Выбрать все",
+        "DESELECT_ALL_ARIA": "Снять выделение со всех",
+        "SELECT_ROW_ARIA": "Выбрать строку",
+        "DESELECT_ROW_ARIA": "Снять выделение со строки"
     },
     "FIELDS": {
         "Имя": "Имя",
@@ -100,7 +152,7 @@
         "Клиент": "Клиент",
         "Контракт": "Контракт",
         "Срок": "Срок",
-        "Фотки": "Фотографии",
+        "Фотки": "Фото",
         "Рейтинг": "Рейтинг",
         "Оценка": "Оценка",
         "Категория": "Категория",

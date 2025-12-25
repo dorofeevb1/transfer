@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api-service';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 export interface UserData {
     id: number;
@@ -27,7 +27,24 @@ export class UserService {
         const endpoint = 'api/users/page'; // заменить URL
         return this.apiService.post<{ users: UserData[], totalCount: number }>(endpoint, { pageIndex, pageSize });
     }
+    getRoles(): Observable<string[]> {
+        // Возвращаем КЛЮЧИ для перевода, которые уже есть в JSON файлах
+        return of([
+            'USERS_TABLE.ROLES.MANAGER',
+            'USERS_TABLE.ROLES.CLIENT',
+            'USERS_TABLE.ROLES.MERCHANDISER'
+        ]);
+    }
 
+
+    // НОВЫЙ МЕТОД: Получение уровней доступа
+    getAccessLevels(): Observable<string[]> {
+        // Возвращаем КЛЮЧИ для перевода
+        return of([
+            'USERS_TABLE.ACCESS_LEVELS.VIEW_EDIT',
+            'USERS_TABLE.ACCESS_LEVELS.VIEW_ONLY'
+        ]);
+    }
     // Поиск пользователей по query
     searchUsers(query: string): Observable<UserData[]> {
         const endpoint = 'api/users/search'; // Замените на URL поиска

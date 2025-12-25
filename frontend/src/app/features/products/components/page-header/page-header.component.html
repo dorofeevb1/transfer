@@ -2,12 +2,6 @@
     <h1 class="page-title">{{ 'PRODUCTS.PAGE_TITLE' | translate }}</h1>
 
     <div class="header-actions">
-        <!-- Кнопка добавления колонки (Второстепенная, белая) -->
-        <button mat-stroked-button class="btn-secondary" (click)="addColumnClick.emit()">
-            <mat-icon>add</mat-icon>
-            {{ 'PRODUCTS.ADD_COLUMN' | translate }}
-        </button>
-
         <!-- Кнопка Импорт (Основная, красная) -->
         <button mat-flat-button class="btn-import" (click)="importClick.emit()">
             <mat-icon>download</mat-icon> <!-- Иконка скачивания/импорта -->

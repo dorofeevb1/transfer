@@ -21,7 +21,7 @@ export class TableControlsComponent {
   @Output() cancelClick = new EventEmitter<void>();
   @Output() deleteClick = new EventEmitter<void>();
   @Output() globalFilterChange = new EventEmitter<Event>();
-  @Output() toggleFilter = new EventEmitter<void>();
+
   @Output() applyColumnChanges = new EventEmitter<void>();
   @Output() removeFilter = new EventEmitter<string>();
   @Output() exportToExcel = new EventEmitter<void>();

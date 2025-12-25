@@ -1,5 +1,5 @@
 <div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="products-table">
+    <table mat-table [dataSource]="dataSource" matSort class="custom-products-table">
 
         <!-- Checkbox Column -->
         <ng-container matColumnDef="select" sticky>
@@ -7,9 +7,10 @@
                 <mat-checkbox *ngIf="dataSource && dataSource.data.length > 0" (change)="masterToggleClick.emit()"
                     [checked]="selection.hasValue() && isAllSelected"
                     [indeterminate]="selection.hasValue() && !isAllSelected" [aria-label]="checkboxLabel()"
-                    color="primary"> <!-- Используем primary (черный в стилях) -->
+                    color="primary">
                 </mat-checkbox>
             </th>
+
             <td mat-cell *matCellDef="let row" class="checkbox-col">
                 <mat-checkbox (click)="$event.stopPropagation()" (change)="rowToggleClick.emit(row)"
                     [checked]="selection.isSelected(row)" [aria-label]="checkboxLabel(row)" color="primary">
@@ -21,10 +22,9 @@
         <ng-container *ngFor="let column of allColumns" [matColumnDef]="column.id">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
                 <div class="header-content">
-                    <span class="header-text">{{ ('FIELDS.' + column.name) | translate }}</span>
+                    <span class="header-text">{{ ( column.name) | translate }}</span>
 
-                    <!-- Кнопка удаления (появляется только при ховере) -->
-                    <button mat-icon-button class="remove-col-btn"
+                    <button mat-icon-button type="button" class="remove-col-btn"
                         (click)="removeColumnClick.emit({ columnId: column.id, event: $event }); $event.stopPropagation()"
                         [matTooltip]="'PRODUCTS.REMOVE_COLUMN_TOOLTIP' | translate">
                         <mat-icon>close</mat-icon>
@@ -33,16 +33,17 @@
             </th>
 
             <td mat-cell *matCellDef="let element">
-                <!-- Режим редактирования -->
+                <!-- Edit mode -->
                 <ng-container *ngIf="isBulkEditMode && selection.isSelected(element); else readOnlyCell">
-                    <div class="edit-cell-wrapper">
-                        <input class="table-input" [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()">
+                    <div class="edit-cell-wrapper" (click)="$event.stopPropagation()">
+                        <input class="table-input" [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()"
+                            [attr.aria-label]="( column.name) | translate">
                     </div>
                 </ng-container>
 
-                <!-- Режим просмотра -->
+                <!-- Readonly mode -->
                 <ng-template #readOnlyCell>
-                    <!-- Если это картинка -->
+                    <!-- Image array -->
                     <ng-container *ngIf="isImageArray(element[column.id]); else textCell">
                         <div class="image-cell"
                             (click)="photoViewerClick.emit(element[column.id]); $event.stopPropagation()">
@@ -53,7 +54,7 @@
                         </div>
                     </ng-container>
 
-                    <!-- Обычный текст -->
+                    <!-- Text cell -->
                     <ng-template #textCell>
                         <span class="text-truncate" [matTooltip]="element[column.id]">
                             {{ element[column.id] || '—' }}

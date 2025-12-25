@@ -1,166 +1,206 @@
 /* Переменные */
-$bg-color: #F5F7F9;
+$bg-color: #FFFFFF; // На макете фон выглядит белым (или очень светлым)
 $text-black: #1A1A1A;
 $text-grey: #666666;
-$text-light-grey: #999999;
+$border-color: #E0E0E0; // Цвет разделителей
 $font-family: 'Inter', sans-serif;
+$accent-red: #D91F26; // Для ховера (опционально)
 
 :host {
     display: block;
-    margin-top: auto;
-    /* Прижимает футер к низу, если контента мало */
+    width: 100%;
 }
 
 .brio-footer {
     background-color: $bg-color;
-    padding: 60px 40px;
+    padding: 40px 60px; // Отступы как на макете
     font-family: $font-family;
-    border-top: 1px solid #EAEAEA;
+    border-top: 1px solid $border-color;
+    color: $text-black;
 
     &__container {
-        max-width: 1600px;
+        // max-width: 1400px; // Ширина контента
         margin: 0 auto;
-    }
-
-    &__content {
         display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        gap: 40px;
+        flex-direction: column;
+        gap: 32px; // Отступ между контентом и линией разделителя
     }
 }
 
-/* --- ЛЕВАЯ КОЛОНКА --- */
-.col-left {
+/* --- ОБЩИЕ СТИЛИ РЯДОВ --- */
+.footer-row {
     display: flex;
-    flex-direction: column;
-    gap: 32px;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
 
-    .brand-logo {
-        height: 50px;
-        /* Размер логотипа */
-        width: auto;
-        object-fit: contain;
-        align-self: flex-start;
+/* --- ВЕРХНИЙ РЯД (HEADER) --- */
+.header-row {
+    .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 24px; // Отступ между лого и разделителем
+
+        .logo-img {
+            height: 48px; // Высота логотипа
+            width: auto;
+        }
+
+        .vertical-divider {
+            width: 1px;
+            height: 40px;
+            background-color: $text-black; // Черная линия как на макете
+            opacity: 0.2;
+        }
+
+        .strategy-text {
+            .headline {
+                font-size: 11px;
+                font-weight: 700;
+                line-height: 1.4;
+                margin: 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                color: $text-black;
+            }
+
+            .subline {
+                font-size: 11px;
+                margin: 4px 0 0 0;
+                color: $text-grey;
+            }
+        }
     }
 
+    .site-link {
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        color: $text-black;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &:hover {
+            color: $accent-red;
+        }
+    }
+}
+
+/* --- ГОРИЗОНТАЛЬНАЯ ЛИНИЯ --- */
+.horizontal-divider {
+    width: 100%;
+    height: 1px;
+    background-color: $border-color;
+    margin: 0; // Отступы регулируются gap родителя
+}
+
+/* --- НИЖНИЙ РЯД (INFO) --- */
+.info-row {
+    align-items: flex-start; // Выравнивание по верху для текстовых блоков
+
+    // 1. Блок персоны (Слева)
     .person-block {
         display: flex;
         flex-direction: column;
+        min-width: 200px;
 
         .person-name {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 700;
-            color: $text-black;
-            margin-bottom: 4px;
             text-transform: uppercase;
+            margin-bottom: 4px;
+            color: $text-black;
         }
 
         .person-title {
-            font-size: 13px;
+            font-size: 11px;
             color: $text-grey;
         }
     }
 
+    // 2. Блок контактов (По центру/Слева)
     .contacts-block {
         display: flex;
-        gap: 24px;
-        flex-wrap: wrap;
+        gap: 24px; // Расстояние между телефонами и почтой
+        margin-left: -100px; // Небольшая корректировка для визуального центра (как на макете)
 
         .contact-link {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 600;
-            color: $text-black;
             text-decoration: none;
+            color: $text-black;
             transition: color 0.2s;
 
             &:hover {
-                color: #D91F26;
-                /* Красный при наведении */
-            }
-
-            &.email {
-                text-decoration: underline;
-                text-decoration-color: #ccc;
+                color: $accent-red;
             }
         }
+    }
+
+    // 3. Блок адреса (Справа)
+    .address-block {
+        text-align: right;
+        font-size: 11px;
+        color: $text-grey;
+        max-width: 350px;
+        line-height: 1.4;
     }
 }
 
-/* --- ПРАВАЯ КОЛОНКА --- */
-.col-right {
-    text-align: right;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 24px;
-    max-width: 500px;
-
-    .strategy-block {
-        .headline {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            font-weight: 700;
-            color: $text-black;
-            line-height: 1.4;
-            text-transform: uppercase;
-        }
-
-        .subline {
-            margin: 0;
-            font-size: 13px;
-            color: $text-light-grey;
-        }
+/* --- АДАПТИВ (MOBILE / TABLET) --- */
+@media (max-width: 1024px) {
+    .brio-footer {
+        padding: 30px 20px;
     }
 
-    .site-block {
-        margin-top: 8px;
+    // Сбрасываем margin для контактов на планшетах
+    .info-row .contacts-block {
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .brio-footer__container {
+        gap: 24px;
+    }
+
+    .footer-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    // Верхний ряд
+    .header-row {
+        .brand-block {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+
+            .vertical-divider {
+                display: none; // Убираем разделитель на мобилке
+            }
+        }
 
         .site-link {
-            font-size: 16px;
-            font-weight: 800;
-            color: $text-black;
-            text-decoration: none;
-            text-transform: uppercase;
-
-            &:hover {
-                color: #D91F26;
-            }
+            align-self: flex-start; // Ссылка тоже слева
+            margin-top: 10px;
         }
     }
 
-    .address-block {
-        font-size: 12px;
-        line-height: 1.5;
-        color: $text-grey;
-        max-width: 380px;
-    }
-}
+    // Нижний ряд
+    .info-row {
+        gap: 24px;
 
-/* Адаптив для мобильных */
-@media (max-width: 900px) {
-    .brio-footer {
-        padding: 40px 20px;
-    }
-
-    .brio-footer__content {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .col-right {
-        text-align: left;
-        align-items: flex-start;
-        margin-top: 20px;
+        .contacts-block {
+            flex-direction: column; // Телефоны в столбик
+            gap: 12px;
+        }
 
         .address-block {
+            text-align: left; // Адрес слева
             max-width: 100%;
         }
-    }
-
-    .contacts-block {
-        flex-direction: column;
-        gap: 12px;
     }
 }

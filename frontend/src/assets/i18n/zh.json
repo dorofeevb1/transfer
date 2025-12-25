@@ -37,10 +37,58 @@
         "DELETE": "删除",
         "APPLY": "应用"
     },
+    "USERS_TABLE": {
+        "PAGE_TITLE": "用户",
+        "ADD_USER_BUTTON": "添加用户",
+        "SEARCH_PLACEHOLDER": "搜索表中的任何字段",
+        "FILTER_BUTTON": "筛选",
+        "SELECTED_COUNT": "已选择 {{count}}",
+        "EDIT_BUTTON": "编辑",
+        "DELETE_BUTTON": "删除",
+        "SAVE_BULK_BUTTON": "保存",
+        "CANCEL_BULK_BUTTON": "取消",
+        "COLUMNS": {
+            "FIO": "全名",
+            "ROLE": "角色",
+            "ACCESS": "权限",
+            "EMAIL": "E-mail",
+            "PASSWORD": "密码"
+        },
+        "CELL_ACTIONS": {
+            "CHANGE_EMAIL": "修改",
+            "CHANGE_PASSWORD": "修改",
+            "PASSWORD_HIDDEN": "********"
+        },
+        "ROLES": {
+            "MANAGER": "经理",
+            "CLIENT": "客户",
+            "MERCHANDISER": "商品专员",
+            "ADMINISTRATOR": "管理员"
+        },
+        "ACCESS_LEVELS": {
+            "VIEW_EDIT": "查看和编辑",
+            "VIEW_ONLY": "仅查看"
+        },
+        "MESSAGES": {
+            "NO_DATA": "无数据",
+            "UPDATE_SUCCESS": "用户更新成功",
+            "DELETE_SUCCESS": "用户删除成功",
+            "EMAIL_CHANGE_TITLE": "E-mail 修改成功",
+            "EMAIL_CHANGE_MESSAGE": "新登录 E-mail: {{email}}",
+            "PASSWORD_CHANGE_TITLE": "密码修改成功",
+            "PASSWORD_CHANGE_MESSAGE": "您可以使用新密码登录。"
+        }
+    },
     "VALIDATION": {
-        "REQUIRED_FIELD": "此字段不能为空。"
+        "REQUIRED_FIELD": "此字段不能为空。",
+        "PASSWORDS_MISMATCH": "两次输入的密码不一致"
     },
     "DIALOGS": {
+        "CHANGE_EMAIL_INSTRUCTION": "请输入新的电子邮件，它将用作个人帐户的登录名",
+        "CHANGE_PASSWORD_INSTRUCTION": "请输入新密码，密码长度至少为 6 个字符",
+        "CONFIRM_PASSWORD_LABEL": "确认密码",
+        "SEND_BUTTON": "发送",
+        "LEAVE_EMPTY_PASSWORD_HINT": "若不更改请留空",
         "APPLIED_FILTERS_ARIA": "已应用的筛选器",
         "REMOVE_FILTER_ARIA": "删除筛选器",
         "CONFIRM_DELETE_TITLE": "删除项目",
@@ -70,7 +118,11 @@
         "REMOVE_FILE_ARIA": "删除文件",
         "SELECT_FILES": "选择文件",
         "PHOTO_VIEWER_TITLE": "查看图片",
-        "PRODUCT_IMAGE_ALT": "产品图片"
+        "PRODUCT_IMAGE_ALT": "产品图片",
+        "USER_DIALOG_TITLE_ADD": "新增用户",
+        "USER_DIALOG_TITLE_EDIT": "编辑用户",
+        "CHANGE_EMAIL_TITLE": "修改电子邮箱",
+        "CHANGE_PASSWORD_TITLE": "修改密码"
     },
     "TABLE": {
         "NO_DATA": "无数据显示",
