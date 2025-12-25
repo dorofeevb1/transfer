@@ -2,7 +2,7 @@ import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { TranslateService } from '@ngx-translate/core';
@@ -40,6 +40,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   activeFilterCount = 0;
   appliedFilters: AppliedFilter[] = [];
 
+  totalCount = 0;
   dataSource = new MatTableDataSource<any>();
   selection = new SelectionModel<any>(true, []);
 
@@ -63,8 +64,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.dataSource.filterPredicate = this.createFilterPredicate();
 
-    this.productTableService.loadTableData();
-
+    this.productTableService.loadTableData(0, 10);
     this.productTableService.rows$.subscribe(data => {
       this.updateTableData(data);
     });
@@ -281,7 +281,7 @@ export class TableComponent implements OnInit, AfterViewInit {
         error: (err) => console.error('Ошибка поиска на сервере: ', err),
       });
     } else {
-      this.productTableService.loadTableData();
+      this.productTableService.loadTableData(0, 100);
     }
   }
 
@@ -322,7 +322,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.dataSource.data.forEach(row => row[newColumnName] = '');
           this.setupForms();
           this.dataSource.data = [...this.dataSource.data];
-          this.productTableService.sendNewColumnToBackend(newColumnName).subscribe({
+          this.productTableService.addColumn({ name: newColumnName, type: 'text' }).subscribe({
             next: () => console.log('Новый столбец успешно отправлен на сервер'),
             error: (err: any) => console.error('Ошибка отправки нового столбца', err),
           });
@@ -375,72 +375,98 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
 
-  // --- ЭКСПОРТ EXCEL ---
-  async handleExportToExcel(): Promise<void> {
-    const dataToExport = this.dataSource.data;
-
-
-    if (!dataToExport || dataToExport.length === 0 || this.isExporting) {
-      if (this.isExporting) console.log('Экспорт уже выполняется...');
-      else console.warn('Нет данных для экспорта.');
-      return;
-    }
-
-
-    // ВАЖНО: Ключ для картинок теперь 'photos'
-    const imageKey = 'photos';
-    const specialKeysToExclude = ['select', 'actions', imageKey];
-
-
-    if (!this.allColumns) {
-      console.error('Конфигурация колонок (allColumns) не найдена. Экспорт невозможен.');
-      return;
-    }
-
-
-    const columnsConfig = this.allColumns
-      .filter((col) => !specialKeysToExclude.includes(col.id))
-      .map((col) => ({
-        key: col.id,
-        header: col.name,
-      }));
-
+  handleExportToExcel(): void {
+    if (this.isExporting) return;
 
     this.isExporting = true;
-    console.log('Начинается экспорт в Excel...');
+    console.log('Запрос Excel файла с сервера...');
 
+    const currentFilters = this.filterForm.value;
+    const currentSearch = this.dataSource.filter;
 
-    try {
-      await this.exportService.exportAsExcelWithImages(
-        dataToExport,
-        'brio_trade_export',
-        columnsConfig,
-        imageKey
-      );
+    // 1. Собираем ID выбранных строк (если они есть)
+    // Предполагаем, что у каждой строки есть поле .id
+    const selectedIds: string[] = this.selection.selected.map(row => row.id);
 
+    // 2. Передаем selectedIds третьим аргументом
+    this.productTableService.downloadExcel(currentFilters, currentSearch, selectedIds).subscribe({
+      next: (blob: Blob) => {
+        const prefix = selectedIds.length > 0 ? 'selected_' : '';
+        const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
 
-      this.productTableService.sendExportDataToBackend(dataToExport).subscribe({
-        next: () => console.log('Данные экспорта успешно отправлены на сервер'),
-        error: (error) => console.error('Ошибка отправки данных экспорта на сервер', error),
-      });
+        this.saveFile(blob, fileName);
 
-
-    } catch (error) {
-      console.error('Критическая ошибка экспорта:', error);
-    } finally {
-      this.isExporting = false;
-      console.log('Экспорт завершен!');
-    }
+        this.isExporting = false;
+        // Опционально: сбросить выделение после экспорта
+        // this.selection.clear(); 
+      },
+      error: (err) => {
+        console.error('Ошибка при скачивании Excel:', err);
+        this.isExporting = false;
+      }
+    });
   }
-
 
   // --- ЭКСПОРТ CSV ---
   handleExportToCsv(): void {
-    const dataToExport = this.dataSource.data;
-    if (dataToExport && dataToExport.length > 0) {
-      this.exportService.exportAsCsvFile(dataToExport, 'brio_trade_export');
-    } else {
-      console.warn('Нет данных для экспорта.');
-    }
+    if (this.isExporting) return;
+
+    this.isExporting = true;
+    console.log('Запрос CSV файла с сервера...');
+
+    const currentFilters = this.filterForm.value;
+    const currentSearch = this.dataSource.filter;
+
+    // 1. Собираем ID
+    const selectedIds: string[] = this.selection.selected.map(row => row.id);
+
+    // 2. Передаем в сервис
+    this.productTableService.downloadCsv(currentFilters, currentSearch, selectedIds).subscribe({
+      next: (blob: Blob) => {
+        const prefix = selectedIds.length > 0 ? 'selected_' : '';
+        const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.csv`;
+
+        this.saveFile(blob, fileName);
+
+        this.isExporting = false;
+      },
+      error: (err) => {
+        console.error('Ошибка при скачивании CSV:', err);
+        this.isExporting = false;
+      }
+    });
   }
+  /**
+   * Вспомогательный метод для сохранения Blob как файла в браузере
+   */
+  private saveFile(blob: Blob, fileName: string): void {
+    // Создаем ссылку на данные
+    const url = window.URL.createObjectURL(blob);
+
+    // Создаем временный элемент ссылки
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+
+    // Кликаем по ней программно
+    document.body.appendChild(a);
+    a.click();
+
+    // Удаляем элемент и освобождаем память
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  onPageChange(event: PageEvent): void {
+    const pageIndex = event.pageIndex;
+    const pageSize = event.pageSize;
+
+    // Получаем текущие фильтры и сортировку
+    const sortField = this.dataSource.sort?.active;
+    const sortDir = this.dataSource.sort?.direction;
+    const filters = this.filterForm.value;
+
+    this.productTableService.loadTableData(pageIndex, pageSize, sortField, sortDir, filters);
+  }
+
 }

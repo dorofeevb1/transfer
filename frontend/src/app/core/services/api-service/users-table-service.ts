@@ -23,10 +23,23 @@ export class UserService {
         return this.apiService.get<UserData[]>(endpoint);
     }
 
+    getProfile(): Observable<UserData> {
+        return this.apiService.get<UserData>('/api/profile');
+    }
+
+    updateProfile(data: Partial<UserData>): Observable<UserData> {
+        return this.apiService.put<UserData>('/api/profile', data);
+    }
+
     getUsersPage(pageIndex: number, pageSize: number): Observable<{ users: UserData[], totalCount: number }> {
         const endpoint = 'api/users/page'; // заменить URL
         return this.apiService.post<{ users: UserData[], totalCount: number }>(endpoint, { pageIndex, pageSize });
     }
+
+    changeMyPassword(oldPassword: string, newPassword: string): Observable<any> {
+        return this.apiService.post('/api/profile/change-password', { oldPassword, newPassword });
+    }
+
     getRoles(): Observable<string[]> {
         // Возвращаем КЛЮЧИ для перевода, которые уже есть в JSON файлах
         return of([

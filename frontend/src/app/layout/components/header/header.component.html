@@ -6,7 +6,7 @@
 
     <div class="header-actions">
 
-        <!-- 1. Переключатель языка (Стиль: Текст + галочка) -->
+        <!-- 1. Переключатель языка -->
         <div class="lang-switcher" [matMenuTriggerFor]="langMenu">
             <span class="lang-text">{{ currentLang === 'ru' ? 'RU' : 'ZH' }}</span>
             <mat-icon class="chevron">expand_more</mat-icon>
@@ -24,40 +24,40 @@
             </button>
         </ng-container>
 
-        <!-- Меню админа (оставил ваши ссылки) -->
+        <!-- Меню админа -->
         <mat-menu #adminMenu="matMenu">
             <button mat-menu-item routerLink="/admin/products">
                 <mat-icon>inventory_2</mat-icon>
-                <span>Товары</span>
+                <span>{{ 'HEADER.PRODUCTS' | translate }}</span>
             </button>
             <button mat-menu-item routerLink="/admin/users">
                 <mat-icon>people</mat-icon>
-                <span>Пользователи</span>
+                <span>{{ 'HEADER.USERS' | translate }}</span>
             </button>
         </mat-menu>
 
-        <!-- 3. Профиль пользователя (Новый дизайн: Аватар + Имя + Роль) -->
+        <!-- 3. Профиль пользователя -->
         <div class="user-profile" [matMenuTriggerFor]="userMenu">
             <div class="avatar-circle">
                 <mat-icon>person</mat-icon>
             </div>
             <div class="user-info">
-                <!-- Здесь можно привязать реальные данные: {{ userName }} -->
-                <span class="user-name">Елена</span>
-                <span class="user-role">Товаровед</span>
+                <!-- Имя пользователя -->
+                <span class="user-name">{{ userName }}</span>
+
+                <!-- Роль: Динамический перевод на основе роли -->
+                <span class="user-role">
+                    {{ 'USERS_TABLE.ROLES.' + (userRole | uppercase) | translate }}
+                </span>
             </div>
             <mat-icon class="dropdown-arrow">expand_more</mat-icon>
         </div>
 
         <!-- Меню пользователя (Логаут) -->
         <mat-menu #userMenu="matMenu">
-            <!-- <button mat-menu-item>
-                <mat-icon>account_circle</mat-icon>
-                <span>Профиль</span>
-            </button> -->
             <button mat-menu-item (click)="logout()">
                 <mat-icon>logout</mat-icon>
-                <span>Выход</span>
+                <span>{{ 'HEADER.LOGOUT' | translate }}</span>
             </button>
         </mat-menu>
 

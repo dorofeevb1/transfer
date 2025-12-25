@@ -1,10 +1,9 @@
 <!-- Контейнер для страницы с боковой панелью (Sidenav) -->
 <mat-sidenav-container class="page-sidenav-container">
 
-    <!-- Сайдбар фильтров (Справа) -->
+
     <mat-sidenav #filterSidenav mode="over" position="end" class="filter-sidenav" [fixedInViewport]="true"
         [fixedTopGap]="0" [fixedBottomGap]="0">
-        <!-- Компонент формы фильтрации -->
         <app-filter-form [form]="filterForm" (apply)="applySideNavFilters()" (reset)="resetSideNavFilters()"
             (close)="filterSidenav.close()">
         </app-filter-form>
@@ -41,8 +40,8 @@
             </div>
 
             <!-- 4. Пагинация (Закреплена внизу или идет следом) -->
-            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons
-                class="sticky-paginator"></mat-paginator>
+            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons class="sticky-paginator"
+                (page)="onPageChange($event)"></mat-paginator>
 
         </div>
     </mat-sidenav-content>

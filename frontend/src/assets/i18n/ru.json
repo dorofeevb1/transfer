@@ -1,7 +1,10 @@
 {
     "HEADER": {
         "SETTINGS": "Настройки",
-        "USER": "Пользователь"
+        "USER": "Пользователь",
+        "PRODUCTS": "Товары",
+        "USERS": "Пользователи",
+        "LOGOUT": "Выход"
     },
     "AUTH": {
         "LOGIN_TITLE": "Вход",
@@ -63,7 +66,8 @@
             "MANAGER": "Менеджер",
             "CLIENT": "Клиент",
             "MERCHANDISER": "Товаровед",
-            "ADMINISTRATOR": "Администратор"
+            "ADMINISTRATOR": "Администратор",
+            "ADMIN": "Администратор"
         },
         "ACCESS_LEVELS": {
             "VIEW_EDIT": "Просмотр и редактирование",

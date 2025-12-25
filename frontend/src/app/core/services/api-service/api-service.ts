@@ -23,14 +23,16 @@ export class ApiService {
         return this.http.get<T>(url, { headers, params });
     }
 
-    post<T>(url: string, body: any): Observable<T> {
+    post<T>(url: string, body: any, options: any = {}): Observable<T> {
         const headers = this.createAuthHeaders();
-        return this.http.post<T>(url, body, { headers });
+        // Fix: Cast options to 'any' to satisfy input types, 
+        // and cast the result to 'Observable<T>' to satisfy return type
+        return this.http.post<T>(url, body, { headers, ...options } as any) as Observable<T>;
     }
 
-    put<T>(url: string, body: any): Observable<T> {
+    put<T>(url: string, body: any, options: any = {}): Observable<T> {
         const headers = this.createAuthHeaders();
-        return this.http.put<T>(url, body, { headers });
+        return this.http.put<T>(url, body, { headers, ...options } as any) as Observable<T>;
     }
 
     delete<T>(url: string, body?: any): Observable<T> {

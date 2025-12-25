@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { AuthService, UserRole } from 'src/app/core/services/api-service/auth.service';
+import { AuthService } from 'src/app/core/services/api-service/auth.service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -9,33 +9,44 @@ import { map } from 'rxjs/operators';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+
   currentLang: string;
   isAdmin$: Observable<boolean>;
 
+  // Данные пользователя
+  userName: string = 'User';
+  userRole: string = 'client';
+
   constructor(
-    public translate: TranslateService,
-    private auth: AuthService,
+    private translate: TranslateService,
+    private authService: AuthService
   ) {
-    translate.addLangs(['ru', 'zh']);
-    translate.setDefaultLang('ru');
+    this.currentLang = this.translate.currentLang || 'ru';
 
-    const browserLang = translate.getBrowserLang();
-    this.currentLang = browserLang?.match(/ru|zh/) ? browserLang : 'ru';
-    translate.use(this.currentLang);
-
-    this.isAdmin$ = this.auth.currentUserRole$.pipe(
-      map((role: UserRole) => role === 'admin')
+    // Проверка прав админа
+    this.isAdmin$ = this.authService.currentUserRole$.pipe(
+      map(role => role === 'admin')
     );
   }
 
-  switchLang(lang: string): void {
-    if (lang) {
-      this.translate.use(lang);
-      this.currentLang = lang;
-    }
+  ngOnInit(): void {
+    // Подписка на роль для обновления UI
+    this.authService.currentUserRole$.subscribe(role => {
+      this.userRole = role || 'client';
+    });
+
+    // Хардкод имени (пока нет бэкенда для профиля)
+    this.userName = 'Елена';
   }
-  logout() {
-    this.auth.logout(); // Или ваш метод выхода
+
+  switchLang(lang: string): void {
+    this.translate.use(lang);
+    this.currentLang = lang;
+    localStorage.setItem('lang', lang);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

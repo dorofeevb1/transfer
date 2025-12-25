@@ -1,7 +1,10 @@
 {
     "HEADER": {
         "SETTINGS": "设置",
-        "USER": "用户"
+        "USER": "用户",
+        "PRODUCTS": "产品",
+        "USERS": "用户列表",
+        "LOGOUT": "退出"
     },
     "AUTH": {
         "LOGIN_TITLE": "登录",
@@ -63,7 +66,8 @@
             "MANAGER": "经理",
             "CLIENT": "客户",
             "MERCHANDISER": "商品专员",
-            "ADMINISTRATOR": "管理员"
+            "ADMINISTRATOR": "管理员",
+            "ADMIN": "管理员"
         },
         "ACCESS_LEVELS": {
             "VIEW_EDIT": "查看和编辑",

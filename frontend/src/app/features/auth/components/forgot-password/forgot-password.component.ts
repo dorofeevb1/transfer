@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
+import { AuthService } from 'src/app/core/services/api-service/auth.service'; // Added import
 
 @Component({
   selector: 'app-forgot-password',
@@ -11,11 +12,13 @@ import { Location } from '@angular/common';
 export class ForgotPasswordComponent implements OnInit {
   forgotPasswordForm!: FormGroup;
   submitted = false;
+  isLoading = false; // Added loading state
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private authService: AuthService // Injected service
   ) { }
 
   ngOnInit(): void {
@@ -31,9 +34,22 @@ export class ForgotPasswordComponent implements OnInit {
     if (this.forgotPasswordForm.invalid) {
       return;
     }
-    // ИЗМЕНЕНО: this.f.email.value на this.f['email'].value
+
+    this.isLoading = true;
     const email = this.f['email'].value;
-    this.router.navigate(['/auth/password-reset-confirmation'], { queryParams: { email: email } });
+
+    // FIXED: Use the correct method that accepts only an email
+    this.authService.requestPasswordReset(email).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/auth/password-reset-confirmation'], { queryParams: { email: email } });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error('Error sending reset email', err);
+        // Optional: display user-friendly error
+      }
+    });
   }
 
   goBack(): void {
