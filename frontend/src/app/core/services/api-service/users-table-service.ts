@@ -24,11 +24,11 @@ export class UserService {
     }
 
     getProfile(): Observable<UserData> {
-        return this.apiService.get<UserData>('/api/profile');
+        return this.apiService.get<UserData>('api/profile');
     }
 
     updateProfile(data: Partial<UserData>): Observable<UserData> {
-        return this.apiService.put<UserData>('/api/profile', data);
+        return this.apiService.put<UserData>('api/profile', data);
     }
 
     getUsersPage(pageIndex: number, pageSize: number): Observable<{ users: UserData[], totalCount: number }> {
@@ -37,7 +37,7 @@ export class UserService {
     }
 
     changeMyPassword(oldPassword: string, newPassword: string): Observable<any> {
-        return this.apiService.post('/api/profile/change-password', { oldPassword, newPassword });
+        return this.apiService.post('api/profile/change-password', { oldPassword, newPassword });
     }
 
     getRoles(): Observable<string[]> {
