@@ -10,13 +10,15 @@ export class ApiService {
     constructor(private http: HttpClient) { }
 
     private createAuthHeaders(): HttpHeaders {
-        const token = localStorage.getItem('jwt_token');
+        const token = localStorage.getItem('jwt-token');
+
         let headers = new HttpHeaders();
         if (token) {
             headers = headers.set('Authorization', `Bearer ${token}`);
         }
         return headers;
     }
+
 
     get<T>(url: string, params?: HttpParams): Observable<T> {
         const headers = this.createAuthHeaders();

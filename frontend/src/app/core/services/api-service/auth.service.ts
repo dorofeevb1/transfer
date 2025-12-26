@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, map, tap, catchError } from 'rxjs/operators'; // Добавлен catchError
+import { delay, map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from './api-service';
 
 export type UserRole = 'admin' | 'user' | null;
@@ -13,6 +13,11 @@ export class AuthService {
     private currentUserRole = new BehaviorSubject<UserRole>(null);
     public currentUserRole$ = this.currentUserRole.asObservable();
 
+    // КОНСТАНТЫ (чтобы избежать опечаток в ключах)
+    private readonly TOKEN_KEY = 'jwt-token';         // Исправлено: jwt-token (было jwt_token)
+    private readonly REFRESH_KEY = 'refresh-token';
+    private readonly ROLE_KEY = 'user-role';
+
     // Список мок-пользователей
     private mockUsers: { email: string; password: string; role: UserRole; token: string }[] = [
         { email: 'admin@gmail.com', password: 'admin', role: 'admin', token: 'mock-jwt-admin' },
@@ -20,13 +25,13 @@ export class AuthService {
     ];
 
     constructor(private router: Router, private apiService: ApiService) {
-        const storedRole = sessionStorage.getItem('userRole') as UserRole;
+        // Читаем из localStorage, чтобы данные совпадали с тем, где ApiService ищет токен
+        const storedRole = localStorage.getItem(this.ROLE_KEY) as UserRole;
         if (storedRole) {
             this.currentUserRole.next(storedRole);
         }
     }
 
-    // --- ОБНОВЛЕННЫЙ МЕТОД LOGIN ---
     login(email: string, password: string): Observable<boolean> {
         // 1. Проверяем мок-пользователей
         const mockUser = this.mockUsers.find(u => u.email === email.toLowerCase() && u.password === password);
@@ -34,47 +39,55 @@ export class AuthService {
         if (mockUser) {
             console.log('Auth: Mock user found, skipping backend.');
             return of(true).pipe(
-                delay(500), // Имитация задержки сети
+                delay(500),
                 tap(() => {
-                    this.setRole(mockUser.role);
-                    sessionStorage.setItem('jwt_token', mockUser.token);
+                    // Сохраняем мок-данные в localStorage
+                    this.setSession(mockUser.token, mockUser.role, 'mock-refresh-token');
                 })
             );
         }
 
-        // 2. Если не нашли в моках — идем на реальный бэкенд
+        // 2. Реальный бэкенд
         console.log('Auth: Mock user not found, requesting backend...');
 
-        return this.apiService.post<{ success: boolean; token?: string; role?: string }>('/api/auth/login', { email, password }).pipe(
+        return this.apiService.post<{ success: boolean; token?: string; role?: string; refreshToken?: string }>(
+            '/api/auth/login',
+            { email, password }
+        ).pipe(
             tap(response => {
-                // Если запрос успешен и пришли данные
                 if (response.success && response.token && response.role) {
-                    sessionStorage.setItem('jwt_token', response.token);
-                    this.setRole(response.role as UserRole);
+                    // Сохраняем реальные данные
+                    this.setSession(response.token, response.role as UserRole, response.refreshToken);
                 }
             }),
-            map(response => !!response.success), // Преобразуем ответ в true/false
+            map(response => !!response.success),
             catchError(error => {
                 console.error('Auth: Backend login failed', error);
-                // В случае ошибки сервера возвращаем false, чтобы компонент показал ошибку
                 return of(false);
             })
         );
     }
 
     logout(): void {
-        sessionStorage.removeItem('jwt_token');
-        sessionStorage.removeItem('userRole');
+        localStorage.removeItem(this.TOKEN_KEY);
+        localStorage.removeItem(this.ROLE_KEY);
+        localStorage.removeItem(this.REFRESH_KEY);
+
         this.currentUserRole.next(null);
         this.router.navigate(['/auth']);
     }
 
-    private setRole(role: UserRole): void {
-        this.currentUserRole.next(role);
+    // Приватный метод для централизованного сохранения сессии
+    private setSession(token: string, role: UserRole, refreshToken?: string): void {
+        localStorage.setItem(this.TOKEN_KEY, token);
+
         if (role) {
-            sessionStorage.setItem('userRole', role);
-        } else {
-            sessionStorage.removeItem('userRole');
+            localStorage.setItem(this.ROLE_KEY, role);
+            this.currentUserRole.next(role);
+        }
+
+        if (refreshToken) {
+            localStorage.setItem(this.REFRESH_KEY, refreshToken);
         }
     }
 
@@ -83,10 +96,11 @@ export class AuthService {
     }
 
     isAuthenticated(): boolean {
-        return !!this.currentUserRole.value && !!sessionStorage.getItem('jwt_token');
+        const token = localStorage.getItem(this.TOKEN_KEY);
+        return !!this.currentUserRole.value && !!token;
     }
 
-    // Метод просто для совместимости, если где-то используется старое название
+    // --- Методы сброса пароля ---
     forgotPassword(email: string): Observable<void> {
         return this.requestPasswordReset(email);
     }
@@ -99,9 +113,10 @@ export class AuthService {
         return this.apiService.post<void>('/api/auth/reset-password', { token, password: newPassword });
     }
 
+    // --- Обновление токена ---
     refreshToken(): Observable<{ token: string }> {
-        const refreshToken = localStorage.getItem('refresh_token');
-        // Если refresh token нет, возвращаем пустой поток или ошибку, чтобы не слать пустой запрос
+        const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+
         if (!refreshToken) {
             return of({ token: '' });
         }
@@ -109,7 +124,7 @@ export class AuthService {
         return this.apiService.post<{ token: string }>('/api/auth/refresh', { refreshToken }).pipe(
             tap(response => {
                 if (response.token) {
-                    sessionStorage.setItem('jwt_token', response.token);
+                    localStorage.setItem(this.TOKEN_KEY, response.token);
                 }
             })
         );
