@@ -33,38 +33,43 @@ export class AuthService {
     }
 
     login(email: string, password: string): Observable<boolean> {
-        // 1. Проверяем мок-пользователей
+        // 1. Проверка моков (без изменений)
         const mockUser = this.mockUsers.find(u => u.email === email.toLowerCase() && u.password === password);
-
         if (mockUser) {
-            console.log('Auth: Mock user found, skipping backend.');
+            console.log('Auth: Mock user found');
             return of(true).pipe(
                 delay(500),
                 tap(() => {
                     this.setSession(mockUser.token, mockUser.role, 'mock-refresh-token');
-                    // !!! РЕДИРЕКТ ПОСЛЕ УСПЕШНОГО ВХОДА (MOCK) !!!
-                    this.redirectUser(mockUser.role);
+                    this.redirectUser(mockUser.role); // <--- ЭТОГО НЕ БЫЛО
                 })
             );
         }
 
         // 2. Реальный бэкенд
-        console.log('Auth: Mock user not found, requesting backend...');
+        console.log('Auth: Requesting backend...');
 
-        return this.apiService.post<{ success: boolean; token?: string; role?: string; refreshToken?: string }>(
-            '/api/auth/login',
+        // Исправляем интерфейс: добавляем refresh (как шлет сервер)
+        return this.apiService.post<{ success: boolean; token: string; role: string; refresh: string; email: string }>(
+            'api/auth/login',
             { email, password }
         ).pipe(
             tap(response => {
+                console.log('Auth: Server response:', response); // Логируем ответ для проверки
+
                 if (response.success && response.token && response.role) {
-                    this.setSession(response.token, response.role as UserRole, response.refreshToken);
-                    // !!! РЕДИРЕКТ ПОСЛЕ УСПЕШНОГО ВХОДА (BACKEND) !!!
+                    // 1. Сохраняем сессию
+                    // ВАЖНО: берем response.refresh (как в JSON), а не response.refreshToken
+                    this.setSession(response.token, response.role as UserRole, response.refresh);
+
+                    // 2. ВЫПОЛНЯЕМ ПЕРЕХОД
+                    console.log('Auth: Redirecting user...');
                     this.redirectUser(response.role as UserRole);
                 }
             }),
             map(response => !!response.success),
             catchError(error => {
-                console.error('Auth: Backend login failed', error);
+                console.error('Auth: Login error', error);
                 return of(false);
             })
         );
@@ -86,7 +91,6 @@ export class AuthService {
         if (role === 'admin') {
             this.router.navigate(['/admin-panel']);
         } else {
-            // Для обычных пользователей или user
             this.router.navigate(['/products']);
         }
     }
@@ -118,11 +122,11 @@ export class AuthService {
     }
 
     requestPasswordReset(email: string): Observable<void> {
-        return this.apiService.post<void>('/api/auth/forgot-password', { email });
+        return this.apiService.post<void>('api/auth/forgot-password', { email });
     }
 
     resetPassword(token: string, newPassword: string): Observable<void> {
-        return this.apiService.post<void>('/api/auth/reset-password', { token, password: newPassword });
+        return this.apiService.post<void>('api/auth/reset-password', { token, password: newPassword });
     }
 
     refreshToken(): Observable<{ token: string }> {
@@ -132,7 +136,7 @@ export class AuthService {
             return of({ token: '' });
         }
 
-        return this.apiService.post<{ token: string }>('/api/auth/refresh', { refreshToken }).pipe(
+        return this.apiService.post<{ token: string }>('api/auth/refresh', { refreshToken }).pipe(
             tap(response => {
                 if (response.token) {
                     localStorage.setItem(this.TOKEN_KEY, response.token);

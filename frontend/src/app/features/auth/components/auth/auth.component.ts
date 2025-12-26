@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router } from '@angular/router'; // Можно убрать, если не используется в других методах
 import { AuthService } from 'src/app/core/services/api-service/auth.service';
 
 @Component({
@@ -47,18 +47,17 @@ export class AuthComponent implements OnInit {
     this.authService.login(email, password).subscribe({
       next: (success) => {
         if (success) {
-          if (this.authService.isAdmin()) {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/products']);
-          }
+          // УДАЛЕНО: this.router.navigate...
+          // Причина: AuthService уже сделал редирект внутри tap()
+          // Если оставить здесь, возникнет гонка или ошибка маршрута
+          console.log('Login successful, redirect handled by service');
         } else {
-          this.authError = true; // Logic correct, credentials valid format but rejected
+          this.authError = true;
         }
       },
       error: (err) => {
         console.error('Login error:', err);
-        this.authError = true; // Server error or 401 Unauthorized
+        this.authError = true;
       }
     });
   }
