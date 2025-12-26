@@ -13,8 +13,8 @@ export class AuthService {
     private currentUserRole = new BehaviorSubject<UserRole>(null);
     public currentUserRole$ = this.currentUserRole.asObservable();
 
-    // КОНСТАНТЫ (чтобы избежать опечаток в ключах)
-    private readonly TOKEN_KEY = 'jwt-token';         // Исправлено: jwt-token (было jwt_token)
+    // КОНСТАНТЫ
+    private readonly TOKEN_KEY = 'jwt-token';
     private readonly REFRESH_KEY = 'refresh-token';
     private readonly ROLE_KEY = 'user-role';
 
@@ -25,7 +25,7 @@ export class AuthService {
     ];
 
     constructor(private router: Router, private apiService: ApiService) {
-        // Читаем из localStorage, чтобы данные совпадали с тем, где ApiService ищет токен
+        // Восстановление сессии при обновлении страницы
         const storedRole = localStorage.getItem(this.ROLE_KEY) as UserRole;
         if (storedRole) {
             this.currentUserRole.next(storedRole);
@@ -41,8 +41,9 @@ export class AuthService {
             return of(true).pipe(
                 delay(500),
                 tap(() => {
-                    // Сохраняем мок-данные в localStorage
                     this.setSession(mockUser.token, mockUser.role, 'mock-refresh-token');
+                    // !!! РЕДИРЕКТ ПОСЛЕ УСПЕШНОГО ВХОДА (MOCK) !!!
+                    this.redirectUser(mockUser.role);
                 })
             );
         }
@@ -56,8 +57,9 @@ export class AuthService {
         ).pipe(
             tap(response => {
                 if (response.success && response.token && response.role) {
-                    // Сохраняем реальные данные
                     this.setSession(response.token, response.role as UserRole, response.refreshToken);
+                    // !!! РЕДИРЕКТ ПОСЛЕ УСПЕШНОГО ВХОДА (BACKEND) !!!
+                    this.redirectUser(response.role as UserRole);
                 }
             }),
             map(response => !!response.success),
@@ -77,7 +79,18 @@ export class AuthService {
         this.router.navigate(['/auth']);
     }
 
-    // Приватный метод для централизованного сохранения сессии
+    /**
+     * Логика перенаправления в зависимости от роли
+     */
+    private redirectUser(role: UserRole): void {
+        if (role === 'admin') {
+            this.router.navigate(['/admin-panel']);
+        } else {
+            // Для обычных пользователей или user
+            this.router.navigate(['/products']);
+        }
+    }
+
     private setSession(token: string, role: UserRole, refreshToken?: string): void {
         localStorage.setItem(this.TOKEN_KEY, token);
 
@@ -100,7 +113,6 @@ export class AuthService {
         return !!this.currentUserRole.value && !!token;
     }
 
-    // --- Методы сброса пароля ---
     forgotPassword(email: string): Observable<void> {
         return this.requestPasswordReset(email);
     }
@@ -113,7 +125,6 @@ export class AuthService {
         return this.apiService.post<void>('/api/auth/reset-password', { token, password: newPassword });
     }
 
-    // --- Обновление токена ---
     refreshToken(): Observable<{ token: string }> {
         const refreshToken = localStorage.getItem(this.REFRESH_KEY);
 
