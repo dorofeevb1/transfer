@@ -45,7 +45,7 @@ export class AuthService {
         // 2. Если не нашли в моках — идем на реальный бэкенд
         console.log('Auth: Mock user not found, requesting backend...');
 
-        return this.apiService.post<{ success: boolean; token?: string; role?: string }>('/auth/login', { email, password }).pipe(
+        return this.apiService.post<{ success: boolean; token?: string; role?: string }>('/api/auth/login', { email, password }).pipe(
             tap(response => {
                 // Если запрос успешен и пришли данные
                 if (response.success && response.token && response.role) {
