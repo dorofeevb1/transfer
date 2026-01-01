@@ -3,6 +3,13 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { ApiService } from './api-service';
 import { HttpParams } from '@angular/common/http'; // Добавлен импорт
 
+
+export interface ExportPayload {
+    ids: string[];
+    columns: string[];
+    searchQuery?: string;
+}
+
 export interface Row {
     id?: string;
     [key: string]: any;
@@ -41,28 +48,11 @@ export class ProductTableService {
             this.columnsSubject.next(columns);
         });
     }
-    downloadExcel(filters: any, searchQuery: string, ids: string[] = []): Observable<Blob> {
-        // Формируем payload. Если ids пустой массив, бэкенд должен использовать фильтры.
-        // Если ids заполнен, бэкенд должен выгрузить только эти записи.
-        const payload = {
-            filters,
-            searchQuery,
-            ids: ids
-        };
-
+    downloadExcel(payload: ExportPayload): Observable<Blob> {
         return this.apiService.post<Blob>('api/products/export/excel', payload, { responseType: 'blob' } as any);
     }
 
-    /**
-     * Скачивание CSV
-     */
-    downloadCsv(filters: any, searchQuery: string, ids: string[] = []): Observable<Blob> {
-        const payload = {
-            filters,
-            searchQuery,
-            ids: ids
-        };
-
+    downloadCsv(payload: ExportPayload): Observable<Blob> {
         return this.apiService.post<Blob>('api/products/export/csv', payload, { responseType: 'blob' } as any);
     }
 

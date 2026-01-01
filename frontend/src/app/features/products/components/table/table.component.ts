@@ -394,28 +394,27 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   handleExportToExcel(): void {
     if (this.isExporting) return;
-
     this.isExporting = true;
     console.log('Запрос Excel файла с сервера...');
 
     const currentFilters = this.filterForm.value;
     const currentSearch = this.dataSource.filter;
-
-    // 1. Собираем ID выбранных строк (если они есть)
-    // Предполагаем, что у каждой строки есть поле .id
     const selectedIds: string[] = this.selection.selected.map(row => row.id);
+    const selectedColumns: string[] = this.getSelectedColumnIds(); // ← добавили колонки
 
-    // 2. Передаем selectedIds третьим аргументом
-    this.productTableService.downloadExcel(currentFilters, currentSearch, selectedIds).subscribe({
+    // Твой нужный payload
+    const payload = {
+      ids: selectedIds,
+      columns: selectedColumns,
+      searchQuery: currentSearch || ''
+    };
+
+    this.productTableService.downloadExcel(payload).subscribe({
       next: (blob: Blob) => {
         const prefix = selectedIds.length > 0 ? 'selected_' : '';
         const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
-
         this.saveFile(blob, fileName);
-
         this.isExporting = false;
-        // Опционально: сбросить выделение после экспорта
-        // this.selection.clear(); 
       },
       error: (err) => {
         console.error('Ошибка при скачивании Excel:', err);
@@ -424,27 +423,35 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private getSelectedColumnIds(): string[] {
+    const formValue = this.columnsForm.value;
+    return Object.keys(formValue)
+      .filter(key => formValue[key]); // только отмеченные чекбоксы колонок
+  }
+
   // --- ЭКСПОРТ CSV ---
   handleExportToCsv(): void {
     if (this.isExporting) return;
-
     this.isExporting = true;
     console.log('Запрос CSV файла с сервера...');
 
     const currentFilters = this.filterForm.value;
     const currentSearch = this.dataSource.filter;
-
-    // 1. Собираем ID
     const selectedIds: string[] = this.selection.selected.map(row => row.id);
+    const selectedColumns: string[] = this.getSelectedColumnIds(); // ← добавили колонки
 
-    // 2. Передаем в сервис
-    this.productTableService.downloadCsv(currentFilters, currentSearch, selectedIds).subscribe({
+    // Твой нужный payload
+    const payload = {
+      ids: selectedIds,
+      columns: selectedColumns,
+      searchQuery: currentSearch || ''
+    };
+
+    this.productTableService.downloadCsv(payload).subscribe({
       next: (blob: Blob) => {
         const prefix = selectedIds.length > 0 ? 'selected_' : '';
         const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.csv`;
-
         this.saveFile(blob, fileName);
-
         this.isExporting = false;
       },
       error: (err) => {
@@ -453,6 +460,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
   /**
    * Вспомогательный метод для сохранения Blob как файла в браузере
    */
