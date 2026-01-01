@@ -41,6 +41,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   activeFilterCount = 0;
   appliedFilters: AppliedFilter[] = [];
 
+  searchQuery = '';
+
   totalCount = 0;
   dataSource = new MatTableDataSource<any>();
   selection = new SelectionModel<any>(true, []);
@@ -288,6 +290,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   applyGlobalFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
+    this.searchQuery = filterValue;
     this.dataSource.filter = filterValue.trim().toLowerCase();
     if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
     if (filterValue.length > 0) {
