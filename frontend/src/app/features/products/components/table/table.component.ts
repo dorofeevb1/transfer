@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
-import { TranslateService } from '@ngx-translate/core';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import { SelectionModel } from '@angular/cdk/collections';
 
 // Компоненты диалогов
@@ -30,6 +30,7 @@ export interface AppliedFilter {
   styleUrls: ['./table.component.scss']
 })
 export class TableComponent implements OnInit, AfterViewInit {
+  private langSub: any;
 
   allColumns: { id: string, name: string }[] = [];
   displayedColumns: string[] = [];
@@ -68,6 +69,16 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.productTableService.rows$.subscribe(data => {
       this.updateTableData(data);
     });
+    this.langSub = this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
+      // перезагружаем таблицу при смене языка
+      const pageIndex = this.paginator?.pageIndex ?? 0;
+      const pageSize = this.paginator?.pageSize ?? 10;
+      const sortField = this.dataSource.sort?.active;
+      const sortDir = this.dataSource.sort?.direction;
+      const filters = this.filterForm.value;
+
+      this.productTableService.loadTableData(pageIndex, pageSize, sortField, sortDir, filters);
+    });
 
     // 👇 ИСПРАВЛЕНИЕ ЗДЕСЬ 👇
     this.productTableService.columns$.subscribe(columns => {
@@ -89,6 +100,12 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
+  }
+
+  ngOnDestroy(): void {
+    if (this.langSub) {
+      this.langSub.unsubscribe();
+    }
   }
 
   setSort(sort: MatSort): void {

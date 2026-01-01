@@ -10,6 +10,7 @@ import { ChangePasswordDialogComponent } from '../dialogs/change-password-dialog
 import { UserDialogComponent } from '../dialogs/user-dialog/user-dialog.component';
 import { UserService } from 'src/app/core/services/api-service/users-table-service';
 import { Observable } from 'rxjs';
+import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 
 
 export interface UserData {
@@ -42,11 +43,12 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
   totalUsersCount = 0;
   isBulkEditMode = false;
   private editCache = new Map<number, UserData>();
+  private langSub: any;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(public dialog: MatDialog, public userService: UserService) {
+  constructor(public dialog: MatDialog, public userService: UserService, private translate: TranslateService) {
     this.selection.changed.subscribe(() => {
       const isMultiSelect = this.selection.selected.length > 1;
 
@@ -64,7 +66,13 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
     // ЗАГРУЖАЕМ СПИСКИ ПРИ ИНИЦИАЛИЗАЦИИ
     this.roles$ = this.userService.getRoles();
     this.accessLevels$ = this.userService.getAccessLevels();
+    this.langSub = this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
+      const pageIndex = this.paginator?.pageIndex ?? 0;
+      const pageSize = this.paginator?.pageSize ?? 5;
+      this.loadUsersPage(pageIndex, pageSize);
+    });
   }
+
   ngAfterViewInit(): void {
     this.paginator.page.subscribe(() => {
       this.loadUsersPage(this.paginator.pageIndex, this.paginator.pageSize);
@@ -324,6 +332,38 @@ export class UsersTableComponent implements OnInit, AfterViewInit {
             }
           });
         }
+      }
+    });
+  }
+  onRoleChange(user: UserData): void {
+    this.userService.updateUser(user.id, user).subscribe({
+      next: updatedUser => {
+        const idx = this.dataSource.data.findIndex(u => u.id === updatedUser.id);
+        if (idx !== -1) {
+          const data = [...this.dataSource.data];
+          data[idx] = updatedUser;
+          this.dataSource.data = data;
+        }
+        console.log('Роль обновлена на сервере');
+      },
+      error: err => {
+        console.error('Ошибка обновления роли', err);
+      }
+    });
+  }
+  onUserFieldChange(user: UserData): void {
+    this.userService.updateUser(user.id, user).subscribe({
+      next: updatedUser => {
+        const idx = this.dataSource.data.findIndex(u => u.id === updatedUser.id);
+        if (idx !== -1) {
+          const data = [...this.dataSource.data];
+          data[idx] = updatedUser;
+          this.dataSource.data = data;
+        }
+        console.log('Пользователь обновлён');
+      },
+      error: err => {
+        console.error('Ошибка обновления пользователя', err);
       }
     });
   }

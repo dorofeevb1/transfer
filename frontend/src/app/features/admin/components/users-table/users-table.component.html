@@ -85,11 +85,12 @@
                     <ng-template #roleEditTemplate>
                         <mat-form-field appearance="outline" class="inline-edit-field">
                             <!-- Используем async для подписки на Observable из TS -->
-                            <mat-select [(ngModel)]="element.role">
+                            <mat-select [(ngModel)]="element.role" (selectionChange)="onRoleChange(element)">
                                 <mat-option *ngFor="let role of roles$ | async" [value]="role">
-                                    {{ role| translate }}
+                                    {{ role | translate }}
                                 </mat-option>
                             </mat-select>
+
                         </mat-form-field>
                     </ng-template>
                 </td>
@@ -111,11 +112,12 @@
                     <ng-template #accessEditTemplate>
                         <mat-form-field appearance="outline" class="inline-edit-field">
                             <!-- Используем async для подписки на Observable из TS -->
-                            <mat-select [(ngModel)]="element.access">
+                            <mat-select [(ngModel)]="element.access" (selectionChange)="onUserFieldChange(element)">
                                 <mat-option *ngFor="let access of accessLevels$ | async" [value]="access">
-                                    {{ access | translate}}
+                                    {{ access | translate }}
                                 </mat-option>
                             </mat-select>
+
                         </mat-form-field>
                     </ng-template>
                 </td>
