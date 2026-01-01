@@ -41,9 +41,9 @@ export class HeaderComponent implements OnInit {
   }
 
   switchLang(lang: string): void {
+    localStorage.setItem('lang', lang);
     this.translate.use(lang);
     this.currentLang = lang;
-    localStorage.setItem('lang', lang);
   }
 
   logout(): void {
