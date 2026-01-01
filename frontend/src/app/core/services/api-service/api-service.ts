@@ -11,11 +11,13 @@ export class ApiService {
     apiurl = 'https://37.77.104.201'
     private createAuthHeaders(): HttpHeaders {
         const token = localStorage.getItem('jwt-token');
+        const lang = localStorage.getItem('lang') || 'ru';
 
         let headers = new HttpHeaders();
         if (token) {
             headers = headers.set('Authorization', `Bearer ${token}`);
         }
+        headers = headers.set('Accept-Language', lang);
         return headers;
     }
 

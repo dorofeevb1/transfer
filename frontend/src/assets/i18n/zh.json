@@ -6,6 +6,13 @@
         "USERS": "用户列表",
         "LOGOUT": "退出"
     },
+    "FOOTER": {
+        "STRATEGY_HEADLINE": "大中型企业的<br>战略采购合作伙伴",
+        "STRATEGY_SUBLINE": "自2010年起致力于实现创意",
+        "PERSON_NAME": "SHCHERBETOV YAN",
+        "PERSON_TITLE": "首席商务官",
+        "ADDRESS": "142713, 俄罗斯, 莫斯科州, 维德诺耶, 沃洛达尔斯基定居点, 中央街30号, 办公室2-1"
+    },
     "AUTH": {
         "LOGIN_TITLE": "登录",
         "LOGIN_SUBTITLE": "请输入您的登录信息",

@@ -12,11 +12,8 @@
 
                 <!-- Текст стратегии -->
                 <div class="strategy-text">
-                    <p class="headline">
-                        STRATEGIC PROCUREMENT PARTNER<br>
-                        FOR MEDIUM AND LARGE BUSINESSES
-                    </p>
-                    <p class="subline">Bringing ideas to life since 2010</p>
+                    <p class="headline" [innerHTML]="'FOOTER.STRATEGY_HEADLINE' | translate"></p>
+                    <p class="subline">{{ 'FOOTER.STRATEGY_SUBLINE' | translate }}</p>
                 </div>
             </div>
 
@@ -32,8 +29,8 @@
 
             <!-- Блок персоны -->
             <div class="info-col person-block">
-                <span class="person-name">SHCHERBETOV YAN</span>
-                <span class="person-title">Chief Commercial Officer</span>
+                <span class="person-name">{{ 'FOOTER.PERSON_NAME' | translate }}</span>
+                <span class="person-title">{{ 'FOOTER.PERSON_TITLE' | translate }}</span>
             </div>
 
             <!-- Блок контактов -->
@@ -45,7 +42,7 @@
 
             <!-- Блок адреса -->
             <div class="info-col address-block">
-                142713, Russia, Moscow Region, Vidnoye, Volodarsky settlement, 30 Tsentralnaya str., office 2-1
+                {{ 'FOOTER.ADDRESS' | translate }}
             </div>
         </div>
 
