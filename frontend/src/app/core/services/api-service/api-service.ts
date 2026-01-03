@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class ApiService {
 
     constructor(private http: HttpClient) { }
-    apiurl = 'https://37.77.104.201'
+    apiurl = 'https://37.77.104.201.sslip.io'
     private createAuthHeaders(): HttpHeaders {
         const token = localStorage.getItem('jwt-token');
         const lang = localStorage.getItem('lang') || 'ru';
