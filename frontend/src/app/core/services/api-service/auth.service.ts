@@ -51,7 +51,7 @@ export class AuthService {
 
         // Исправляем интерфейс: добавляем refresh (как шлет сервер)
         return this.apiService.post<{ success: boolean; token: string; role: string; refresh: string; email: string }>(
-            'api/auth/login',
+            'api/auth/login/',
             { email, password }
         ).pipe(
             tap(response => {
