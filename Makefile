@@ -18,7 +18,7 @@ back:
 front:
 	@echo "🚀 Заливаем фронтенд..."
 	# --delete удаляет старые файлы на сервере (важно для кэша)
-	rsync -avzP --delete ./frontend/dist/ $(HOST):$(REMOTE_PATH)/frontend/dist/
+	rsync -avzP --delete ./frontend/dist/brio-trade-logistic/ $(HOST):$(REMOTE_PATH)/frontend/dist/brio-trade-logistic/
 	@echo "✅ Фронтенд обновлен! (Nginx подхватит сам)"
 
 # 3. Полный деплой (если менял всё)
