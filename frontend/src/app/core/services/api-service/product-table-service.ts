@@ -91,9 +91,8 @@ export class ProductTableService {
     }
 
     deleteRows(rowIds: string[]): Observable<void> {
-        // Обычно для DELETE с body используют request, как у вас в ApiService,
-        // но иногда проще передать IDs через query params или использовать POST для batch delete
-        return this.apiService.delete<void>('api/products/', rowIds);
+        // Используем POST для batch delete, т.к. DELETE с body не всегда хорошо поддерживается
+        return this.apiService.post<void>('api/products/delete/', rowIds);
     }
 
     // --- КОЛОНКИ ---

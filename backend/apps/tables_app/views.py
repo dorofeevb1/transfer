@@ -319,77 +319,161 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="import")
     def import_products(self, request):
-        """Массовый импорт товаров с агрессивным автопереводом 5 полей.
+        """Массовый импорт товаров с оптимизированным батчевым автопереводом.
 
-        Игнорирует прочерки и NaN в Excel, принудительно заменяя их переводом.
-        Суммирует количество (amount_pieces) для существующих товаров.
+        Оптимизации:
+        - Батчевый перевод (50 текстов за раз)
+        - Кэширование переводов (не переводим одинаковые тексты дважды)
+        - Bulk операции для новых продуктов
+        - Суммирует количество (amount_pieces) для существующих товаров
         """
-        serializer = ProductImportSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        raw_data = serializer.validated_data["data"]
-        approved = serializer.validated_data["approved"]
+        try:
+            serializer = ProductImportSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            raw_data = serializer.validated_data["data"]
+            approved = serializer.validated_data["approved"]
 
-        if not raw_data:
-            return Response({"error": "Файл пуст"}, status=status.HTTP_400_BAD_REQUEST)
+            if not raw_data:
+                return Response({"error": "Файл пуст"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Validation error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-        translator = GoogleTranslator(source="auto", target="zh-CN")
-        model_fields_types = {
-            f.name: f.get_internal_type() for f in Product._meta.fields
-        }
-        processed, updated, created = 0, 0, 0
+        try:
+            model_fields_types = {
+                f.name: f.get_internal_type() for f in Product._meta.fields
+            }
 
-        for row in raw_data:
-            row_clean = {clean_key(k): v for k, v in row.items()}
-            article = str(row_clean.get("Артикул", "")).strip()
-            if not article:
-                continue
+            # ШАГ 1: Подготовка данных и сбор текстов для перевода
+            products_data = []
+            texts_to_translate = set()  # Уникальные тексты для перевода
 
-            model_data = {}
-            for e_h, m_f in EXCEL_TO_MODEL_MAP.items():
-                if e_h == "Артикул":
+            for row in raw_data:
+                row_clean = {clean_key(k): v for k, v in row.items()}
+                article = str(row_clean.get("Артикул", "")).strip()
+                if not article:
                     continue
-                model_data[m_f] = clean_val(
-                    row_clean.get(clean_key(e_h)), model_fields_types.get(m_f)
-                )
 
-            # --- ЦИКЛ ГЛУБОКОГО ПЕРЕВОДА ---
-            for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
-                val_ru = model_data.get(ru_f)
-                val_zh = model_data.get(zh_f)
-                # Если RU не пусто, а в ZH пусто или прочерк — запрашиваем Google
-                if not is_empty(val_ru) and is_empty(val_zh):
+                model_data = {}
+                for e_h, m_f in EXCEL_TO_MODEL_MAP.items():
+                    if e_h == "Артикул":
+                        continue
+                    model_data[m_f] = clean_val(
+                        row_clean.get(clean_key(e_h)), model_fields_types.get(m_f)
+                    )
+
+                # Собираем тексты для перевода
+                for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
+                    val_ru = model_data.get(ru_f)
+                    val_zh = model_data.get(zh_f)
+                    if not is_empty(val_ru) and is_empty(val_zh):
+                        texts_to_translate.add(str(val_ru))
+
+                new_amount = clean_val(row_clean.get("Кол-во шт"), "int")
+                products_data.append({
+                    "article": article,
+                    "model_data": model_data,
+                    "new_amount": new_amount
+                })
+
+            # ШАГ 2: Батчевый перевод всех уникальных текстов
+            translation_cache = {}
+            if texts_to_translate:
+                translator = GoogleTranslator(source="auto", target="zh-CN")
+                texts_list = list(texts_to_translate)
+
+                # Переводим батчами по 50 текстов
+                batch_size = 50
+                for i in range(0, len(texts_list), batch_size):
+                    batch = texts_list[i:i + batch_size]
                     try:
-                        model_data[zh_f] = translator.translate(str(val_ru))
-                        time.sleep(0.1)  # Защита от лимитов Google
-                    except Exception:
-                        model_data[zh_f] = ""
+                        # translate_batch возвращает список переводов
+                        translations = translator.translate_batch(batch)
+                        for original, translated in zip(batch, translations):
+                            translation_cache[original] = translated
+                        time.sleep(0.1)  # Небольшая задержка между батчами
+                    except Exception as e:
+                        # При ошибке переводим по одному
+                        for text in batch:
+                            try:
+                                translation_cache[text] = translator.translate(text)
+                                time.sleep(0.05)
+                            except:
+                                translation_cache[text] = ""
 
-            new_amount = clean_val(row_clean.get("Кол-во шт"), "int")
+            # ШАГ 3: Применяем переводы и разделяем на новые/существующие
+            existing_articles = set(
+                Product.objects.filter(
+                    article__in=[p["article"] for p in products_data]
+                ).values_list("article", flat=True)
+            )
 
-            try:
-                product, is_created = Product.objects.get_or_create(
-                    article=article,
-                    defaults={**model_data, "amount_pieces": new_amount},
-                )
-                if not is_created:
-                    for f, v in model_data.items():
+            products_to_create = []
+            products_to_update = []
+
+            for prod_data in products_data:
+                article = prod_data["article"]
+                model_data = prod_data["model_data"]
+                new_amount = prod_data["new_amount"]
+
+                # Применяем переводы из кэша
+                for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
+                    val_ru = model_data.get(ru_f)
+                    val_zh = model_data.get(zh_f)
+                    if not is_empty(val_ru) and is_empty(val_zh):
+                        model_data[zh_f] = translation_cache.get(str(val_ru), "")
+
+                if article in existing_articles:
+                    products_to_update.append({
+                        "article": article,
+                        "model_data": model_data,
+                        "new_amount": new_amount
+                    })
+                else:
+                    # Убираем amount_pieces из model_data, чтобы избежать дубликата
+                    create_data = {k: v for k, v in model_data.items() if k != "amount_pieces"}
+                    products_to_create.append(
+                        Product(article=article, amount_pieces=new_amount, **create_data)
+                    )
+
+            # ШАГ 4: Bulk создание новых продуктов
+            created = 0
+            if products_to_create:
+                try:
+                    Product.objects.bulk_create(products_to_create, ignore_conflicts=True)
+                    created = len(products_to_create)
+                except Exception:
+                    pass
+
+            # ШАГ 5: Обновление существующих (по одному, т.к. используем F())
+            updated = 0
+            for prod_update in products_to_update:
+                try:
+                    product = Product.objects.get(article=prod_update["article"])
+                    for f, v in prod_update["model_data"].items():
                         if f != "amount_pieces":
                             setattr(product, f, v)
-                    product.amount_pieces = F("amount_pieces") + new_amount
+                    product.amount_pieces = F("amount_pieces") + prod_update["new_amount"]
                     product.save()
                     updated += 1
-                else:
-                    created += 1
-                processed += 1
-            except Exception:
-                continue
+                except Exception:
+                    continue
 
-        return Response(
-            {
-                "success": True,
-                "message": f"Обработано: {processed}. Создано: {created}. Обновлено: {updated}.",
-            }
-        )
+            processed = created + updated
+            return Response(
+                {
+                    "success": True,
+                    "message": f"Обработано: {processed}. Создано: {created}. Обновлено: {updated}.",
+                }
+            )
+        except Exception as e:
+            import traceback
+            return Response(
+                {
+                    "error": f"Import failed: {str(e)}",
+                    "traceback": traceback.format_exc()
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
     @action(detail=False, methods=["post"], url_path="fix-translations")
     def fix_translations(self, request):
@@ -518,9 +602,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         Product.objects.all().update(**{column: default})
         return Response({"success": True})
 
-    @action(detail=False, methods=["delete"])
+    @action(detail=False, methods=["delete", "post"], url_path="delete")
     def delete_bulk(self, request):
-        """Массовое удаление товаров по списку ID."""
+        """Массовое удаление товаров по списку ID.
+
+        URL: DELETE /api/products/delete/
+        Body: [id1, id2, ...] или {"ids": [id1, id2, ...]}
+        """
         ids = (
             request.data
             if isinstance(request.data, list)
