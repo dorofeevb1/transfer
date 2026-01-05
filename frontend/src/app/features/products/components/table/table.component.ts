@@ -192,7 +192,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     console.log('selection.selected.length:', this.selection.selected.length);
 
     // Копируем массив ДО очистки selection
-    const changedRows = [...this.selection.selected];
+    const changedRows: any[] = [...this.selection.selected];
 
     if (changedRows.length === 0) {
       console.warn('No rows to save!');
@@ -238,6 +238,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.selection.clear();
     this.editCache.clear();
   }
+
 
   onCancelBulkEdit(): void {
     this.selection.selected.forEach(row => {
@@ -288,9 +289,9 @@ export class TableComponent implements OnInit, AfterViewInit {
     const first = photos[0];
     // Проверяем base64, URL или локальный путь /media/
     const isValidPhoto = first.startsWith('data:image') ||
-                         first.startsWith('http://') ||
-                         first.startsWith('https://') ||
-                         first.startsWith('/media/');
+      first.startsWith('http://') ||
+      first.startsWith('https://') ||
+      first.startsWith('/media/');
     if (isValidPhoto) {
       this.dialog.open(PhotoViewerComponent, { width: '80vw', height: '80vh', data: { photos } });
     }

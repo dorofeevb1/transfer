@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ApiService } from './api-service';
-import { HttpParams } from '@angular/common/http'; // Добавлен импорт
-
+import { HttpParams } from '@angular/common/http';
 
 export interface ExportPayload {
     ids: string[];
@@ -42,23 +41,33 @@ export class ProductTableService {
 
     // --- ПОЛУЧЕНИЕ ДАННЫХ ---
 
-    // Базовая загрузка (можно использовать для инициализации колонок)
+    // Базовая загрузка (для инициализации колонок)
     loadTableStructure(): void {
         this.apiService.get<Column[]>('api/products/columns/').subscribe(columns => {
             this.columnsSubject.next(columns);
         });
     }
+
     downloadExcel(payload: ExportPayload): Observable<Blob> {
-        return this.apiService.post<Blob>('api/products/export/excel/', payload, { responseType: 'blob' } as any);
+        return this.apiService.post<Blob>('api/products/export/excel/', payload, {
+            responseType: 'blob'
+        } as any);
     }
 
     downloadCsv(payload: ExportPayload): Observable<Blob> {
-        return this.apiService.post<Blob>('api/products/export/csv/', payload, { responseType: 'blob' } as any);
+        return this.apiService.post<Blob>('api/products/export/csv/', payload, {
+            responseType: 'blob'
+        } as any);
     }
 
-
     // Загрузка данных с пагинацией, сортировкой и фильтрацией
-    loadTableData(pageIndex: number, pageSize: number, sortField?: string, sortDirection?: string, filters?: any): void {
+    loadTableData(
+        pageIndex: number,
+        pageSize: number,
+        sortField?: string,
+        sortDirection?: string,
+        filters?: any
+    ): void {
         let params = new HttpParams()
             .set('page', pageIndex.toString())
             .set('size', pageSize.toString());
@@ -68,14 +77,14 @@ export class ProductTableService {
         }
 
         if (filters) {
-            // Превращаем объект фильтров в JSON-строку или отдельные параметры
             params = params.set('filters', JSON.stringify(filters));
         }
 
-        this.apiService.get<{ rows: Row[], totalCount: number }>('api/products/data/', params)
+        this.apiService
+            .get<{ rows: Row[]; totalCount: number }>('api/products/data/', params)
             .subscribe(response => {
                 this.rowsSubject.next(response.rows);
-                // Тут можно было бы обновить Subject для totalCount, если он есть
+                // при необходимости можешь тут же обновлять totalCount
             });
     }
 
@@ -86,23 +95,28 @@ export class ProductTableService {
         return this.apiService.post<Row>('api/products/', row);
     }
 
+    // Одиночное обновление
     updateRow(rowId: string, row: Row): Observable<Row> {
         return this.apiService.put<Row>(`api/products/${rowId}/`, row);
     }
 
+    // МАССОВОЕ обновление (подключается к onSaveBulkChanges в table.component.ts)
+    bulkUpdateRows(rows: Row[]): Observable<Row[]> {
+        // эндпоинт можно поменять, если у тебя другой
+        return this.apiService.put<Row[]>('api/products/bulk-update/', rows);
+    }
+
+    // МАССОВОЕ удаление
     deleteRows(rowIds: string[]): Observable<void> {
-        // Используем POST для batch delete, т.к. DELETE с body не всегда хорошо поддерживается
         return this.apiService.post<void>('api/products/delete/', rowIds);
     }
 
     // --- КОЛОНКИ ---
 
-    // Добавление новой колонки (динамические поля)
-    addColumn(column: { name: string, type: string }): Observable<Column> {
+    addColumn(column: { name: string; type: string }): Observable<Column> {
         return this.apiService.post<Column>('api/products/columns/', column);
     }
 
-    // Удаление колонки
     deleteColumn(columnId: string): Observable<void> {
         return this.apiService.delete<void>(`api/products/columns/${columnId}/`);
     }
@@ -110,15 +124,18 @@ export class ProductTableService {
     // --- ЭКСПОРТ / ИМПОРТ ---
 
     sendExportDataToBackend(filters: any): Observable<Blob> {
-        // Запрос на генерацию Excel на бэкенде (если фронтенд не справляется или нужны полные данные)
-        // Возвращаем Blob для скачивания файла
-        return this.apiService.post('api/products/export/', { filters }, { responseType: 'blob' } as any);
+        return this.apiService.post('api/products/export/', { filters }, {
+            responseType: 'blob'
+        } as any);
     }
 
-    sendImportDataToBackend(data: any[], approved: boolean = false): Observable<{ success: boolean, message?: string, errors?: any[] }> {
+    sendImportDataToBackend(
+        data: any[],
+        approved: boolean = false
+    ): Observable<{ success: boolean; message?: string; errors?: any[] }> {
         const payload = {
-            data: data,
-            approved: approved
+            data,
+            approved
         };
         return this.apiService.post('api/products/import/', payload);
     }
