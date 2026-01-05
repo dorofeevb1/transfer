@@ -28,6 +28,7 @@ EXCEL_TO_MODEL_MAP = {
     "Категория. Уровень 1": "category_1",
     "Категория. Уровень 2": "category_2",
     "Фотки": "photos_list",
+    "photos": "photos_list",  # Поле из фронтенда с base64 картинками
     "Видео (ссылка)": "video_link",
     "Артикул": "article",
     "Наименование товара": "name",
@@ -95,25 +96,98 @@ def is_empty(val):
     Returns:
         bool: True если значение пустое.
     """
-    if pd.isna(val) or val is None:
+    # Если это список - проверяем, пустой ли он
+    if isinstance(val, list):
+        return len(val) == 0
+    if val is None:
         return True
+    # pd.isna не работает с массивами, проверяем только скаляры
+    try:
+        if pd.isna(val):
+            return True
+    except (ValueError, TypeError):
+        pass
     s_val = str(val).strip().lower()
     return s_val in ["", "—", "-", "none", "nan", "null", "."]
 
 
-def clean_val(val, field_type):
+def save_base64_image(base64_str):
+    """Сохраняет base64 изображение в файл и возвращает путь."""
+    if not base64_str or not isinstance(base64_str, str):
+        return None
+
+    # Проверяем формат data:image/...;base64,...
+    if not base64_str.startswith("data:image"):
+        return None
+
+    try:
+        # Извлекаем тип и данные
+        header, data = base64_str.split(";base64,", 1)
+        ext = header.split("/")[-1]  # png, jpeg, etc
+        if ext == "jpeg":
+            ext = "jpg"
+
+        # Декодируем и сохраняем
+        file_content = ContentFile(base64.b64decode(data))
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        path = default_storage.save(f"products/{filename}", file_content)
+        return f"/media/{path}"
+    except Exception:
+        return None
+
+
+def clean_val(val, field_type, field_name=None):
     """Преобразование данных из Excel в типы данных Django.
 
     Args:
         val (any): Значение из ячейки.
         field_type (str): Внутренний тип поля модели.
+        field_name (str): Имя поля (для специальной обработки photos_list).
 
     Returns:
         any: Типизированное значение.
     """
+    # Специальная обработка для photos_list - всегда возвращаем массив
+    if field_name == "photos_list":
+        if is_empty(val):
+            return []
+
+        # Если уже список - обрабатываем каждый элемент
+        if isinstance(val, list):
+            result = []
+            for item in val:
+                if not item:
+                    continue
+                item_str = str(item).strip()
+                # Если это base64 - сохраняем как файл
+                if item_str.startswith("data:image"):
+                    saved_path = save_base64_image(item_str)
+                    if saved_path:
+                        result.append(saved_path)
+                # Если это URL или путь - добавляем как есть
+                elif item_str:
+                    result.append(item_str)
+            return result
+
+        # Если строка - конвертируем в массив
+        str_val = str(val).strip()
+        if not str_val:
+            return []
+
+        # Если это base64 - сохраняем как файл
+        if str_val.startswith("data:image"):
+            saved_path = save_base64_image(str_val)
+            return [saved_path] if saved_path else []
+
+        # Разделяем по запятой или переносу строки (если несколько ссылок)
+        photos = [p.strip() for p in str_val.replace('\n', ',').split(',') if p.strip()]
+        return photos
+
     if is_empty(val):
         if field_type in ["int", "float", "DecimalField", "IntegerField", "FloatField"]:
             return 0
+        if field_type == "JSONField":
+            return []
         return ""
 
     str_val = str(val).strip()
@@ -357,9 +431,18 @@ class ProductViewSet(viewsets.ModelViewSet):
                 for e_h, m_f in EXCEL_TO_MODEL_MAP.items():
                     if e_h == "Артикул":
                         continue
-                    model_data[m_f] = clean_val(
-                        row_clean.get(clean_key(e_h)), model_fields_types.get(m_f)
-                    )
+                    # Для photos_list - объединяем, а не перезаписываем
+                    if m_f == "photos_list":
+                        new_photos = clean_val(
+                            row_clean.get(clean_key(e_h)), model_fields_types.get(m_f), m_f
+                        )
+                        existing_photos = model_data.get("photos_list", [])
+                        # Объединяем и убираем дубликаты
+                        model_data[m_f] = list(dict.fromkeys(existing_photos + new_photos))
+                    else:
+                        model_data[m_f] = clean_val(
+                            row_clean.get(clean_key(e_h)), model_fields_types.get(m_f), m_f
+                        )
 
                 # Собираем тексты для перевода
                 for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
@@ -378,6 +461,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             # ШАГ 2: Батчевый перевод всех уникальных текстов
             translation_cache = {}
             if texts_to_translate:
+                print(f"[IMPORT] Starting translation of {len(texts_to_translate)} unique texts")
                 translator = GoogleTranslator(source="auto", target="zh-CN")
                 texts_list = list(texts_to_translate)
 
@@ -385,20 +469,28 @@ class ProductViewSet(viewsets.ModelViewSet):
                 batch_size = 50
                 for i in range(0, len(texts_list), batch_size):
                     batch = texts_list[i:i + batch_size]
+                    print(f"[IMPORT] Translating batch {i//batch_size + 1}, {len(batch)} texts")
                     try:
                         # translate_batch возвращает список переводов
                         translations = translator.translate_batch(batch)
                         for original, translated in zip(batch, translations):
                             translation_cache[original] = translated
+                        print(f"[IMPORT] Batch translated successfully")
                         time.sleep(0.1)  # Небольшая задержка между батчами
                     except Exception as e:
+                        print(f"[IMPORT] Batch failed: {e}, falling back to individual")
                         # При ошибке переводим по одному
-                        for text in batch:
+                        for idx, text in enumerate(batch):
                             try:
                                 translation_cache[text] = translator.translate(text)
+                                if idx % 10 == 0:
+                                    print(f"[IMPORT] Individual: {idx}/{len(batch)}")
                                 time.sleep(0.05)
                             except:
                                 translation_cache[text] = ""
+                print(f"[IMPORT] Translation complete, {len(translation_cache)} cached")
+            else:
+                print("[IMPORT] No texts to translate")
 
             # ШАГ 3: Применяем переводы и разделяем на новые/существующие
             existing_articles = set(

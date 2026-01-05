@@ -84,14 +84,20 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     // 👇 ИСПРАВЛЕНИЕ ЗДЕСЬ 👇
     this.productTableService.columns$.subscribe(columns => {
-      const junkKeys = ['фотографии', 'фото', 'photo', 'image', 'img', 'picture', 'изображение'];
+      const junkKeys = ['фотографии', 'фото', 'image', 'img', 'picture', 'изображение'];
+      // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
+      const allowedPhotoColumns = ['photos', 'photos_list'];
 
       // Фильтруем колонки, пришедшие с сервера
       const cleanColumns = columns.filter(col => {
         const lowerKey = col.id.toLowerCase();
-        // Если ключ содержит запрещенное слово И это не наша правильная колонка 'photos'
-        const isJunk = junkKeys.some(junk => lowerKey.includes(junk)) && lowerKey !== 'photos';
-        return !isJunk; // Оставляем только хорошие
+        // Если это наша правильная колонка - пропускаем
+        if (allowedPhotoColumns.includes(lowerKey)) {
+          return true;
+        }
+        // Если ключ содержит запрещенное слово - фильтруем
+        const isJunk = junkKeys.some(junk => lowerKey.includes(junk));
+        return !isJunk;
       });
 
       this.allColumns = cleanColumns;
@@ -128,7 +134,9 @@ export class TableComponent implements OnInit, AfterViewInit {
   updateTableData(data: any[]): void {
     if (data && data.length > 0) {
       // Ключевые слова-мусор
-      const junkKeys = ['фотографии', 'фото', 'photo', 'image', 'img', 'picture', 'изображение'];
+      const junkKeys = ['фотографии', 'фото', 'image', 'img', 'picture', 'изображение'];
+      // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
+      const allowedPhotoColumns = ['photos', 'photos_list'];
 
       const columns = data.reduce((acc: string[], obj: any) => {
         Object.keys(obj).forEach(key => {
@@ -137,8 +145,14 @@ export class TableComponent implements OnInit, AfterViewInit {
           // Если уже добавили - пропускаем
           if (acc.includes(key)) return;
 
-          // Фильтр мусора: если ключ похож на картинку, но это не наш стандарт 'photos' - не добавляем в колонки
-          if (junkKeys.some(junk => lowerKey.includes(junk)) && lowerKey !== 'photos') {
+          // Если это наша правильная колонка - добавляем
+          if (allowedPhotoColumns.includes(lowerKey)) {
+            acc.push(key);
+            return;
+          }
+
+          // Фильтр мусора: если ключ содержит запрещенное слово - не добавляем
+          if (junkKeys.some(junk => lowerKey.includes(junk))) {
             return;
           }
 

@@ -32,7 +32,15 @@ export class ProductsTableComponent implements AfterViewInit {
   }
 
   isImageArray(value: any): boolean {
-    return Array.isArray(value) && value.length > 0 && typeof value[0] === 'string' && value[0].startsWith('data:image');
+    if (!Array.isArray(value) || value.length === 0 || typeof value[0] !== 'string') {
+      return false;
+    }
+    const first = value[0];
+    // Проверяем base64 или URL на изображение
+    return first.startsWith('data:image') ||
+           first.startsWith('http://') ||
+           first.startsWith('https://') ||
+           first.startsWith('/media/');
   }
 
   checkboxLabel(row?: any): string {
