@@ -202,15 +202,35 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   onSaveBulkChanges(): void {
-    const changedRows = this.selection.selected.map(item => {
-      return this.editCache.get(item.id) ?? item;
-    });
+    console.log('=== onSaveBulkChanges called ===');
+    console.log('selection.selected:', this.selection.selected);
+    console.log('selection.selected.length:', this.selection.selected.length);
+
+    // Копируем массив ДО очистки selection
+    const changedRows = [...this.selection.selected];
+
+    if (changedRows.length === 0) {
+      console.warn('No rows to save!');
+      this.isBulkEditMode = false;
+      return;
+    }
 
     changedRows.forEach(row => {
-      this.productTableService.updateRow(row.id, row).subscribe(updatedRow => {
-        const index = this.dataSource.data.findIndex(d => d.id === updatedRow.id);
-        if (index !== -1) {
-          this.dataSource.data[index] = updatedRow;
+      console.log('Saving row:', row, 'id:', row.id);
+      if (!row.id) {
+        console.error('Row has no id:', row);
+        return;
+      }
+      this.productTableService.updateRow(row.id, row).subscribe({
+        next: (updatedRow) => {
+          console.log('Update success:', updatedRow);
+          const index = this.dataSource.data.findIndex(d => d.id === updatedRow.id);
+          if (index !== -1) {
+            this.dataSource.data[index] = updatedRow;
+          }
+        },
+        error: (err) => {
+          console.error('Error updating row:', err);
         }
       });
     });

@@ -56,7 +56,7 @@
         </ng-container>
 
         <ng-container *ngIf="isBulkEditMode">
-            <button mat-flat-button color="primary" (click)="saveClick.emit()">Сохранить</button>
+            <button mat-flat-button color="primary" (click)="onSaveClick()">Сохранить</button>
             <button mat-button (click)="cancelClick.emit()">Отмена</button>
         </ng-container>
     </div>

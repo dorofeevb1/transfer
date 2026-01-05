@@ -26,4 +26,11 @@ export class TableControlsComponent {
   @Output() removeFilter = new EventEmitter<string>();
   @Output() exportToExcel = new EventEmitter<void>();
   @Output() exportToCsv = new EventEmitter<void>();
+
+  onSaveClick(): void {
+    console.log('=== TableControlsComponent.onSaveClick() ===');
+    console.log('isBulkEditMode:', this.isBulkEditMode);
+    console.log('selectionHasValue:', this.selectionHasValue);
+    this.saveClick.emit();
+  }
 }
