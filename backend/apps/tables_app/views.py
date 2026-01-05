@@ -264,6 +264,26 @@ class ProductViewSet(viewsets.ModelViewSet):
         "comments": "comments_zh",
     }
 
+    # --- ПЕРЕОПРЕДЕЛЕНИЕ CRUD ---
+
+    def perform_update(self, serializer):
+        """Обработка photos_list при обновлении - строка -> массив."""
+        data = serializer.validated_data
+        photos = data.get("photos_list")
+
+        # Если photos_list пришёл как строка - преобразуем в массив
+        if photos is not None and isinstance(photos, str):
+            photos = photos.strip()
+            if photos:
+                # Разбиваем по запятой если несколько URL
+                data["photos_list"] = [
+                    p.strip() for p in photos.split(",") if p.strip()
+                ]
+            else:
+                data["photos_list"] = []
+
+        serializer.save()
+
     # --- ВНУТРЕННЯЯ ЛОГИКА ---
 
     def _is_identical(self, db_obj, incoming_data):

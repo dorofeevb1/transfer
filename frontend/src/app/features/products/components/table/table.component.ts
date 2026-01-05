@@ -200,22 +200,36 @@ export class TableComponent implements OnInit, AfterViewInit {
       return;
     }
 
+    let completedCount = 0;
+    const totalCount = changedRows.length;
+
     changedRows.forEach(row => {
       console.log('Saving row:', row, 'id:', row.id);
       if (!row.id) {
         console.error('Row has no id:', row);
+        completedCount++;
         return;
       }
       this.productTableService.updateRow(row.id, row).subscribe({
         next: (updatedRow) => {
           console.log('Update success:', updatedRow);
-          const index = this.dataSource.data.findIndex(d => d.id === updatedRow.id);
-          if (index !== -1) {
-            this.dataSource.data[index] = updatedRow;
+          completedCount++;
+          // Когда все запросы завершены - перезагружаем данные
+          if (completedCount === totalCount) {
+            const pageIndex = this.paginator?.pageIndex ?? 0;
+            const pageSize = this.paginator?.pageSize ?? 10;
+            this.productTableService.loadTableData(pageIndex, pageSize);
           }
         },
         error: (err) => {
           console.error('Error updating row:', err);
+          completedCount++;
+          // Даже при ошибке проверяем завершение
+          if (completedCount === totalCount) {
+            const pageIndex = this.paginator?.pageIndex ?? 0;
+            const pageSize = this.paginator?.pageSize ?? 10;
+            this.productTableService.loadTableData(pageIndex, pageSize);
+          }
         }
       });
     });
