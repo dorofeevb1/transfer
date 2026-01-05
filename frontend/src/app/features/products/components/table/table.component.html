@@ -29,7 +29,7 @@
             </app-table-controls>
 
             <!-- 3. Таблица с данными -->
-            <div class="table-wrapper">
+            <div class="table-wrapper" *ngIf="showTable">
                 <app-products-table [dataSource]="dataSource" [selection]="selection" [allColumns]="allColumns"
                     [isBulkEditMode]="isBulkEditMode" [columnsToRender]="columnsToRender"
                     [isAllSelected]="isAllSelected()" (sortChange)="setSort($event)"

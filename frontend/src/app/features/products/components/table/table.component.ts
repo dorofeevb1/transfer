@@ -36,6 +36,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   displayedColumns: string[] = [];
   columnsForm: FormGroup;
   isBulkEditMode = false;
+  showTable = true; // Флаг для пересоздания таблицы при смене языка
 
   filterForm: FormGroup;
   activeFilterCount = 0;
@@ -67,12 +68,25 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.dataSource.filterPredicate = this.createFilterPredicate();
 
+    // Загружаем колонки с бэкенда (с локализацией)
+    this.productTableService.loadTableStructure();
+
+    // Загружаем данные
     this.productTableService.loadTableData(0, 10);
     this.productTableService.rows$.subscribe(data => {
-      this.updateTableData(data);
+      this.dataSource.data = data || [];
     });
+
     this.langSub = this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
-      // перезагружаем таблицу при смене языка
+      // Обновляем localStorage перед запросом (на случай если ещё не обновился)
+      localStorage.setItem('lang', event.lang);
+
+      // Скрываем таблицу чтобы Angular пересоздал её с новыми колонками
+      this.showTable = false;
+
+      // перезагружаем колонки и данные при смене языка
+      this.productTableService.loadTableStructure();
+
       const pageIndex = this.paginator?.pageIndex ?? 0;
       const pageSize = this.paginator?.pageSize ?? 10;
       const sortField = this.dataSource.sort?.active;
@@ -80,9 +94,10 @@ export class TableComponent implements OnInit, AfterViewInit {
       const filters = this.filterForm.value;
 
       this.productTableService.loadTableData(pageIndex, pageSize, sortField, sortDir, filters);
+      // showTable будет включен в подписке на columns$ после получения новых колонок
     });
 
-    // 👇 ИСПРАВЛЕНИЕ ЗДЕСЬ 👇
+    // Подписка на колонки с бэкенда
     this.productTableService.columns$.subscribe(columns => {
       const junkKeys = ['фотографии', 'фото', 'image', 'img', 'picture', 'изображение'];
       // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
@@ -103,6 +118,13 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.allColumns = cleanColumns;
       this.displayedColumns = ['select', ...cleanColumns.map(c => c.id)];
       this.setupForms();
+
+      // Показываем таблицу после обновления колонок (с небольшой задержкой для Angular)
+      if (!this.showTable) {
+        setTimeout(() => {
+          this.showTable = true;
+        }, 10);
+      }
     });
   }
 
@@ -135,45 +157,8 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   // --- ОБНОВЛЕНИЕ ТАБЛИЦЫ ---
   updateTableData(data: any[]): void {
-    if (data && data.length > 0) {
-      // Ключевые слова-мусор
-      const junkKeys = ['фотографии', 'фото', 'image', 'img', 'picture', 'изображение'];
-      // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
-      const allowedPhotoColumns = ['photos', 'photos_list'];
-
-      const columns = data.reduce((acc: string[], obj: any) => {
-        Object.keys(obj).forEach(key => {
-          const lowerKey = key.toLowerCase();
-
-          // Если уже добавили - пропускаем
-          if (acc.includes(key)) return;
-
-          // Если это наша правильная колонка - добавляем
-          if (allowedPhotoColumns.includes(lowerKey)) {
-            acc.push(key);
-            return;
-          }
-
-          // Фильтр мусора: если ключ содержит запрещенное слово - не добавляем
-          if (junkKeys.some(junk => lowerKey.includes(junk))) {
-            return;
-          }
-
-          acc.push(key);
-        });
-        return acc;
-      }, []);
-
-      this.allColumns = columns.map(col => ({ id: col, name: col }));
-      this.displayedColumns = ['select', ...columns];
-      this.setupForms();
-      this.dataSource.data = data;
-    } else {
-      this.dataSource.data = [];
-      this.allColumns = [];
-      this.displayedColumns = [];
-      this.setupForms();
-    }
+    // Теперь колонки приходят с бэкенда через columns$, здесь только данные
+    this.dataSource.data = data || [];
   }
 
   // ... (методы onEditClick, onSaveBulkChanges, onCancelBulkEdit, onDeleteSelected - без изменений) ...

@@ -384,16 +384,79 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
 
+    # Маппинг русских названий колонок на китайские
+    COLUMN_NAMES_ZH = {
+        "id": "ID",
+        "article": "商品编号",
+        "date_creation": "报价日期",
+        "category_1": "一级分类",
+        "category_1_zh": "一级分类（中文）",
+        "category_2": "二级分类",
+        "category_2_zh": "二级分类（中文）",
+        "name": "商品名称",
+        "name_zh": "商品名称（中文）",
+        "composition": "成分",
+        "composition_zh": "成分（中文）",
+        "photos_list": "图片",
+        "video_link": "视频链接",
+        "size_goods": "商品尺寸",
+        "package_goods": "商品包装",
+        "package_goods_zh": "商品包装（中文）",
+        "group_package": "组合包装",
+        "quantum": "起订量",
+        "price_actual": "实际价格（卢布）",
+        "transport_box_load": "运输箱装载量",
+        "width_cm": "宽度（厘米）",
+        "height_cm": "高度（厘米）",
+        "length_cm": "长度（厘米）",
+        "cbm": "立方米",
+        "gross_weight": "运输箱毛重",
+        "tn_ved_code": "海关编码",
+        "tp": "技术规程",
+        "tp_zh": "技术规程（中文）",
+        "rd": "规范文件",
+        "rd_zh": "规范文件（中文）",
+        "risk": "风险等级",
+        "risk_zh": "风险等级（中文）",
+        "vat": "增值税",
+        "amount_stores": "店铺数量",
+        "amount_pieces": "商品数量",
+        "comments": "备注",
+        "comments_zh": "备注（中文）",
+        "extra_data": "额外数据",
+    }
+
     @action(detail=False, methods=["get"], url_path="columns")
     def get_columns(self, request):
-        """Возвращает список доступных столбцов модели Product."""
+        """Возвращает список доступных столбцов модели Product с локализацией."""
+        lang = request.headers.get("Accept-Language", "ru").lower()
+        is_chinese = "zh" in lang
+
+        # Поля которые не показываем (дубликаты для китайского и служебные)
+        hidden_fields = {
+            "category_1_zh", "category_2_zh", "name_zh", "composition_zh",
+            "package_goods_zh", "tp_zh", "rd_zh", "risk_zh", "comments_zh",
+            "extra_data"
+        }
+
         columns = []
         for field in Product._meta.fields:
+            # Пропускаем скрытые поля
+            if field.name in hidden_fields:
+                continue
+
+            if is_chinese:
+                # Китайские названия из маппинга
+                display_name = self.COLUMN_NAMES_ZH.get(field.name, field.verbose_name)
+            else:
+                # Русские названия из verbose_name модели
+                display_name = field.verbose_name
+
             columns.append(
                 {
-                    "name": field.name,
+                    "id": field.name,
+                    "name": display_name,
                     "type": field.get_internal_type(),
-                    "verbose_name": field.verbose_name,
                 }
             )
         return Response(columns)

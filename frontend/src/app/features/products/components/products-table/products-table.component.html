@@ -22,7 +22,7 @@
         <ng-container *ngFor="let column of allColumns" [matColumnDef]="column.id">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>
                 <div class="header-content">
-                    <span class="header-text">{{ ( column.name) | translate }}</span>
+                    <span class="header-text">{{ column.name }}</span>
 
                     <button mat-icon-button type="button" class="remove-col-btn"
                         (click)="removeColumnClick.emit({ columnId: column.id, event: $event }); $event.stopPropagation()"
@@ -37,7 +37,7 @@
                 <ng-container *ngIf="isBulkEditMode && selection.isSelected(element); else readOnlyCell">
                     <div class="edit-cell-wrapper" (click)="$event.stopPropagation()">
                         <input class="table-input" [(ngModel)]="element[column.id]" (click)="$event.stopPropagation()"
-                            [attr.aria-label]="( column.name) | translate">
+                            [attr.aria-label]="column.name">
                     </div>
                 </ng-container>
 
