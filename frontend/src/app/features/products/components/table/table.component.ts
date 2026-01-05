@@ -260,7 +260,16 @@ export class TableComponent implements OnInit, AfterViewInit {
 
 
   openPhotoViewer(photos: string[]): void {
-    if (Array.isArray(photos) && photos.length > 0 && typeof photos[0] === 'string' && photos[0].startsWith('data:image')) {
+    if (!Array.isArray(photos) || photos.length === 0 || typeof photos[0] !== 'string') {
+      return;
+    }
+    const first = photos[0];
+    // Проверяем base64, URL или локальный путь /media/
+    const isValidPhoto = first.startsWith('data:image') ||
+                         first.startsWith('http://') ||
+                         first.startsWith('https://') ||
+                         first.startsWith('/media/');
+    if (isValidPhoto) {
       this.dialog.open(PhotoViewerComponent, { width: '80vw', height: '80vh', data: { photos } });
     }
   }

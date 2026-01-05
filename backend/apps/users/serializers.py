@@ -24,6 +24,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """Сериализатор для модели пользователя с автолокализацией RU/ZH."""
 
+    # Маппинг ключей перевода с фронтенда на реальные значения
+    ROLE_MAP = {
+        'USERS_TABLE.ROLES.ADMIN': 'admin',
+        'USERS_TABLE.ROLES.MANAGER': 'manager',
+        'USERS_TABLE.ROLES.CLIENT': 'client',
+        'USERS_TABLE.ROLES.MERCHANDISER': 'merchandiser',
+    }
+    ACCESS_MAP = {
+        'USERS_TABLE.ACCESS_LEVELS.VIEW_EDIT': 'view_edit',
+        'USERS_TABLE.ACCESS_LEVELS.VIEW_ONLY': 'view_only',
+    }
+
     class Meta:
         model = User
         fields = ['id', 'fio', 'fio_zh', 'email', 'role', 'access', 'password']
@@ -31,6 +43,20 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True, 'required': False},
             'id': {'read_only': True}
         }
+
+    def to_internal_value(self, data):
+        """Преобразование ключей перевода в реальные значения перед валидацией."""
+        data = data.copy() if hasattr(data, 'copy') else dict(data)
+
+        # Преобразуем role
+        if 'role' in data and data['role'] in self.ROLE_MAP:
+            data['role'] = self.ROLE_MAP[data['role']]
+
+        # Преобразуем access
+        if 'access' in data and data['access'] in self.ACCESS_MAP:
+            data['access'] = self.ACCESS_MAP[data['access']]
+
+        return super().to_internal_value(data)
 
     def to_representation(self, instance):
         """Автоматическая локализация по Accept-Language."""
