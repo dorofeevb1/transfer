@@ -2,12 +2,15 @@
 import os
 import uuid
 import time
+import io
 import pandas as pd
+import requests
 from datetime import datetime, date
 from django.http import HttpResponse
 from django.db.models import Q, F, CharField
 from django.db.models.functions import Cast
 from django.utils import timezone
+from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from rest_framework import viewsets, status, filters
@@ -15,6 +18,10 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from deep_translator import GoogleTranslator
+from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XLImage
+from openpyxl.utils import get_column_letter
+from PIL import Image as PILImage
 import base64
 
 from .models import Product
@@ -592,11 +599,59 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return Response({"success": True, "fixed": fixed_count})
 
+    def _fetch_image(self, url):
+        """Загружает изображение по URL или локальному пути и возвращает BytesIO."""
+        try:
+            original_url = url
+            # Преобразуем полный URL на свой сервер в локальный путь
+            # http://37.77.104.201.sslip.io/media/... -> /media/...
+            if "/media/" in url and url.startswith(("http://", "https://")):
+                url = "/media/" + url.split("/media/", 1)[1]
+
+            # Локальный путь /media/...
+            if url.startswith("/media/"):
+                # Убираем /media/ и получаем относительный путь
+                rel_path = url.replace("/media/", "", 1)
+                file_path = os.path.join(settings.MEDIA_ROOT, rel_path)
+                print(f"[FETCH_IMAGE] Checking local file: {file_path}, exists={os.path.exists(file_path)}")
+                if os.path.exists(file_path):
+                    with open(file_path, "rb") as f:
+                        img_data = io.BytesIO(f.read())
+                        # Проверяем что это валидное изображение
+                        PILImage.open(img_data).verify()
+                        img_data.seek(0)
+                        print(f"[FETCH_IMAGE] Success: {file_path}")
+                        return img_data
+                print(f"[FETCH_IMAGE] File not found: {file_path}")
+                return None
+
+            # Внешний URL (не наш сервер)
+            if url.startswith(("http://", "https://")):
+                resp = requests.get(url, timeout=5)
+                if resp.status_code == 200:
+                    img_data = io.BytesIO(resp.content)
+                    # Проверяем что это валидное изображение
+                    PILImage.open(img_data).verify()
+                    img_data.seek(0)
+                    return img_data
+                return None
+
+            # Base64
+            if url.startswith("data:image"):
+                header, data = url.split(";base64,", 1)
+                img_data = io.BytesIO(base64.b64decode(data))
+                PILImage.open(img_data).verify()
+                img_data.seek(0)
+                return img_data
+
+            return None
+        except Exception:
+            return None
+
     @action(detail=False, methods=["get", "post"], url_path="export/excel")
     def export_excel(self, request):
-        """Исправленный умный экспорт: фильтрация строк и колонок."""
+        """Экспорт в Excel с встроенными изображениями."""
         queryset = self._apply_export_filters(request)
-        # Получаем данные через сериализатор (он обеспечит локализацию RU/ZH)
         serializer = self.get_serializer(
             queryset, many=True, context={"request": request}
         )
@@ -607,22 +662,26 @@ class ProductViewSet(viewsets.ModelViewSet):
             "columns"
         )
 
+        # Подготавливаем данные
         final_data = []
+        photo_column_header = None
+
         for item in serializer.data:
             row = {}
-            # Если выбранные колонки присланы, идем строго по ним
             if selected_columns:
                 for col_name in selected_columns:
                     if col_name in item:
-                        # Получаем красивый заголовок из маппинга, если его нет — используем имя поля
                         header = MODEL_TO_EXCEL_MAP.get(col_name, col_name)
                         row[header] = item[col_name]
+                        if col_name == "photos_list":
+                            photo_column_header = header
             else:
-                # Если колонки не выбраны, берем всё, что есть в стандартном Excel-маппинге
                 for key, value in item.items():
                     if key in MODEL_TO_EXCEL_MAP:
                         header = MODEL_TO_EXCEL_MAP.get(key)
                         row[header] = value
+                        if key == "photos_list":
+                            photo_column_header = header
 
             if row:
                 final_data.append(row)
@@ -632,12 +691,115 @@ class ProductViewSet(viewsets.ModelViewSet):
                 {"error": "No data found for the given criteria"}, status=400
             )
 
-        df = pd.DataFrame(final_data)
+        # Создаём Excel через openpyxl
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Products"
+
+        # Заголовки
+        headers = list(final_data[0].keys())
+        for col_idx, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col_idx, value=header)
+
+        # Находим индекс колонки с фото
+        photo_col_idx = None
+        if photo_column_header and photo_column_header in headers:
+            photo_col_idx = headers.index(photo_column_header) + 1
+
+        print(f"[EXPORT] photo_column_header={photo_column_header}, photo_col_idx={photo_col_idx}")
+        print(f"[EXPORT] headers={headers}")
+        if final_data:
+            print(f"[EXPORT] First row photos value: {final_data[0].get(photo_column_header) if photo_column_header else 'N/A'}")
+            print(f"[EXPORT] First row photos type: {type(final_data[0].get(photo_column_header) if photo_column_header else None)}")
+
+        # Данные
+        row_height = 60  # Высота строки с фото
+        img_max_height = 55  # Максимальная высота картинки
+        img_width_px = 55  # Ширина одного фото в пикселях
+
+        for row_idx, row_data in enumerate(final_data, 2):
+            has_image = False
+            images_in_row = 0
+
+            for col_idx, header in enumerate(headers, 1):
+                value = row_data.get(header, "")
+
+                # Если это колонка с фото
+                if col_idx == photo_col_idx and isinstance(value, list) and value:
+                    failed_urls = []  # URL которые не удалось загрузить
+
+                    from openpyxl.drawing.spreadsheet_drawing import AnchorMarker, OneCellAnchor
+                    from openpyxl.drawing.xdr import XDRPositiveSize2D
+                    from openpyxl.utils.units import pixels_to_EMU
+
+                    x_offset = 0  # Смещение в пикселях
+                    for photo_url in value:
+                        if not photo_url:
+                            continue
+
+                        img_data = self._fetch_image(photo_url)
+                        if img_data:
+                            try:
+                                img = XLImage(img_data)
+                                # Масштабируем
+                                if img.height > img_max_height:
+                                    ratio = img_max_height / img.height
+                                    img.width = int(img.width * ratio)
+                                    img.height = int(img.height * ratio)
+
+                                # Якорь с горизонтальным смещением
+                                marker = AnchorMarker(
+                                    col=col_idx - 1,
+                                    colOff=pixels_to_EMU(x_offset),
+                                    row=row_idx - 1,
+                                    rowOff=0
+                                )
+                                size = XDRPositiveSize2D(
+                                    pixels_to_EMU(img.width),
+                                    pixels_to_EMU(img.height)
+                                )
+                                img.anchor = OneCellAnchor(_from=marker, ext=size)
+
+                                ws.add_image(img)
+                                has_image = True
+                                x_offset += img.width + 5
+                            except Exception as e:
+                                print(f"[EXPORT] Error: {e}")
+                                failed_urls.append(photo_url)
+                        else:
+                            failed_urls.append(photo_url)
+
+                    # Если ничего не вставилось - ставим ссылки
+                    if not has_image and failed_urls:
+                        ws.cell(row=row_idx, column=col_idx,
+                                value=", ".join(failed_urls))
+                    else:
+                        ws.cell(row=row_idx, column=col_idx, value="")
+                else:
+                    # Обычное значение
+                    if isinstance(value, list):
+                        value = ", ".join(str(v) for v in value)
+                    ws.cell(row=row_idx, column=col_idx, value=value)
+
+            # Устанавливаем высоту строки если есть изображение
+            if has_image:
+                ws.row_dimensions[row_idx].height = row_height
+
+        # Устанавливаем ширину колонки с фото (достаточно для нескольких фото)
+        if photo_col_idx:
+            # Ширина = количество возможных фото * ширина одного фото
+            ws.column_dimensions[get_column_letter(photo_col_idx)].width = 40
+
+        # Отдаём файл
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
         response = HttpResponse(
+            output.read(),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
         response["Content-Disposition"] = "attachment; filename=products.xlsx"
-        pd.DataFrame(final_data).to_excel(response, index=False)
         return response
 
     @action(detail=False, methods=["get", "post"], url_path="export/csv")

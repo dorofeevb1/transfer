@@ -100,8 +100,8 @@ export class ImportDialogComponent {
     try {
       await firstValueFrom(this.productTableService.sendImportDataToBackend(dataToSend, false));
 
-      // Если успех (бэкенд вернул 200 OK)
-      this.dialogRef.close(processingResult);
+      // Если успех (бэкенд вернул 200 OK) - возвращаем success: true для перезагрузки таблицы
+      this.dialogRef.close({ success: true });
 
     } catch (error: any) {
       console.error('Ошибка отправки на сервер:', error);
@@ -149,8 +149,8 @@ export class ImportDialogComponent {
         // Повторная отправка с approved = true
         await firstValueFrom(this.productTableService.sendImportDataToBackend(data, true));
 
-        // Успех после подтверждения
-        this.dialogRef.close({ mergedData: data });
+        // Успех после подтверждения - возвращаем success: true для перезагрузки таблицы
+        this.dialogRef.close({ success: true });
 
       } catch (retryError) {
         console.error('Ошибка при повторной отправке (после апрува):', retryError);

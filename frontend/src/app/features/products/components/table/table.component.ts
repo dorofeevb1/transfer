@@ -124,8 +124,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(ImportDialogComponent, { width: '550px', disableClose: true });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result && result.mergedData && result.mergedData.length > 0) {
-        this.updateTableData([...this.dataSource.data, ...result.mergedData]);
+      if (result && result.success) {
+        // После успешного импорта перезагружаем данные с сервера
+        const pageIndex = this.paginator?.pageIndex ?? 0;
+        const pageSize = this.paginator?.pageSize ?? 10;
+        this.productTableService.loadTableData(pageIndex, pageSize);
       }
     });
   }
