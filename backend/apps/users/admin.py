@@ -18,16 +18,18 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ("role", "access", "is_active", "is_staff")
 
     # Поля, по которым работает поиск
-    search_fields = ("email", "fio")
+    search_fields = ("email", "fio", "fio_zh")
 
     # Сортировка по умолчанию
     ordering = ("email",)
 
     # Настройка формы редактирования пользователя
-    # Добавляем наши кастомные поля (Role, Access, FIO) в секцию "Personal info"
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        (_("Персональная информация"), {"fields": ("fio", "role", "access")}),
+        (
+            _("Персональная информация"),
+            {"fields": ("fio", "fio_zh", "role", "access")},
+        ),
         (
             _("Права доступа"),
             {
@@ -51,9 +53,9 @@ class CustomUserAdmin(UserAdmin):
                 "classes": ("wide",),
                 "fields": (
                     "email",
-                    "password",
-                    "confirm_password",
-                ),  # confirm_password обрабатывается UserAdmin
+                    "password1",
+                    "password2",
+                ),
             },
         ),
         (_("Доп. информация"), {"fields": ("fio", "role", "access")}),

@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.urls import path
 from django.http import HttpResponseRedirect
 from django.contrib import messages
-from django.utils.html import format_html
 from deep_translator import GoogleTranslator
 import time
 
@@ -72,14 +71,16 @@ class ProductAdmin(admin.ModelAdmin):
                         setattr(p, zh_f, translator.translate(str(val_ru)))
                         changed = True
                         time.sleep(0.1)
-                    except:
+                    except Exception:
                         continue
             if changed:
                 p.save()
                 fixed_count += 1
 
         self.message_user(
-            request, f"Успешно исправлено товаров: {fixed_count}", messages.SUCCESS
+            request,
+            f"Успешно исправлено товаров: {fixed_count}",
+            messages.SUCCESS,
         )
         return HttpResponseRedirect("../")
 
@@ -110,13 +111,19 @@ class ProductAdmin(admin.ModelAdmin):
         ),
         (
             "Характеристики",
-            {"fields": (("composition", "composition_zh"), "size_goods", "quantum")},
+            {
+                "fields": (
+                    ("composition", "composition_zh"),
+                    "size_goods",
+                    "quantum",
+                )
+            },
         ),
         (
             "Логистика",
             {
                 "fields": (
-                    "package_goods",
+                    ("package_goods", "package_goods_zh"),
                     "group_package",
                     "transport_box_load",
                     "gross_weight",
@@ -124,7 +131,18 @@ class ProductAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("ВЭД", {"fields": ("tn_ved_code", "vat", ("tp", "rd", "risk"))}),
+        (
+            "ВЭД",
+            {
+                "fields": (
+                    "tn_ved_code",
+                    "vat",
+                    ("tp", "tp_zh"),
+                    ("rd", "rd_zh"),
+                    ("risk", "risk_zh"),
+                )
+            },
+        ),
         (
             "Медиа",
             {
