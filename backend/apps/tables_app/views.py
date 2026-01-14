@@ -266,6 +266,53 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     # --- ПЕРЕОПРЕДЕЛЕНИЕ CRUD ---
 
+    def update(self, request, *args, **kwargs):
+        """Перехватываем UPDATE для обработки поля images (base64 фото)."""
+        # Обрабатываем поле images (base64 фото из фронтенда)
+        images = request.data.get("images", [])
+        if images and isinstance(images, list):
+            # Берём текущие photos_list из запроса или пустой список
+            current_photos = list(request.data.get("photos_list", []) or [])
+            if isinstance(current_photos, str):
+                current_photos = [p.strip() for p in current_photos.split(",")]
+
+            new_photos_added = []
+            for img in images:
+                if not img or not isinstance(img, str):
+                    continue
+
+                # Если это внешняя ссылка - добавляем как есть
+                if img.startswith(("http://", "https://")):
+                    if img not in current_photos:
+                        new_photos_added.append(img)
+                # Если это локальный путь /media/ - добавляем как есть
+                elif img.startswith("/media/"):
+                    if img not in current_photos:
+                        new_photos_added.append(img)
+                # Если это base64 - декодируем и сохраняем файл
+                elif img.startswith("data:image"):
+                    file_obj = decode_base64_file(img)
+                    if file_obj:
+                        filename = f"{uuid.uuid4().hex}.jpg"
+                        path = default_storage.save(
+                            f"products/{filename}", ContentFile(file_obj.read())
+                        )
+                        relative_path = f"/media/{path}"
+                        new_photos_added.append(relative_path)
+
+            # Объединяем старые и новые фото
+            if new_photos_added:
+                # Модифицируем request.data (работает с dict и QueryDict)
+                if hasattr(request.data, '_mutable'):
+                    request.data._mutable = True
+                    request.data["photos_list"] = current_photos + new_photos_added
+                    request.data._mutable = False
+                else:
+                    request.data["photos_list"] = current_photos + new_photos_added
+
+        # Вызываем стандартный update
+        return super().update(request, *args, **kwargs)
+
     def perform_update(self, serializer):
         """Обработка photos_list при обновлении - строка -> массив."""
         data = serializer.validated_data
