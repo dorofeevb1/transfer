@@ -554,9 +554,8 @@ class ProductViewSet(viewsets.ModelViewSet):
                 f.name: f.get_internal_type() for f in Product._meta.fields
             }
 
-            # ШАГ 1: Подготовка данных и сбор текстов для перевода
+            # ШАГ 1: Подготовка данных
             products_data = []
-            texts_to_translate = set()  # Уникальные тексты для перевода
 
             for row in raw_data:
                 row_clean = {clean_key(k): v for k, v in row.items()}
@@ -581,13 +580,6 @@ class ProductViewSet(viewsets.ModelViewSet):
                             row_clean.get(clean_key(e_h)), model_fields_types.get(m_f), m_f
                         )
 
-                # Собираем тексты для перевода
-                for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
-                    val_ru = model_data.get(ru_f)
-                    val_zh = model_data.get(zh_f)
-                    if not is_empty(val_ru) and is_empty(val_zh):
-                        texts_to_translate.add(str(val_ru))
-
                 new_amount = clean_val(row_clean.get("Кол-во шт"), "int")
                 products_data.append({
                     "article": article,
@@ -595,41 +587,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                     "new_amount": new_amount
                 })
 
-            # ШАГ 2: Батчевый перевод всех уникальных текстов
-            translation_cache = {}
-            if texts_to_translate:
-                print(f"[IMPORT] Starting translation of {len(texts_to_translate)} unique texts")
-                translator = GoogleTranslator(source="auto", target="zh-CN")
-                texts_list = list(texts_to_translate)
-
-                # Переводим батчами по 50 текстов
-                batch_size = 50
-                for i in range(0, len(texts_list), batch_size):
-                    batch = texts_list[i:i + batch_size]
-                    print(f"[IMPORT] Translating batch {i//batch_size + 1}, {len(batch)} texts")
-                    try:
-                        # translate_batch возвращает список переводов
-                        translations = translator.translate_batch(batch)
-                        for original, translated in zip(batch, translations):
-                            translation_cache[original] = translated
-                        print(f"[IMPORT] Batch translated successfully")
-                        time.sleep(0.1)  # Небольшая задержка между батчами
-                    except Exception as e:
-                        print(f"[IMPORT] Batch failed: {e}, falling back to individual")
-                        # При ошибке переводим по одному
-                        for idx, text in enumerate(batch):
-                            try:
-                                translation_cache[text] = translator.translate(text)
-                                if idx % 10 == 0:
-                                    print(f"[IMPORT] Individual: {idx}/{len(batch)}")
-                                time.sleep(0.05)
-                            except:
-                                translation_cache[text] = ""
-                print(f"[IMPORT] Translation complete, {len(translation_cache)} cached")
-            else:
-                print("[IMPORT] No texts to translate")
-
-            # ШАГ 3: Применяем переводы и разделяем на новые/существующие
+            # ШАГ 2: Разделяем на новые/существующие
             existing_articles = set(
                 Product.objects.filter(
                     article__in=[p["article"] for p in products_data]
@@ -644,13 +602,6 @@ class ProductViewSet(viewsets.ModelViewSet):
                 model_data = prod_data["model_data"]
                 new_amount = prod_data["new_amount"]
 
-                # Применяем переводы из кэша
-                for ru_f, zh_f in self.MAP_ZH_FIELDS.items():
-                    val_ru = model_data.get(ru_f)
-                    val_zh = model_data.get(zh_f)
-                    if not is_empty(val_ru) and is_empty(val_zh):
-                        model_data[zh_f] = translation_cache.get(str(val_ru), "")
-
                 if article in existing_articles:
                     products_to_update.append({
                         "article": article,
@@ -664,7 +615,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                         Product(article=article, amount_pieces=new_amount, **create_data)
                     )
 
-            # ШАГ 4: Bulk создание новых продуктов
+            # ШАГ 3: Bulk создание новых продуктов
             created = 0
             if products_to_create:
                 try:
@@ -673,7 +624,7 @@ class ProductViewSet(viewsets.ModelViewSet):
                 except Exception:
                     pass
 
-            # ШАГ 5: Обновление существующих (по одному, т.к. используем F())
+            # ШАГ 4: Обновление существующих (по одному, т.к. используем F())
             updated = 0
             for prod_update in products_to_update:
                 try:
