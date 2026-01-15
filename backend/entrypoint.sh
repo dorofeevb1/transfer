@@ -7,8 +7,11 @@ while ! nc -z db 5432; do
 done
 echo "PostgreSQL started"
 
-echo "Applying database migrations..."
-python manage.py migrate
+# Миграции только для web контейнера (не для celery)
+if [ "$1" != "celery" ]; then
+  echo "Applying database migrations..."
+  python manage.py migrate
+fi
 
-echo "Starting Django server..."
-python manage.py runserver 0.0.0.0:8000
+# Выполняем переданную команду
+exec "$@"

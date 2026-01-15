@@ -10,8 +10,9 @@ REMOTE_PATH = /root/tables
 back:
 	@echo "🚀 Заливаем бэкенд..."
 	rsync -avzP --exclude '__pycache__' --exclude 'venv' --exclude '.git' --exclude '.env' ./backend/ $(HOST):$(REMOTE_PATH)/backend/
-	@echo "🔄 Пересобираем контейнер Django..."
-	ssh $(HOST) "cd $(REMOTE_PATH) && docker compose up -d --build web"
+	rsync -avzP ./docker-compose.yml $(HOST):$(REMOTE_PATH)/docker-compose.yml
+	@echo "🔄 Пересобираем контейнеры..."
+	ssh $(HOST) "cd $(REMOTE_PATH) && docker compose up -d --build web celery"
 	@echo "✅ Бэкенд готов!"
 
 # 2. Обновить Фронтенд (Angular)
