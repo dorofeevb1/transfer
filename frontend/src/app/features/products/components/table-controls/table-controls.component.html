@@ -1,28 +1,20 @@
 <div class="controls-row">
-    <!-- ЛЕВАЯ ЧАСТЬ: Поиск и Фильтр -->
+    <!-- Левая часть: Поиск, Экспорт, Фильтры, Сортировка -->
     <div class="left-group">
 
         <!-- Поиск -->
         <div class="search-field">
-            <!-- Убираем левую иконку, она не нужна по макету, если есть кнопка справа -->
             <input type="text" [placeholder]="'PRODUCTS.SEARCH_PLACEHOLDER' | translate"
                 (keyup)="globalFilterChange.emit($event)">
-
-            <!-- Черная кнопка поиска справа -->
             <button class="search-btn" disabled>
                 <mat-icon>search</mat-icon>
             </button>
         </div>
 
-    </div>
-
-    <!-- ПРАВАЯ ЧАСТЬ: Экспорт и Таблица -->
-    <div class="right-group">
-
         <!-- Экспорт -->
         <div class="export-wrapper">
             <button class="btn-outline" [matMenuTriggerFor]="exportMenu">
-                <mat-icon class="icon-left">ios_share</mat-icon> <!-- Иконка "поделиться/экспорт" как на iOS -->
+                <mat-icon class="icon-left">ios_share</mat-icon>
                 {{ 'PRODUCTS.EXPORT' | translate }}
                 <mat-icon class="chevron">expand_more</mat-icon>
             </button>
@@ -32,11 +24,26 @@
             </mat-menu>
         </div>
 
-        <!-- Таблица / Колонки -->
-        <button class="btn-outline" [matMenuTriggerFor]="columnsMenu">
-            <mat-icon class="icon-left">tune</mat-icon>
+        <!-- Фильтры -->
+        <button class="btn-outline" (click)="toggleFilter.emit()">
+            <mat-icon class="icon-left">filter_list</mat-icon>
             {{ 'PRODUCTS.FILTERS' | translate }}
             <span *ngIf="activeFilterCount > 0" class="badge">{{ activeFilterCount }}</span>
+        </button>
+
+        <!-- Сортировка таблицы -->
+        <button class="btn-outline" [matMenuTriggerFor]="columnsMenu">
+            <mat-icon class="icon-left">tune</mat-icon>
+            {{ 'PRODUCTS.TABLE_SORT' | translate }}
+        </button>
+
+    </div>
+
+    <!-- Правая часть: Импорт -->
+    <div class="right-group">
+        <button class="btn-import" (click)="importClick.emit()">
+            <mat-icon>download</mat-icon>
+            {{ 'PRODUCTS.IMPORT' | translate }}
         </button>
     </div>
 </div>

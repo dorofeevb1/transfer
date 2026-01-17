@@ -1,3 +1,10 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
 /* Основной контейнер */
 .filter-container {
     display: flex;
@@ -139,8 +146,37 @@
     width: 100%;
 }
 
-.date-input-wrapper {
-    margin-top: 16px;
+/* Секция даты */
+.date-section {
+    padding: 24px 32px 16px 32px;
+}
+
+/* Список чекбоксов */
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .checkbox-item {
+        ::ng-deep .mdc-form-field {
+            font-family: 'Inter', sans-serif;
+        }
+
+        ::ng-deep .mdc-label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Стиль чекбокса */
+        ::ng-deep .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+            background-color: #1A1A1A !important;
+            border-color: #1A1A1A !important;
+        }
+
+        ::ng-deep .mdc-checkbox__native-control:enabled ~ .mdc-checkbox__background {
+            border-color: #666 !important;
+        }
+    }
 }
 
 .size-inputs-grid {

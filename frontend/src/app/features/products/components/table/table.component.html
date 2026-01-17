@@ -4,7 +4,7 @@
 
     <mat-sidenav #filterSidenav mode="over" position="end" class="filter-sidenav" [fixedInViewport]="true"
         [fixedTopGap]="0" [fixedBottomGap]="0">
-        <app-filter-form [form]="filterForm" (apply)="applySideNavFilters()" (reset)="resetSideNavFilters()"
+        <app-filter-form [form]="filterForm" (apply)="applySideNavFilters($event)" (reset)="resetSideNavFilters()"
             (close)="filterSidenav.close()">
         </app-filter-form>
     </mat-sidenav>
@@ -13,11 +13,7 @@
     <mat-sidenav-content class="page-content-wrapper">
         <div class="table-page-layout">
 
-            <!-- 1. Заголовок страницы (Товары + Кнопки Импорта) -->
-            <app-page-header (importClick)="openImportDialog()" (addColumnClick)="addColumn()">
-            </app-page-header>
-
-            <!-- 2. Панель управления (Поиск, Фильтр, Экспорт) -->
+            <!-- Панель управления (Поиск, Фильтры, Экспорт, Импорт) -->
             <app-table-controls [allColumns]="allColumns" [columnsForm]="columnsForm"
                 [activeFilterCount]="activeFilterCount" [appliedFilters]="appliedFilters"
                 [selectionHasValue]="selection.hasValue()" [selectionCount]="selection.selected.length"
@@ -25,7 +21,8 @@
                 (toggleFilter)="filterSidenav.toggle()" (applyColumnChanges)="applyColumnChanges()"
                 (removeFilter)="onRemoveFilter($event)" (editClick)="onEditClick()" (saveClick)="onSaveBulkChanges()"
                 (cancelClick)="onCancelBulkEdit()" (deleteClick)="onDeleteSelected()"
-                (exportToExcel)="handleExportToExcel()" (exportToCsv)="handleExportToCsv()">
+                (exportToExcel)="handleExportToExcel()" (exportToCsv)="handleExportToCsv()"
+                (importClick)="openImportDialog()">
             </app-table-controls>
 
             <!-- 3. Таблица с данными -->
@@ -34,7 +31,9 @@
                     [isBulkEditMode]="isBulkEditMode" [columnsToRender]="columnsToRender"
                     [isAllSelected]="isAllSelected()" (sortChange)="setSort($event)"
                     (removeColumnClick)="removeColumn($event.columnId, $event.event)"
-                    (photoViewerClick)="openPhotoViewer($event)" (masterToggleClick)="masterToggle()"
+                    (photoViewerClick)="openPhotoViewer($event)"
+                    (singlePhotoClick)="openSinglePhoto($event)"
+                    (masterToggleClick)="masterToggle()"
                     (rowToggleClick)="selection.toggle($event)">
                 </app-products-table>
             </div>

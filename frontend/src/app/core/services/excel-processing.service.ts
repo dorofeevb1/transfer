@@ -69,8 +69,12 @@ export class ExcelProcessingService {
             newRow[this.TARGET_FIELD] = []; // Создаем массив под фотки
 
             Object.keys(row).forEach(key => {
-                // Если ключ в черном списке - пропускаем его нахер
+                // Если ключ в черном списке - пропускаем
                 if (keysToRemove.includes(key)) {
+                    return;
+                }
+                // Не перезаписываем наш массив photos данными из Excel
+                if (key === this.TARGET_FIELD) {
                     return;
                 }
                 newRow[key] = row[key];
@@ -85,9 +89,22 @@ export class ExcelProcessingService {
         // 3. ДОСТАЕМ ФОТКИ ИЗ НЕДР XLSX
         try {
             const zip = await JSZip.loadAsync(arrayBuffer);
-            const relsFiles = Object.keys(zip.files).filter(n => n.includes('drawings/_rels/drawing') && n.endsWith('.rels'));
 
-            if (relsFiles.length === 0) return data;
+            // DEBUG: Показываем все файлы в архиве
+            const allFiles = Object.keys(zip.files);
+            console.log('=== XLSX ZIP CONTENTS ===');
+            console.log('All files:', allFiles.filter(f => f.includes('drawing') || f.includes('media')));
+
+            const relsFiles = Object.keys(zip.files).filter(n => n.includes('drawings/_rels/drawing') && n.endsWith('.rels'));
+            console.log('Rels files found:', relsFiles);
+
+            if (relsFiles.length === 0) {
+                console.warn('No drawing rels files found!');
+                // Попробуем альтернативный путь
+                const altRels = allFiles.filter(f => f.includes('_rels') && f.includes('drawing'));
+                console.log('Alternative rels:', altRels);
+                return data;
+            }
 
             const imgMap = new Map<string, string>();
             for (const rFile of relsFiles) {
@@ -104,15 +121,20 @@ export class ExcelProcessingService {
             }
 
             const drawFiles = Object.keys(zip.files).filter(n => n.includes('drawings/drawing') && n.endsWith('.xml'));
+            console.log('Drawing files found:', drawFiles);
+
             for (const dFile of drawFiles) {
                 const xml = await zip.file(dFile)?.async('string');
                 if (!xml) continue;
+
+                console.log('Parsing drawing file:', dFile);
                 const doc = new DOMParser().parseFromString(xml, 'application/xml');
 
                 const anchors = [
                     ...Array.from(doc.getElementsByTagName('xdr:twoCellAnchor')),
                     ...Array.from(doc.getElementsByTagName('xdr:oneCellAnchor'))
                 ];
+                console.log('Anchors found:', anchors.length);
 
                 for (const anchor of anchors) {
                     const fromNode = anchor.getElementsByTagName('xdr:from')[0];
@@ -144,6 +166,15 @@ export class ExcelProcessingService {
         } catch (e) {
             console.warn('Ошибка парсинга картинок:', e);
         }
+
+        // Логируем результат для отладки
+        console.log('=== EXCEL PROCESSING RESULT ===');
+        data.forEach((row, i) => {
+            if (row[this.TARGET_FIELD] && row[this.TARGET_FIELD].length > 0) {
+                console.log(`Row ${i}: ${row[this.TARGET_FIELD].length} photos found`);
+            }
+        });
+        console.log('Total rows with photos:', data.filter(r => r[this.TARGET_FIELD]?.length > 0).length);
 
         return data;
     }

@@ -18,6 +18,7 @@ import { AddColumnDialogComponent } from '../../dialogs/add-column-dialog/add-co
 // Сервисы
 import { ExportService } from 'src/app/core/services/export.service';
 import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
+import { FilterData } from '../../dialogs/filter-form/filter-form.component';
 
 export interface AppliedFilter {
   key: string;
@@ -41,6 +42,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   filterForm: FormGroup;
   activeFilterCount = 0;
   appliedFilters: AppliedFilter[] = [];
+  currentFilters: FilterData | null = null;
 
   searchQuery = '';
 
@@ -297,6 +299,23 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
   }
 
+  openSinglePhoto(photo: string): void {
+    if (!photo || typeof photo !== 'string') {
+      return;
+    }
+    const isValidPhoto = photo.startsWith('data:image') ||
+      photo.startsWith('http://') ||
+      photo.startsWith('https://') ||
+      photo.startsWith('/media/');
+    if (isValidPhoto) {
+      this.dialog.open(PhotoViewerComponent, {
+        width: '80vw',
+        height: '80vh',
+        data: { photos: [photo], singleMode: true }
+      });
+    }
+  }
+
 
   setupForms(): void {
     const filterControls: { [key: string]: FormControl } = {};
@@ -310,27 +329,113 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
 
-  applySideNavFilters(): void {
-    const values = this.filterForm.value;
-    this.appliedFilters = Object.entries(values)
-      .filter(([_, value]) => !!value)
-      .map(([key, value]) => ({ key, value: String(value) }));
-    this.activeFilterCount = this.appliedFilters.length;
-    this.dataSource.filter = JSON.stringify(values);
-    if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+  applySideNavFilters(filterData: FilterData): void {
+    this.currentFilters = filterData;
+
+    // Подсчитываем количество активных фильтров
+    let count = 0;
+    const applied: AppliedFilter[] = [];
+
+    if (filterData.dateFrom || filterData.dateTo) {
+      count++;
+      const fromStr = filterData.dateFrom ? filterData.dateFrom.toLocaleDateString('ru-RU') : '';
+      const toStr = filterData.dateTo ? filterData.dateTo.toLocaleDateString('ru-RU') : '';
+      const dateValue = fromStr && toStr ? `${fromStr} - ${toStr}` : (fromStr || toStr);
+      applied.push({ key: 'Дата', value: dateValue });
+    }
+    if (filterData.category1 && filterData.category1.length > 0) {
+      count++;
+      applied.push({ key: 'Категория 1', value: filterData.category1.join(', ') });
+    }
+    if (filterData.category2 && filterData.category2.length > 0) {
+      count++;
+      applied.push({ key: 'Категория 2', value: filterData.category2.join(', ') });
+    }
+    if (filterData.package && filterData.package.length > 0) {
+      count++;
+      applied.push({ key: 'Упаковка', value: filterData.package.join(', ') });
+    }
+
+    this.activeFilterCount = count;
+    this.appliedFilters = applied;
+
+    // Отправляем запрос на бэкенд
+    const pageIndex = this.paginator?.pageIndex ?? 0;
+    const pageSize = this.paginator?.pageSize ?? 10;
+
+    this.productTableService.loadTableDataWithFilters(
+      pageIndex,
+      pageSize,
+      filterData
+    ).subscribe({
+      next: (response) => {
+        this.dataSource.data = response.rows || [];
+        this.totalCount = response.totalCount || 0;
+        if (this.paginator) {
+          this.paginator.length = this.totalCount;
+        }
+      },
+      error: (err) => console.error('Ошибка фильтрации:', err)
+    });
+
     this.filterSidenav.close();
   }
 
 
   resetSideNavFilters(): void {
     this.filterForm.reset();
-    this.applySideNavFilters();
+    this.currentFilters = null;
+    this.activeFilterCount = 0;
+    this.appliedFilters = [];
+
+    // Перезагружаем данные без фильтров
+    const pageIndex = this.paginator?.pageIndex ?? 0;
+    const pageSize = this.paginator?.pageSize ?? 10;
+    this.productTableService.loadTableData(pageIndex, pageSize);
   }
 
 
   onRemoveFilter(key: string): void {
-    this.filterForm.get(key)?.setValue('');
-    this.applySideNavFilters();
+    // Удаляем фильтр из списка примененных
+    this.appliedFilters = this.appliedFilters.filter(f => f.key !== key);
+    this.activeFilterCount = this.appliedFilters.length;
+
+    // Обновляем currentFilters
+    if (this.currentFilters) {
+      if (key === 'Дата') {
+        this.currentFilters.dateFrom = null;
+        this.currentFilters.dateTo = null;
+      } else if (key === 'Категория 1') {
+        this.currentFilters.category1 = [];
+      } else if (key === 'Категория 2') {
+        this.currentFilters.category2 = [];
+      } else if (key === 'Упаковка') {
+        this.currentFilters.package = [];
+      }
+
+      // Перезапрашиваем данные с обновленными фильтрами
+      const pageIndex = this.paginator?.pageIndex ?? 0;
+      const pageSize = this.paginator?.pageSize ?? 10;
+
+      if (this.activeFilterCount > 0) {
+        this.productTableService.loadTableDataWithFilters(
+          pageIndex,
+          pageSize,
+          this.currentFilters
+        ).subscribe({
+          next: (response) => {
+            this.dataSource.data = response.rows || [];
+            this.totalCount = response.totalCount || 0;
+            if (this.paginator) {
+              this.paginator.length = this.totalCount;
+            }
+          },
+          error: (err) => console.error('Ошибка фильтрации:', err)
+        });
+      } else {
+        this.productTableService.loadTableData(pageIndex, pageSize);
+      }
+    }
   }
 
 

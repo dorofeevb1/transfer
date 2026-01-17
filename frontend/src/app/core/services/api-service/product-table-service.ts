@@ -143,4 +143,37 @@ export class ProductTableService {
     searchTableData(query: string): Observable<Row[]> {
         return this.apiService.post<Row[]>('api/products/search/', { query });
     }
+
+    // --- ФИЛЬТРЫ ---
+
+    // Получение уникальных значений для фильтров
+    getFilterOptions(): Observable<{ category1: string[], category2: string[], package: string[] }> {
+        return this.apiService.get<{ category1: string[], category2: string[], package: string[] }>('api/products/filter-options/');
+    }
+
+    // Загрузка данных с применением фильтров
+    loadTableDataWithFilters(
+        pageIndex: number,
+        pageSize: number,
+        filters: {
+            dateFrom?: Date | null;
+            dateTo?: Date | null;
+            category1?: string[];
+            category2?: string[];
+            package?: string[];
+        }
+    ): Observable<TableDataResponse> {
+        const payload = {
+            page: pageIndex,
+            size: pageSize,
+            filters: {
+                dateFrom: filters.dateFrom ? filters.dateFrom.toISOString().split('T')[0] : null,
+                dateTo: filters.dateTo ? filters.dateTo.toISOString().split('T')[0] : null,
+                category1: filters.category1 || [],
+                category2: filters.category2 || [],
+                package: filters.package || []
+            }
+        };
+        return this.apiService.post<TableDataResponse>('api/products/filter/', payload);
+    }
 }

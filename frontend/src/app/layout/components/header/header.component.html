@@ -16,15 +16,14 @@
             <button mat-menu-item (click)="switchLang('zh')">中文</button>
         </mat-menu>
 
-        <!-- 2. Настройки (Скрыты, если не админ) -->
-        <ng-container *ngIf="isAdmin$ | async">
+        <!-- 2. Настройки (закомментировано) -->
+        <!-- <ng-container *ngIf="isAdmin$ | async">
             <button mat-icon-button class="action-btn settings-btn" [matMenuTriggerFor]="adminMenu"
                 [matTooltip]="'HEADER.SETTINGS' | translate">
                 <mat-icon>settings</mat-icon>
             </button>
         </ng-container>
 
-        <!-- Меню админа -->
         <mat-menu #adminMenu="matMenu">
             <button mat-menu-item routerLink="/admin-panel/products">
                 <mat-icon>inventory_2</mat-icon>
@@ -34,7 +33,7 @@
                 <mat-icon>people</mat-icon>
                 <span>{{ 'HEADER.USERS' | translate }}</span>
             </button>
-        </mat-menu>
+        </mat-menu> -->
 
         <!-- 3. Профиль пользователя -->
         <div class="user-profile" [matMenuTriggerFor]="userMenu">

@@ -1,19 +1,8 @@
 :host {
     display: block;
     width: 100%;
-    /* 
-       РАСЧЕТ ВЫСОТЫ РАБОЧЕЙ ОБЛАСТИ:
-       100vh (Весь экран)
-       - 81px (Шапка сайта, файл 9)
-       - 301px (Футер сайта, файл 10)
-       = ~382px отступов
-       
-       Примечание: Если на широких экранах футер снова станет 220px, 
-       внизу может появиться пустое место. Это нормально.
-    */
-    height: calc(100vh - 382px);
-
-    /* Минимальная высота, чтобы таблица совсем не схлопнулась на ноутбуках */
+    /* 100vh минус высота шапки (81px) */
+    height: calc(100vh - 81px);
     min-height: 400px;
 }
 
@@ -21,6 +10,12 @@
     width: 100%;
     height: 100%;
     background-color: #F5F7F9;
+
+    ::ng-deep .mat-drawer-content {
+        display: flex;
+        flex-direction: column;
+        height: 100% !important;
+    }
 }
 
 .page-content-wrapper {
@@ -50,25 +45,34 @@ app-table-controls,
 
 /* --- ОБЕРТКА ТАБЛИЦЫ (РАСТЯГИВАЕТСЯ) --- */
 .table-wrapper {
-    /* Flex: 1 заставляет блок занять всё пространство 
-       между .header-actions (сверху) и .sticky-paginator (снизу) */
-    flex: 1;
-
-    /* Скрываем скролл на обертке, передаем его внутрь компонента таблицы */
+    flex: 1 1 auto;
+    min-height: 0; /* Важно для flex-контейнера */
     overflow: hidden;
-
     background: white;
     position: relative;
     display: flex;
     flex-direction: column;
+
+    app-products-table {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
 }
 
 /* Стилизация сайдбара фильтров */
 .filter-sidenav {
     width: 400px;
-    height: 100%;
+    height: 100vh !important;
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
     border-left: none;
+
+    ::ng-deep .mat-drawer-inner-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
 }
 
 /* Пагинатор прибит к низу области контента */

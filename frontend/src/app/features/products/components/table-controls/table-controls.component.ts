@@ -26,6 +26,8 @@ export class TableControlsComponent {
   @Output() removeFilter = new EventEmitter<string>();
   @Output() exportToExcel = new EventEmitter<void>();
   @Output() exportToCsv = new EventEmitter<void>();
+  @Output() toggleFilter = new EventEmitter<void>();
+  @Output() importClick = new EventEmitter<void>();
 
   onSaveClick(): void {
     console.log('=== TableControlsComponent.onSaveClick() ===');

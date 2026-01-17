@@ -1,22 +1,38 @@
-<div class="viewer-container">
+<div class="viewer-container" [class.single-mode]="data.singleMode">
     <div class="viewer-header">
         <h2 class="viewer-title">{{ 'DIALOGS.PHOTO_VIEWER_TITLE' | translate }}</h2>
-        <button mat-icon-button class="close-btn" mat-dialog-close>
-            <mat-icon>close</mat-icon>
-        </button>
+        <div class="header-actions">
+            <button mat-icon-button *ngIf="data.singleMode" (click)="toggleZoom()" [matTooltip]="isZoomed ? 'Уменьшить' : 'Увеличить'">
+                <mat-icon>{{ isZoomed ? 'zoom_out' : 'zoom_in' }}</mat-icon>
+            </button>
+            <button mat-icon-button class="close-btn" mat-dialog-close>
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
     </div>
 
     <div class="viewer-content">
-        <div class="photo-grid">
-            <div *ngFor="let photo of data.photos" class="photo-item">
-                <img [src]="photo | safeUrl" [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
+        <!-- Single mode: одно фото крупно с зумом -->
+        <ng-container *ngIf="data.singleMode; else galleryMode">
+            <div class="single-photo-container" [class.zoomed]="isZoomed" (click)="toggleZoom()">
+                <img [src]="data.photos[0] | safeUrl"
+                     [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate"
+                     [style.transform]="isZoomed ? 'scale(' + zoomLevel + ')' : 'scale(1)'"
+                     [style.cursor]="isZoomed ? 'zoom-out' : 'zoom-in'">
+            </div>
+        </ng-container>
 
-                <!-- Оверлей при наведении (опционально) -->
-                <div class="photo-overlay">
-                    <mat-icon>zoom_in</mat-icon>
+        <!-- Gallery mode: сетка фото -->
+        <ng-template #galleryMode>
+            <div class="photo-grid">
+                <div *ngFor="let photo of data.photos; let i = index" class="photo-item" (click)="openFullscreen(i)">
+                    <img [src]="photo | safeUrl" [alt]="'DIALOGS.PRODUCT_IMAGE_ALT' | translate">
+                    <div class="photo-overlay">
+                        <mat-icon>zoom_in</mat-icon>
+                    </div>
                 </div>
             </div>
-        </div>
+        </ng-template>
 
         <!-- Если фото нет -->
         <div *ngIf="!data.photos?.length" class="empty-state">
@@ -30,4 +46,22 @@
             {{ 'DIALOGS.CLOSE_BUTTON' | translate }}
         </button>
     </div>
+</div>
+
+<!-- Fullscreen overlay для галереи -->
+<div class="fullscreen-overlay" *ngIf="fullscreenIndex !== null" (click)="closeFullscreen()">
+    <button mat-icon-button class="fullscreen-close" (click)="closeFullscreen()">
+        <mat-icon>close</mat-icon>
+    </button>
+    <button mat-icon-button class="fullscreen-nav prev" *ngIf="fullscreenIndex > 0" (click)="prevPhoto($event)">
+        <mat-icon>chevron_left</mat-icon>
+    </button>
+    <img [src]="data.photos[fullscreenIndex] | safeUrl"
+         [class.zoomed]="isZoomed"
+         [style.transform]="isZoomed ? 'scale(' + zoomLevel + ')' : 'scale(1)'"
+         (click)="toggleZoom(); $event.stopPropagation()">
+    <button mat-icon-button class="fullscreen-nav next" *ngIf="fullscreenIndex < data.photos.length - 1" (click)="nextPhoto($event)">
+        <mat-icon>chevron_right</mat-icon>
+    </button>
+    <div class="fullscreen-counter">{{ fullscreenIndex + 1 }} / {{ data.photos.length }}</div>
 </div>

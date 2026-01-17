@@ -1,21 +1,27 @@
 :host {
     display: block;
     background-color: #FFFFFF;
-    padding: 0 40px 24px 40px;
-    /* Отступы как у хедера */
+    padding: 24px 40px;
 }
 
 .controls-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
 }
 
-.left-group,
+.left-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .right-group {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
+    flex-shrink: 0;
 }
 
 /* --- ПОИСК --- */
@@ -23,9 +29,8 @@
     position: relative;
     display: flex;
     align-items: center;
-    width: 320px;
-    /* Ширина инпута */
-    height: 44px;
+    width: 280px;
+    height: 40px;
 
     input {
         width: 100%;
@@ -58,42 +63,41 @@
         right: 0;
         top: 0;
         bottom: 0;
-        width: 44px;
+        width: 40px;
         background-color: #1A1A1A;
-        /* Черный цвет */
         color: white;
         border: none;
         border-radius: 0 4px 4px 0;
-        /* Скругление только справа */
         display: flex;
         justify-content: center;
         align-items: center;
         cursor: pointer;
 
         mat-icon {
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
         }
     }
 }
 
 /* --- КНОПКИ (Белые с рамкой) --- */
 .btn-outline {
-    height: 44px;
+    height: 40px;
     background-color: white;
     border: 1px solid #E0E0E0;
     border-radius: 4px;
-    padding: 0 16px;
+    padding: 0 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
     color: #1A1A1A;
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
 
     &:hover {
         background-color: #F5F5F5;
@@ -101,16 +105,17 @@
 
     .icon-left {
         color: #1A1A1A;
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
     }
 
     .chevron {
         color: #808080;
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        margin-left: -2px;
     }
 
     .badge {
@@ -121,6 +126,35 @@
         padding: 2px 6px;
         border-radius: 10px;
         margin-left: 4px;
+    }
+}
+
+/* --- КНОПКА ИМПОРТ (Красная) --- */
+.btn-import {
+    height: 40px;
+    background-color: #D91F26;
+    border: none;
+    border-radius: 4px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background-color: #B81A20;
+    }
+
+    mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
     }
 }
 

@@ -18,6 +18,7 @@ export class ProductsTableComponent implements AfterViewInit {
 
   @Output() removeColumnClick = new EventEmitter<{ columnId: string, event: MouseEvent }>();
   @Output() photoViewerClick = new EventEmitter<string[]>();
+  @Output() singlePhotoClick = new EventEmitter<string>();
   @Output() masterToggleClick = new EventEmitter<void>();
   @Output() rowToggleClick = new EventEmitter<any>();
   @Output() sortChange = new EventEmitter<MatSort>();
