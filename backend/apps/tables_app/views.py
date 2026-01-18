@@ -919,6 +919,76 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
         return response
 
+    @action(detail=False, methods=["get"], url_path="filter-options")
+    def get_filter_options(self, request):
+        """Возвращает уникальные значения для адаптивных фильтров."""
+        # Получаем уникальные значения, исключая пустые
+        category1_values = Product.objects.exclude(
+            Q(category_1__isnull=True) | Q(category_1='') | Q(category_1='—')
+        ).values_list('category_1', flat=True).distinct().order_by('category_1')
+
+        category2_values = Product.objects.exclude(
+            Q(category_2__isnull=True) | Q(category_2='') | Q(category_2='—')
+        ).values_list('category_2', flat=True).distinct().order_by('category_2')
+
+        package_values = Product.objects.exclude(
+            Q(package_goods__isnull=True) | Q(package_goods='') | Q(package_goods='—')
+        ).values_list('package_goods', flat=True).distinct().order_by('package_goods')
+
+        return Response({
+            'category1': list(category1_values),
+            'category2': list(category2_values),
+            'package': list(package_values)
+        })
+
+    @action(detail=False, methods=["post"], url_path="filter")
+    def filter_products(self, request):
+        """Фильтрация товаров по категориям, упаковке и датам."""
+        filters = request.data.get('filters', {})
+        page = request.data.get('page', 1)
+        page_size = request.data.get('size', 20)
+
+        queryset = Product.objects.all()
+
+        # Фильтр по датам
+        date_from = filters.get('dateFrom')
+        date_to = filters.get('dateTo')
+        if date_from:
+            queryset = queryset.filter(date_creation__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(date_creation__lte=date_to)
+
+        # Фильтр по категории 1
+        category1 = filters.get('category1', [])
+        if category1:
+            queryset = queryset.filter(category_1__in=category1)
+
+        # Фильтр по категории 2
+        category2 = filters.get('category2', [])
+        if category2:
+            queryset = queryset.filter(category_2__in=category2)
+
+        # Фильтр по упаковке
+        package = filters.get('package', [])
+        if package:
+            queryset = queryset.filter(package_goods__in=package)
+
+        # Подсчет общего количества
+        total_count = queryset.count()
+
+        # Пагинация
+        start = (page - 1) * page_size
+        end = start + page_size
+        queryset = queryset[start:end]
+
+        # Сериализация
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+
+        return Response({
+            'rows': serializer.data,
+            'totalCount': total_count
+        })
+
     @action(detail=False, methods=["post"], url_path="clear-column")
     def clear_column(self, request):
         """Массовая очистка указанного столбца (кроме ID и Артикула)."""

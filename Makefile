@@ -12,7 +12,7 @@ back:
 	rsync -avzP --exclude '__pycache__' --exclude 'venv' --exclude '.git' --exclude '.env' ./backend/ $(HOST):$(REMOTE_PATH)/backend/
 	rsync -avzP ./docker-compose.yml $(HOST):$(REMOTE_PATH)/docker-compose.yml
 	@echo "🔄 Пересобираем контейнеры..."
-	ssh $(HOST) "cd $(REMOTE_PATH) && docker compose up -d --build web celery"
+	ssh $(HOST) "cd $(REMOTE_PATH) && docker compose up -d --build web celery && docker compose restart nginx"
 	@echo "✅ Бэкенд готов!"
 
 # 2. Обновить Фронтенд (Angular)

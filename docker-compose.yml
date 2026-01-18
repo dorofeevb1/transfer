@@ -61,9 +61,18 @@ services:
       - DB_PORT=5432
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - LIBRETRANSLATE_URL=http://libretranslate:5000
     depends_on:
       - db
       - redis
+      - libretranslate
+
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    restart: always
+    volumes:
+      - libretranslate_data:/home/libretranslate/.local
+    command: --load-only ru,zh,en
 
   nginx:
     image: nginx:alpine
@@ -85,3 +94,4 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
+  libretranslate_data:
