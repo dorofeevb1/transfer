@@ -10,6 +10,10 @@ from .tasks import fix_translations_task
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    # --- КАСТОМНЫЙ JS ДЛЯ КЛИКА ПО СТРОКЕ ---
+    class Media:
+        js = ('admin/js/row_click.js',)
+
     # --- НАСТРОЙКИ ОТОБРАЖЕНИЯ ---
     list_display = (
         "article",
@@ -120,3 +124,114 @@ class ProductAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    # --- ОГРАНИЧЕНИЯ ДЛЯ МЕНЕДЖЕРА ---
+
+    # Сокращенный список колонок для менеджера (в требуемом порядке)
+    MANAGER_LIST_DISPLAY = (
+        "date_creation",
+        "category_1",
+        "category_2",
+        "photos_list",
+        "article",
+        "name",
+        "composition",
+        "size_goods",
+        "package_goods",
+        "group_package",
+        "quantum",
+        "price_actual",
+        "vat",
+        "amount_stores",
+        "amount_pieces",
+        "comments",
+    )
+
+    # Сокращенная форма редактирования для менеджера
+    MANAGER_FIELDSETS = (
+        (
+            "Основное",
+            {
+                "fields": (
+                    "date_creation",
+                    ("category_1", "category_1_zh"),
+                    ("category_2", "category_2_zh"),
+                    "photos_list",
+                    "article",
+                    ("name", "name_zh"),
+                )
+            },
+        ),
+        (
+            "Описание",
+            {
+                "fields": (
+                    ("composition", "composition_zh"),
+                    "size_goods",
+                )
+            },
+        ),
+        (
+            "Упаковка и цена",
+            {
+                "fields": (
+                    ("package_goods", "package_goods_zh"),
+                    "group_package",
+                    "quantum",
+                    "price_actual",
+                    "vat",
+                )
+            },
+        ),
+        (
+            "Количество",
+            {
+                "fields": (
+                    "amount_stores",
+                    "amount_pieces",
+                )
+            },
+        ),
+        (
+            "Комментарии",
+            {
+                "fields": (
+                    ("comments", "comments_zh"),
+                )
+            },
+        ),
+    )
+
+    def _is_manager(self, request):
+        """Проверка, является ли пользователь менеджером."""
+        return hasattr(request.user, 'role') and request.user.role == 'manager'
+
+    def get_list_display(self, request):
+        """Сокращенный список колонок для менеджера."""
+        if self._is_manager(request):
+            return self.MANAGER_LIST_DISPLAY
+        return self.list_display
+
+    def get_fieldsets(self, request, obj=None):
+        """Сокращенная форма редактирования для менеджера."""
+        if self._is_manager(request):
+            return self.MANAGER_FIELDSETS
+        return self.fieldsets
+
+    def get_list_filter(self, request):
+        """Скрываем фильтры для менеджера."""
+        if self._is_manager(request):
+            return ()
+        return self.list_filter
+
+    def has_add_permission(self, request):
+        """Менеджер не может добавлять товары."""
+        if self._is_manager(request):
+            return False
+        return super().has_add_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        """Менеджер не может удалять товары."""
+        if self._is_manager(request):
+            return False
+        return super().has_delete_permission(request, obj)

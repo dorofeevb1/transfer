@@ -63,6 +63,40 @@ EXCEL_TO_MODEL_MAP = {
 
 MODEL_TO_EXCEL_MAP = {v: k for k, v in EXCEL_TO_MODEL_MAP.items()}
 
+# --- ОГРАНИЧЕНИЯ ДЛЯ РОЛЕЙ ---
+
+# Поля, доступные менеджеру (сокращенная таблица)
+# Порядок: Дата КП, Категории, Фото, Артикул, Наименование, Состав,
+# Размер, Упаковка, Квант, Цена, НДС, Кол-во, Комментарии
+MANAGER_ALLOWED_FIELDS = [
+    'id',
+    'date_creation',
+    'category_1',
+    'category_1_zh',
+    'category_2',
+    'category_2_zh',
+    'photos_list',
+    'article',
+    'name',
+    'name_zh',
+    'composition',
+    'composition_zh',
+    'size_goods',
+    'package_goods',
+    'package_goods_zh',
+    'group_package',
+    'quantum',
+    'price_actual',
+    'vat',
+    'amount_stores',
+    'amount_pieces',
+    'comments',
+    'comments_zh',
+]
+
+# Лимит экспорта для менеджера
+MANAGER_EXPORT_LIMIT = 100
+
 # --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 
 
@@ -498,6 +532,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         """Возвращает список доступных столбцов модели Product с локализацией."""
         lang = request.headers.get("Accept-Language", "ru").lower()
         is_chinese = "zh" in lang
+        is_manager = request.user.role == 'manager'
 
         # Поля которые не показываем (дубликаты для китайского и служебные)
         hidden_fields = {
@@ -510,6 +545,10 @@ class ProductViewSet(viewsets.ModelViewSet):
         for field in Product._meta.fields:
             # Пропускаем скрытые поля
             if field.name in hidden_fields:
+                continue
+
+            # Для менеджера - показываем только разрешенные поля
+            if is_manager and field.name not in MANAGER_ALLOWED_FIELDS:
                 continue
 
             if is_chinese:
@@ -538,6 +577,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         - Bulk операции для новых продуктов
         - Суммирует количество (amount_pieces) для существующих товаров
         """
+        # Менеджер не может импортировать
+        if request.user.role == 'manager':
+            return Response(
+                {"error": "Импорт недоступен для менеджеров"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         try:
             serializer = ProductImportSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -733,6 +779,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     def export_excel(self, request):
         """Экспорт в Excel с встроенными изображениями."""
         queryset = self._apply_export_filters(request)
+
+        # Ограничение для менеджера - максимум 100 строк
+        if request.user.role == 'manager':
+            queryset = queryset[:MANAGER_EXPORT_LIMIT]
+
         serializer = self.get_serializer(
             queryset, many=True, context={"request": request}
         )
@@ -887,6 +938,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     def export_csv(self, request):
         """Умный экспорт в CSV: с поддержкой локализации и выбора колонок."""
         queryset = self._apply_export_filters(request)
+
+        # Ограничение для менеджера - максимум 100 строк
+        if request.user.role == 'manager':
+            queryset = queryset[:MANAGER_EXPORT_LIMIT]
+
         # ВАЖНО: Добавлен context для работы Accept-Language
         serializer = self.get_serializer(
             queryset, many=True, context={"request": request}
@@ -922,18 +978,44 @@ class ProductViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="filter-options")
     def get_filter_options(self, request):
         """Возвращает уникальные значения для адаптивных фильтров."""
+        # Определяем язык из заголовка
+        lang = request.headers.get('Accept-Language', 'ru').lower()
+        is_chinese = 'zh' in lang
+
+        # Выбираем поля в зависимости от языка
+        if is_chinese:
+            category1_field = 'category_1_zh'
+            category2_field = 'category_2_zh'
+            package_field = 'package_goods_zh'
+        else:
+            category1_field = 'category_1'
+            category2_field = 'category_2'
+            package_field = 'package_goods'
+
         # Получаем уникальные значения, исключая пустые
         category1_values = Product.objects.exclude(
-            Q(category_1__isnull=True) | Q(category_1='') | Q(category_1='—')
-        ).values_list('category_1', flat=True).distinct().order_by('category_1')
+            Q(**{f'{category1_field}__isnull': True}) |
+            Q(**{category1_field: ''}) |
+            Q(**{category1_field: '—'})
+        ).values_list(category1_field, flat=True).distinct().order_by(
+            category1_field
+        )
 
         category2_values = Product.objects.exclude(
-            Q(category_2__isnull=True) | Q(category_2='') | Q(category_2='—')
-        ).values_list('category_2', flat=True).distinct().order_by('category_2')
+            Q(**{f'{category2_field}__isnull': True}) |
+            Q(**{category2_field: ''}) |
+            Q(**{category2_field: '—'})
+        ).values_list(category2_field, flat=True).distinct().order_by(
+            category2_field
+        )
 
         package_values = Product.objects.exclude(
-            Q(package_goods__isnull=True) | Q(package_goods='') | Q(package_goods='—')
-        ).values_list('package_goods', flat=True).distinct().order_by('package_goods')
+            Q(**{f'{package_field}__isnull': True}) |
+            Q(**{package_field: ''}) |
+            Q(**{package_field: '—'})
+        ).values_list(package_field, flat=True).distinct().order_by(
+            package_field
+        )
 
         return Response({
             'category1': list(category1_values),
@@ -945,8 +1027,22 @@ class ProductViewSet(viewsets.ModelViewSet):
     def filter_products(self, request):
         """Фильтрация товаров по категориям, упаковке и датам."""
         filters = request.data.get('filters', {})
-        page = request.data.get('page', 1)
+        page = request.data.get('page', 0)  # Фронт передает page=0 для первой страницы
         page_size = request.data.get('size', 20)
+
+        # Определяем язык из заголовка
+        lang = request.headers.get('Accept-Language', 'ru').lower()
+        is_chinese = 'zh' in lang
+
+        # Выбираем поля в зависимости от языка
+        if is_chinese:
+            category1_field = 'category_1_zh'
+            category2_field = 'category_2_zh'
+            package_field = 'package_goods_zh'
+        else:
+            category1_field = 'category_1'
+            category2_field = 'category_2'
+            package_field = 'package_goods'
 
         queryset = Product.objects.all()
 
@@ -961,28 +1057,30 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Фильтр по категории 1
         category1 = filters.get('category1', [])
         if category1:
-            queryset = queryset.filter(category_1__in=category1)
+            queryset = queryset.filter(**{f'{category1_field}__in': category1})
 
         # Фильтр по категории 2
         category2 = filters.get('category2', [])
         if category2:
-            queryset = queryset.filter(category_2__in=category2)
+            queryset = queryset.filter(**{f'{category2_field}__in': category2})
 
         # Фильтр по упаковке
         package = filters.get('package', [])
         if package:
-            queryset = queryset.filter(package_goods__in=package)
+            queryset = queryset.filter(**{f'{package_field}__in': package})
 
         # Подсчет общего количества
         total_count = queryset.count()
 
-        # Пагинация
-        start = (page - 1) * page_size
+        # Пагинация (page=0 это первая страница)
+        start = page * page_size
         end = start + page_size
         queryset = queryset[start:end]
 
         # Сериализация
-        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        serializer = self.get_serializer(
+            queryset, many=True, context={'request': request}
+        )
 
         return Response({
             'rows': serializer.data,
