@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog'; // Добавили MatDialog
-import { firstValueFrom } from 'rxjs'; // Необходим для async/await запросов
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { firstValueFrom } from 'rxjs';
 import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 import { ExcelProcessingService } from 'src/app/core/services/excel-processing.service';
 
@@ -24,7 +25,8 @@ export class ImportDialogComponent {
 
   constructor(
     public dialogRef: MatDialogRef<ImportDialogComponent>,
-    private dialog: MatDialog, // Инджектим сервис диалогов
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private excelService: ExcelProcessingService,
     private productTableService: ProductTableService
   ) { }
@@ -116,8 +118,21 @@ export class ImportDialogComponent {
         // Запускаем сценарий подтверждения
         await this.handleDuplicateConflict(dataToSend);
 
+      } else if (error.status === 403) {
+        // Доступ запрещен (например, для менеджера)
+        const errorMsg = error.error?.error || 'Доступ запрещен';
+        this.snackBar.open(errorMsg, 'Закрыть', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        this.isLoading = false;
       } else {
-        // Какая-то другая ошибка - просто выключаем лоадер
+        // Какая-то другая ошибка
+        const errorMsg = error.error?.error || error.message || 'Произошла ошибка';
+        this.snackBar.open(errorMsg, 'Закрыть', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
         this.isLoading = false;
       }
     }

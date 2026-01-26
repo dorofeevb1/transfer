@@ -1,9 +1,9 @@
 :host {
     display: block;
     width: 100%;
-    /* 100vh минус высота шапки (81px) */
-    height: calc(100vh - 81px);
+    /* Минимальная высота для скролла при большом количестве данных */
     min-height: 400px;
+    max-height: calc(100vh - 81px);
 }
 
 .page-sidenav-container {
@@ -43,21 +43,16 @@ app-table-controls,
     z-index: 10;
 }
 
-/* --- ОБЕРТКА ТАБЛИЦЫ (РАСТЯГИВАЕТСЯ) --- */
+/* --- ОБЕРТКА ТАБЛИЦЫ --- */
 .table-wrapper {
     flex: 1 1 auto;
     min-height: 0; /* Важно для flex-контейнера */
-    overflow: hidden;
+    overflow: auto;
     background: white;
     position: relative;
-    display: flex;
-    flex-direction: column;
 
     app-products-table {
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
+        display: block;
     }
 }
 

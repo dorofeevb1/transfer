@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { delay, map, tap, catchError } from 'rxjs/operators';
 import { ApiService } from './api-service';
 
-export type UserRole = 'admin' | 'user' | null;
+export type UserRole = 'admin' | 'manager' | 'client' | 'merchandiser' | null;
 
 @Injectable({
     providedIn: 'root'
@@ -21,7 +21,8 @@ export class AuthService {
     // Список мок-пользователей
     private mockUsers: { email: string; password: string; role: UserRole; token: string }[] = [
         { email: 'admin@gmail.com', password: 'admin', role: 'admin', token: 'mock-jwt-admin' },
-        { email: 'user@gmail.com', password: 'user', role: 'user', token: 'mock-jwt-user' },
+        { email: 'manager@gmail.com', password: 'manager', role: 'manager', token: 'mock-jwt-manager' },
+        { email: 'client@gmail.com', password: 'client', role: 'client', token: 'mock-jwt-client' },
     ];
 
     constructor(private router: Router, private apiService: ApiService) {
@@ -110,6 +111,14 @@ export class AuthService {
 
     isAdmin(): boolean {
         return this.currentUserRole.value === 'admin';
+    }
+
+    isManager(): boolean {
+        return this.currentUserRole.value === 'manager';
+    }
+
+    getRole(): UserRole {
+        return this.currentUserRole.value;
     }
 
     isAuthenticated(): boolean {

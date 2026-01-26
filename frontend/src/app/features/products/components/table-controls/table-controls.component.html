@@ -39,9 +39,9 @@
 
     </div>
 
-    <!-- Правая часть: Импорт -->
+    <!-- Правая часть: Импорт (скрыт для менеджера) -->
     <div class="right-group">
-        <button class="btn-import" (click)="importClick.emit()">
+        <button class="btn-import" (click)="importClick.emit()" *ngIf="canImport">
             <mat-icon>download</mat-icon>
             {{ 'PRODUCTS.IMPORT' | translate }}
         </button>

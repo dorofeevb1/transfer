@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { AppliedFilter } from '../table/table.component'; // Проверьте путь импорта
+import { AppliedFilter } from '../table/table.component';
+import { AuthService } from 'src/app/core/services/api-service/auth.service';
 
 @Component({
   selector: 'app-table-controls',
@@ -28,6 +29,12 @@ export class TableControlsComponent {
   @Output() exportToCsv = new EventEmitter<void>();
   @Output() toggleFilter = new EventEmitter<void>();
   @Output() importClick = new EventEmitter<void>();
+
+  constructor(private authService: AuthService) {}
+
+  get canImport(): boolean {
+    return !this.authService.isManager();
+  }
 
   onSaveClick(): void {
     console.log('=== TableControlsComponent.onSaveClick() ===');
