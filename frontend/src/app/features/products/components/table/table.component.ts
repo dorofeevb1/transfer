@@ -104,6 +104,8 @@ export class TableComponent implements OnInit, AfterViewInit {
       const junkKeys = ['фотографии', 'фото', 'image', 'img', 'picture', 'изображение'];
       // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
       const allowedPhotoColumns = ['photos', 'photos_list'];
+      // Колонки, которые скрываем
+      const hiddenColumns = ['id', 'video_link'];
 
       // Порядок колонок согласно Excel шаблону
       const columnOrder = [
@@ -135,9 +137,77 @@ export class TableComponent implements OnInit, AfterViewInit {
         'comments',
       ];
 
+      // Названия колонок на русском
+      const columnNamesRu: { [key: string]: string } = {
+        'date_creation': 'Дата КП',
+        'category_1': 'Категория. Уровень 1',
+        'category_2': 'Категория. Уровень 2',
+        'photos_list': 'Фото',
+        'article': 'Артикул',
+        'name': 'Наименование Товара/ Описание',
+        'composition': 'Состав',
+        'size_goods': 'Размер Товара',
+        'package_goods': 'Упаковка Товара',
+        'group_package': 'Групповая упаковка',
+        'quantum': 'Квант (если групповая упаковка присуствует)',
+        'price_actual': 'Фактическая цена, CNY',
+        'transport_box_load': 'Загрузка транспортного короба',
+        'width_cm': 'Width, cm',
+        'height_cm': 'Hight, cm',
+        'length_cm': 'Length, cm',
+        'cbm': 'CBM ("Формула")',
+        'gross_weight': 'Брутто транспортного короба',
+        'tn_ved_code': 'ТН ВЭД код',
+        'tp': 'ТП',
+        'rd': 'РД',
+        'risk': 'Риск',
+        'vat': 'НДС',
+        'amount_stores': 'Кол-во магазинов',
+        'amount_pieces': 'Кол-во шт',
+        'comments': 'Комментарии',
+      };
+
+      // Названия колонок на китайском
+      const columnNamesZh: { [key: string]: string } = {
+        'date_creation': '报价单日期',
+        'category_1': '产品分类1',
+        'category_2': '产品分类2',
+        'photos_list': '图片',
+        'article': '货号',
+        'name': '产品名称/描述',
+        'composition': '原料',
+        'size_goods': '产品尺寸',
+        'package_goods': '产品包装',
+        'group_package': '集体包装',
+        'quantum': '集体包装装数量（如果有）',
+        'price_actual': '实际价格, CNY',
+        'transport_box_load': '装箱量',
+        'width_cm': 'Width, cm',
+        'height_cm': 'Hight, cm',
+        'length_cm': 'Length, cm',
+        'cbm': 'CBM ("Формула")',
+        'gross_weight': '外箱毛重',
+        'tn_ved_code': 'ТН ВЭД код',
+        'tp': 'ТП',
+        'rd': 'РД',
+        'risk': 'Риск',
+        'vat': 'НДС',
+        'amount_stores': '商店数量',
+        'amount_pieces': '总数量',
+        'comments': '备注',
+      };
+
+      // Выбираем названия в зависимости от текущего языка
+      const currentLang = localStorage.getItem('lang') || 'ru';
+      const columnNames = currentLang === 'zh' ? columnNamesZh : columnNamesRu;
+
       // Фильтруем колонки, пришедшие с сервера
       const cleanColumns = columns.filter(col => {
         const lowerKey = col.id.toLowerCase();
+        // Скрываем колонки из списка hiddenColumns
+        if (hiddenColumns.includes(col.id)) {
+          return false;
+        }
         // Если это наша правильная колонка - пропускаем
         if (allowedPhotoColumns.includes(lowerKey)) {
           return true;
@@ -157,8 +227,14 @@ export class TableComponent implements OnInit, AfterViewInit {
         return orderA - orderB;
       });
 
-      this.allColumns = sortedColumns;
-      this.displayedColumns = ['select', ...sortedColumns.map(c => c.id)];
+      // Переименовываем колонки согласно маппингу
+      const renamedColumns = sortedColumns.map(col => ({
+        ...col,
+        name: columnNames[col.id] || col.name
+      }));
+
+      this.allColumns = renamedColumns;
+      this.displayedColumns = ['select', ...renamedColumns.map(c => c.id)];
       this.setupForms();
 
       // Показываем таблицу после обновления колонок (с небольшой задержкой для Angular)
