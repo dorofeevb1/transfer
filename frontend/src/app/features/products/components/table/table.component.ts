@@ -105,6 +105,36 @@ export class TableComponent implements OnInit, AfterViewInit {
       // Колонки, которые НЕ фильтруем (наши правильные колонки с фото)
       const allowedPhotoColumns = ['photos', 'photos_list'];
 
+      // Порядок колонок согласно Excel шаблону
+      const columnOrder = [
+        'date_creation',
+        'category_1',
+        'category_2',
+        'photos_list',
+        'article',
+        'name',
+        'composition',
+        'size_goods',
+        'package_goods',
+        'group_package',
+        'quantum',
+        'price_actual',
+        'transport_box_load',
+        'width_cm',
+        'height_cm',
+        'length_cm',
+        'cbm',
+        'gross_weight',
+        'tn_ved_code',
+        'tp',
+        'rd',
+        'risk',
+        'vat',
+        'amount_stores',
+        'amount_pieces',
+        'comments',
+      ];
+
       // Фильтруем колонки, пришедшие с сервера
       const cleanColumns = columns.filter(col => {
         const lowerKey = col.id.toLowerCase();
@@ -117,8 +147,18 @@ export class TableComponent implements OnInit, AfterViewInit {
         return !isJunk;
       });
 
-      this.allColumns = cleanColumns;
-      this.displayedColumns = ['select', ...cleanColumns.map(c => c.id)];
+      // Сортируем колонки по заданному порядку
+      const sortedColumns = cleanColumns.sort((a, b) => {
+        const indexA = columnOrder.indexOf(a.id);
+        const indexB = columnOrder.indexOf(b.id);
+        // Если колонка не найдена в порядке - ставим в конец
+        const orderA = indexA === -1 ? 999 : indexA;
+        const orderB = indexB === -1 ? 999 : indexB;
+        return orderA - orderB;
+      });
+
+      this.allColumns = sortedColumns;
+      this.displayedColumns = ['select', ...sortedColumns.map(c => c.id)];
       this.setupForms();
 
       // Показываем таблицу после обновления колонок (с небольшой задержкой для Angular)
