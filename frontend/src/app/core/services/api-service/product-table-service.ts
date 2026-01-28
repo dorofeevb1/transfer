@@ -33,9 +33,11 @@ export interface TableDataResponse {
 export class ProductTableService {
     private rowsSubject = new BehaviorSubject<Row[]>([]);
     private columnsSubject = new BehaviorSubject<Column[]>([]);
+    private totalCountSubject = new BehaviorSubject<number>(0);
 
     public rows$ = this.rowsSubject.asObservable();
     public columns$ = this.columnsSubject.asObservable();
+    public totalCount$ = this.totalCountSubject.asObservable();
 
     constructor(private apiService: ApiService) { }
 
@@ -84,7 +86,7 @@ export class ProductTableService {
             .get<{ rows: Row[]; totalCount: number }>('api/products/data/', params)
             .subscribe(response => {
                 this.rowsSubject.next(response.rows);
-                // при необходимости можешь тут же обновлять totalCount
+                this.totalCountSubject.next(response.totalCount || 0);
             });
     }
 

@@ -39,7 +39,7 @@
             </div>
 
             <!-- 4. Пагинация (Закреплена внизу или идет следом) -->
-            <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons class="sticky-paginator"
+            <mat-paginator [length]="totalCount" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons class="sticky-paginator"
                 (page)="onPageChange($event)"></mat-paginator>
 
         </div>

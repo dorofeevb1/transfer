@@ -79,6 +79,14 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.dataSource.data = data || [];
     });
 
+    // Подписываемся на totalCount для пагинации
+    this.productTableService.totalCount$.subscribe(count => {
+      this.totalCount = count;
+      if (this.paginator) {
+        this.paginator.length = count;
+      }
+    });
+
     this.langSub = this.translate.onLangChange.subscribe((event: LangChangeEvent) => {
       // Обновляем localStorage перед запросом (на случай если ещё не обновился)
       localStorage.setItem('lang', event.lang);
@@ -247,7 +255,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    // Не назначаем paginator на dataSource — используем серверную пагинацию
+    // this.dataSource.paginator = this.paginator;
   }
 
   ngOnDestroy(): void {
