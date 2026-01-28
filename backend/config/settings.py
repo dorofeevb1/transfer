@@ -7,12 +7,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-default-key")
 DEBUG = int(os.environ.get("DEBUG", 1))
-ALLOWED_HOSTS = ['37.77.104.201.sslip.io', '37.77.104.201', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['217.26.29.116.sslip.io', '217.26.29.116', 'localhost', '127.0.0.1']
 
 APPEND_SLASH = False
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://37.77.104.201.sslip.io'
+    'https://217.26.29.116.sslip.io'
 ]
 
 INSTALLED_APPS = [
@@ -105,7 +105,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
