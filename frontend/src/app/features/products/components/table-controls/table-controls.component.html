@@ -50,21 +50,21 @@
 
 <!-- Панель массовых действий -->
 <div class="bulk-actions-bar" *ngIf="selectionHasValue">
-    <span class="selected-label">Выбрано: {{ selectionCount }}</span>
+    <span class="selected-label">{{ 'PRODUCTS.SELECTED' | translate }}: {{ selectionCount }}</span>
 
     <div class="bulk-buttons">
         <ng-container *ngIf="!isBulkEditMode">
             <button mat-button class="action-btn" (click)="editClick.emit()">
-                <mat-icon>edit</mat-icon> Редактировать
+                <mat-icon>edit</mat-icon> {{ 'PRODUCTS.EDIT' | translate }}
             </button>
             <button mat-button class="action-btn text-red" (click)="deleteClick.emit()">
-                <mat-icon>delete</mat-icon> Удалить
+                <mat-icon>delete</mat-icon> {{ 'PRODUCTS.DELETE' | translate }}
             </button>
         </ng-container>
 
         <ng-container *ngIf="isBulkEditMode">
-            <button mat-flat-button color="primary" (click)="onSaveClick()">Сохранить</button>
-            <button mat-button (click)="cancelClick.emit()">Отмена</button>
+            <button mat-flat-button color="primary" (click)="onSaveClick()">{{ 'PRODUCTS.SAVE' | translate }}</button>
+            <button mat-button (click)="cancelClick.emit()">{{ 'PRODUCTS.CANCEL' | translate }}</button>
         </ng-container>
     </div>
 </div>

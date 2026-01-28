@@ -35,44 +35,10 @@
 /* --- ФИКСИРОВАННЫЕ БЛОКИ (НЕ СЖИМАЮТСЯ) --- */
 app-page-header,
 app-table-controls,
-.sticky-paginator,
-.select-all-banner {
+.sticky-paginator {
     flex-shrink: 0;
     /* Запрещаем сжатие */
     z-index: 10;
-}
-
-/* Баннер выбора всех записей */
-.select-all-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 12px 24px;
-    background-color: #E3F2FD;
-    border-left: 4px solid #2196F3;
-    color: #1565C0;
-    font-size: 14px;
-
-    span {
-        flex: 1;
-    }
-
-    button {
-        flex-shrink: 0;
-    }
-
-    .close-banner-btn {
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-
-        mat-icon {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
-        }
-    }
 }
 
 /* --- ОБЕРТКА ТАБЛИЦЫ --- */
