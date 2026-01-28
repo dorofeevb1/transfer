@@ -7,6 +7,7 @@ export interface ExportPayload {
     ids: string[];
     columns: string[];
     searchQuery?: string;
+    selectAll?: boolean;
 }
 
 export interface Row {
@@ -110,7 +111,8 @@ export class ProductTableService {
 
     // МАССОВОЕ удаление
     deleteRows(rowIds: string[]): Observable<void> {
-        return this.apiService.post<void>('api/products/delete/', rowIds);
+        // Если массив пустой - удаляем все записи
+        return this.apiService.post<void>('api/products/delete/', { ids: rowIds, deleteAll: rowIds.length === 0 });
     }
 
     // --- КОЛОНКИ ---

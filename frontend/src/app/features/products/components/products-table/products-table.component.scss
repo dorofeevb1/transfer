@@ -17,39 +17,17 @@ $text-muted: #999999;
 :host {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    /* Важно для скролла */
-}
-
-.table-container {
-    flex: 1 1 auto;
-    overflow: auto;
-    /* Скролл только внутри контейнера */
-    background: #fff;
-    position: relative;
     width: 100%;
     min-height: 0;
 }
 
-/* Кастомный скроллбар */
-.table-container::-webkit-scrollbar {
-    height: 8px;
-    width: 8px;
-}
-
-.table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.table-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-.table-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+.table-container {
+    flex: 1 1 auto;
+    overflow: visible;
+    background: #fff;
+    position: relative;
+    width: 100%;
+    min-height: 0;
 }
 
 table {

@@ -49,9 +49,12 @@ export class TableComponent implements OnInit, AfterViewInit {
   totalCount = 0;
   dataSource = new MatTableDataSource<any>();
   selection = new SelectionModel<any>(true, []);
+  selectAllRecords = false; // Флаг для выбора всех записей (не только на странице)
+  showSelectAllBanner = false; // Показывать баннер с предложением выбрать все
 
   isExporting = false;
   private editCache = new Map<string, any>();
+  private currentPageSize = 10;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('filterSidenav') filterSidenav!: MatSidenav;
@@ -377,12 +380,12 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
     this.dataSource.data = [...this.dataSource.data];
     this.isBulkEditMode = false;
-    this.selection.clear();
+    this.clearSelection();
     this.editCache.clear();
   }
 
   onDeleteSelected(): void {
-    const selectedCount = this.selection.selected.length;
+    const selectedCount = this.selectAllRecords ? this.totalCount : this.selection.selected.length;
     if (selectedCount === 0) return;
 
     this.translate.get([
@@ -398,10 +401,13 @@ export class TableComponent implements OnInit, AfterViewInit {
       });
       dialogRef.afterClosed().subscribe(confirmed => {
         if (confirmed) {
-          const idsToDelete = this.selection.selected.map(item => item.id);
+          const idsToDelete = this.selectAllRecords ? [] : this.selection.selected.map(item => item.id);
           this.productTableService.deleteRows(idsToDelete).subscribe(() => {
-            this.dataSource.data = this.dataSource.data.filter(item => !idsToDelete.includes(item.id));
-            this.selection.clear();
+            // Перезагружаем данные после удаления
+            const pageIndex = this.paginator?.pageIndex ?? 0;
+            const pageSize = this.paginator?.pageSize ?? 10;
+            this.productTableService.loadTableData(pageIndex, pageSize);
+            this.clearSelection();
           });
         }
       });
@@ -662,12 +668,32 @@ export class TableComponent implements OnInit, AfterViewInit {
   isAllSelected(): boolean {
     const numSelected = this.selection.selected.length;
     const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    return numSelected === numRows && numRows > 0;
   }
 
 
   masterToggle(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach(row => this.selection.select(row));
+    if (this.isAllSelected()) {
+      this.selection.clear();
+      this.selectAllRecords = false;
+      this.showSelectAllBanner = false;
+    } else {
+      this.dataSource.data.forEach(row => this.selection.select(row));
+      // Показываем баннер только если есть больше записей чем на странице
+      this.showSelectAllBanner = this.totalCount > this.dataSource.data.length;
+      this.selectAllRecords = false;
+    }
+  }
+
+  selectAllRecordsAction(): void {
+    this.selectAllRecords = true;
+    this.showSelectAllBanner = false;
+  }
+
+  clearSelection(): void {
+    this.selection.clear();
+    this.selectAllRecords = false;
+    this.showSelectAllBanner = false;
   }
 
 
@@ -678,19 +704,21 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     const currentFilters = this.filterForm.value;
     const currentSearch = this.dataSource.filter;
-    const selectedIds: string[] = this.selection.selected.map(row => row.id);
-    const selectedColumns: string[] = this.getSelectedColumnIds(); // ← добавили колонки
+    const selectedColumns: string[] = this.getSelectedColumnIds();
 
-    // Твой нужный payload
+    // Если выбраны все записи - отправляем пустой массив ids (бэкенд вернет все)
+    const selectedIds: string[] = this.selectAllRecords ? [] : this.selection.selected.map(row => row.id);
+
     const payload = {
       ids: selectedIds,
       columns: selectedColumns,
-      searchQuery: currentSearch || ''
+      searchQuery: currentSearch || '',
+      selectAll: this.selectAllRecords // Флаг для бэкенда
     };
 
     this.productTableService.downloadExcel(payload).subscribe({
       next: (blob: Blob) => {
-        const prefix = selectedIds.length > 0 ? 'selected_' : '';
+        const prefix = this.selectAllRecords ? 'all_' : (selectedIds.length > 0 ? 'selected_' : '');
         const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
         this.saveFile(blob, fileName);
         this.isExporting = false;
@@ -716,19 +744,21 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     const currentFilters = this.filterForm.value;
     const currentSearch = this.dataSource.filter;
-    const selectedIds: string[] = this.selection.selected.map(row => row.id);
-    const selectedColumns: string[] = this.getSelectedColumnIds(); // ← добавили колонки
+    const selectedColumns: string[] = this.getSelectedColumnIds();
 
-    // Твой нужный payload
+    // Если выбраны все записи - отправляем пустой массив ids (бэкенд вернет все)
+    const selectedIds: string[] = this.selectAllRecords ? [] : this.selection.selected.map(row => row.id);
+
     const payload = {
       ids: selectedIds,
       columns: selectedColumns,
-      searchQuery: currentSearch || ''
+      searchQuery: currentSearch || '',
+      selectAll: this.selectAllRecords // Флаг для бэкенда
     };
 
     this.productTableService.downloadCsv(payload).subscribe({
       next: (blob: Blob) => {
-        const prefix = selectedIds.length > 0 ? 'selected_' : '';
+        const prefix = this.selectAllRecords ? 'all_' : (selectedIds.length > 0 ? 'selected_' : '');
         const fileName = `${prefix}products_export_${new Date().toISOString().slice(0, 10)}.csv`;
         this.saveFile(blob, fileName);
         this.isExporting = false;
@@ -765,12 +795,32 @@ export class TableComponent implements OnInit, AfterViewInit {
     const pageIndex = event.pageIndex;
     const pageSize = event.pageSize;
 
+    // Если изменился размер страницы - сбрасываем на первую страницу
+    const pageSizeChanged = this.currentPageSize !== pageSize;
+    const actualPageIndex = pageSizeChanged ? 0 : pageIndex;
+
+    // Сохраняем новый размер страницы
+    this.currentPageSize = pageSize;
+
+    // Сбрасываем выбор всех записей при смене страницы
+    this.selectAllRecords = false;
+    this.showSelectAllBanner = false;
+
     // Получаем текущие фильтры и сортировку
     const sortField = this.dataSource.sort?.active;
     const sortDir = this.dataSource.sort?.direction;
     const filters = this.filterForm.value;
 
-    this.productTableService.loadTableData(pageIndex, pageSize, sortField, sortDir, filters);
+    this.productTableService.loadTableData(actualPageIndex, pageSize, sortField, sortDir, filters);
+
+    // Обновляем paginator если сбросили страницу
+    if (pageSizeChanged && actualPageIndex !== pageIndex) {
+      setTimeout(() => {
+        if (this.paginator) {
+          this.paginator.pageIndex = 0;
+        }
+      });
+    }
   }
 
 }

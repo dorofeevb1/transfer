@@ -141,7 +141,9 @@
         "SELECT_ALL_ARIA": "全选",
         "DESELECT_ALL_ARIA": "取消全选",
         "SELECT_ROW_ARIA": "选择项目",
-        "DESELECT_ROW_ARIA": "取消选择项目"
+        "DESELECT_ROW_ARIA": "取消选择项目",
+        "SELECTED_ON_PAGE": "本页已选择 {{count}} 项",
+        "SELECT_ALL_RECORDS": "选择全部 {{total}} 项"
     },
     "FIELDS": {
         "Имя": "名字",

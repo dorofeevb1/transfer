@@ -16,7 +16,8 @@
             <!-- Панель управления (Поиск, Фильтры, Экспорт, Импорт) -->
             <app-table-controls [allColumns]="allColumns" [columnsForm]="columnsForm"
                 [activeFilterCount]="activeFilterCount" [appliedFilters]="appliedFilters"
-                [selectionHasValue]="selection.hasValue()" [selectionCount]="selection.selected.length"
+                [selectionHasValue]="selection.hasValue() || selectAllRecords"
+                [selectionCount]="selectAllRecords ? totalCount : selection.selected.length"
                 [isBulkEditMode]="isBulkEditMode" (globalFilterChange)="applyGlobalFilter($event)"
                 (toggleFilter)="filterSidenav.toggle()" (applyColumnChanges)="applyColumnChanges()"
                 (removeFilter)="onRemoveFilter($event)" (editClick)="onEditClick()" (saveClick)="onSaveBulkChanges()"
@@ -24,6 +25,19 @@
                 (exportToExcel)="handleExportToExcel()" (exportToCsv)="handleExportToCsv()"
                 (importClick)="openImportDialog()">
             </app-table-controls>
+
+            <!-- Баннер выбора всех записей -->
+            <div class="select-all-banner" *ngIf="showSelectAllBanner">
+                <span>
+                    {{ 'TABLE.SELECTED_ON_PAGE' | translate: {count: selection.selected.length} }}
+                </span>
+                <button mat-button color="primary" (click)="selectAllRecordsAction()">
+                    {{ 'TABLE.SELECT_ALL_RECORDS' | translate: {total: totalCount} }}
+                </button>
+                <button mat-icon-button (click)="showSelectAllBanner = false" class="close-banner-btn">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </div>
 
             <!-- 3. Таблица с данными -->
             <div class="table-wrapper" *ngIf="showTable">
@@ -39,8 +53,14 @@
             </div>
 
             <!-- 4. Пагинация (Закреплена внизу или идет следом) -->
-            <mat-paginator [length]="totalCount" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons class="sticky-paginator"
-                (page)="onPageChange($event)"></mat-paginator>
+            <mat-paginator
+                [length]="totalCount"
+                [pageSize]="10"
+                [pageSizeOptions]="[10, 25, 50]"
+                showFirstLastButtons
+                class="sticky-paginator"
+                (page)="onPageChange($event)">
+            </mat-paginator>
 
         </div>
     </mat-sidenav-content>
