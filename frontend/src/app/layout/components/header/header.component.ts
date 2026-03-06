@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from 'src/app/core/services/api-service/auth.service';
-import { ApiService } from 'src/app/core/services/api-service/api-service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -21,8 +20,7 @@ export class HeaderComponent implements OnInit {
 
   constructor(
     private translate: TranslateService,
-    private authService: AuthService,
-    private apiService: ApiService
+    private authService: AuthService
   ) {
     this.currentLang = this.translate.currentLang || 'ru';
 
@@ -38,15 +36,7 @@ export class HeaderComponent implements OnInit {
       this.userRole = role || 'client';
     });
 
-    // Загрузка имени из профиля
-    this.apiService.get<{ fio: string; email: string }>('api/profile/').subscribe({
-      next: (profile) => {
-        this.userName = profile.fio || profile.email || 'User';
-      },
-      error: () => {
-        this.userName = 'User';
-      }
-    });
+    this.userName = this.authService.getUserName();
   }
 
   switchLang(lang: string): void {

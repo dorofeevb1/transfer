@@ -17,6 +17,7 @@ export class AuthService {
     private readonly TOKEN_KEY = 'jwt-token';
     private readonly REFRESH_KEY = 'refresh-token';
     private readonly ROLE_KEY = 'user-role';
+    private readonly USER_NAME_KEY = 'user-name';
 
     // Список мок-пользователей
     private mockUsers: { email: string; password: string; role: UserRole; token: string }[] = [
@@ -42,7 +43,8 @@ export class AuthService {
                 delay(500),
                 tap(() => {
                     this.setSession(mockUser.token, mockUser.role, 'mock-refresh-token');
-                    this.redirectUser(mockUser.role); // <--- ЭТОГО НЕ БЫЛО
+                    localStorage.setItem(this.USER_NAME_KEY, mockUser.email);
+                    this.redirectUser(mockUser.role);
                 })
             );
         }
@@ -51,7 +53,7 @@ export class AuthService {
         console.log('Auth: Requesting backend...');
 
         // Исправляем интерфейс: добавляем refresh (как шлет сервер)
-        return this.apiService.post<{ success: boolean; token: string; role: string; refresh: string; email: string }>(
+        return this.apiService.post<{ success: boolean; token: string; role: string; refresh: string; email: string; name?: string }>(
             'api/auth/login/',
             { email, password }
         ).pipe(
@@ -62,6 +64,7 @@ export class AuthService {
                     // 1. Сохраняем сессию
                     // ВАЖНО: берем response.refresh (как в JSON), а не response.refreshToken
                     this.setSession(response.token, response.role as UserRole, response.refresh);
+                    localStorage.setItem(this.USER_NAME_KEY, response.name || response.email);
 
                     // 2. ВЫПОЛНЯЕМ ПЕРЕХОД
                     console.log('Auth: Redirecting user...');
@@ -80,6 +83,7 @@ export class AuthService {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.ROLE_KEY);
         localStorage.removeItem(this.REFRESH_KEY);
+        localStorage.removeItem(this.USER_NAME_KEY);
 
         this.currentUserRole.next(null);
         this.router.navigate(['/auth']);
@@ -119,6 +123,10 @@ export class AuthService {
 
     getRole(): UserRole {
         return this.currentUserRole.value;
+    }
+
+    getUserName(): string {
+        return localStorage.getItem(this.USER_NAME_KEY) || 'User';
     }
 
     isAuthenticated(): boolean {
