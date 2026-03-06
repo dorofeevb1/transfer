@@ -1,0 +1,13 @@
+<div class="tabs-header">
+    <button class="tab-btn"
+            routerLink="rfi" routerLinkActive="active">
+        {{ 'PRODUCTS.RFI_TAB' | translate }}
+    </button>
+    <button class="tab-btn"
+            routerLink="catalog" routerLinkActive="active">
+        {{ 'PRODUCTS.CATALOG_TAB' | translate }}
+    </button>
+</div>
+<div class="tab-content">
+    <router-outlet></router-outlet>
+</div>

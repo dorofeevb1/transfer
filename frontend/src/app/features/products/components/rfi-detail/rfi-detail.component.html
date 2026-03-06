@@ -1,0 +1,131 @@
+<div class="rfi-detail-layout" *ngIf="!isLoading && rfi">
+
+    <!-- Header -->
+    <div class="detail-header">
+        <div class="header-left">
+            <button mat-icon-button (click)="goBack()" class="back-btn">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div class="header-title-group">
+                <h2 class="rfi-title">{{ rfi.number }}</h2>
+                <span class="status-badge" [ngClass]="getStatusClass(rfi.status)">
+                    {{ 'RFI.STATUS.' + rfi.status.toUpperCase() | translate }}
+                </span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <ng-container *ngFor="let transition of getAvailableTransitions()">
+                <button mat-flat-button
+                        [color]="transition.color"
+                        [class.btn-action]="!transition.color"
+                        (click)="onStatusChange(transition)">
+                    {{ transition.label | translate }}
+                </button>
+            </ng-container>
+            <button mat-icon-button [matMenuTriggerFor]="moreMenu" class="more-btn">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #moreMenu="matMenu">
+                <button mat-menu-item class="delete-item" (click)="deleteRfi()">
+                    <mat-icon>delete</mat-icon>
+                    {{ 'PRODUCTS.DELETE' | translate }}
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="detail-info">
+        <div class="info-card">
+            <span class="info-label">{{ 'RFI.COLUMNS.SUPPLIER' | translate }}</span>
+            <span class="info-value">{{ rfi.supplier || '—' }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">{{ 'RFI.COLUMNS.DEADLINE' | translate }}</span>
+            <span class="info-value">{{ rfi.deadline | date:'dd.MM.yyyy' }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">{{ 'RFI.COLUMNS.AUTHOR' | translate }}</span>
+            <span class="info-value">{{ rfi.author || '—' }}</span>
+        </div>
+        <div class="info-card">
+            <span class="info-label">{{ 'RFI.COLUMNS.CREATED_AT' | translate }}</span>
+            <span class="info-value">{{ rfi.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
+        </div>
+        <div class="info-card" *ngIf="rfi.comment">
+            <span class="info-label">{{ 'RFI.COMMENT' | translate }}</span>
+            <span class="info-value">{{ rfi.comment }}</span>
+        </div>
+    </div>
+
+    <!-- Lines table -->
+    <div class="lines-section">
+        <h3 class="section-title">{{ 'RFI.LINES_TITLE' | translate }} ({{ rfi.lines?.length || 0 }})</h3>
+
+        <div class="lines-table-wrapper">
+            <table mat-table [dataSource]="linesDataSource" class="lines-table">
+
+                <ng-container matColumnDef="article">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'RFI.LINE_COLUMNS.ARTICLE' | translate }}</th>
+                    <td mat-cell *matCellDef="let line">{{ line.article || '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'RFI.LINE_COLUMNS.NAME' | translate }}</th>
+                    <td mat-cell *matCellDef="let line">{{ line.name || '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="quantity">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'RFI.LINE_COLUMNS.QUANTITY' | translate }}</th>
+                    <td mat-cell *matCellDef="let line">{{ line.quantity ?? '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'RFI.LINE_COLUMNS.PRICE' | translate }}</th>
+                    <td mat-cell *matCellDef="let line">{{ line.price ?? '—' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="comment">
+                    <th mat-header-cell *matHeaderCellDef>{{ 'RFI.LINE_COLUMNS.COMMENT' | translate }}</th>
+                    <td mat-cell *matCellDef="let line">{{ line.comment || '—' }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="lineColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: lineColumns;"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell no-data-cell" [attr.colspan]="lineColumns.length">
+                        {{ 'TABLE.NO_DATA' | translate }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-section" *ngIf="rfi.history && rfi.history.length > 0">
+        <h3 class="section-title">{{ 'RFI.HISTORY_TITLE' | translate }}</h3>
+        <div class="history-list">
+            <div class="history-item" *ngFor="let entry of rfi.history">
+                <div class="history-dot"></div>
+                <div class="history-content">
+                    <span class="history-status">
+                        {{ 'RFI.STATUS.' + entry.status_from.toUpperCase() | translate }}
+                        →
+                        {{ 'RFI.STATUS.' + entry.status_to.toUpperCase() | translate }}
+                    </span>
+                    <span class="history-meta">
+                        {{ entry.changed_by }} · {{ entry.changed_at | date:'dd.MM.yyyy HH:mm' }}
+                    </span>
+                    <span class="history-comment" *ngIf="entry.comment">{{ entry.comment }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Loading -->
+<div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="40"></mat-spinner>
+</div>

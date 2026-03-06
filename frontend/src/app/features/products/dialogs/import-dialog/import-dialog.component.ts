@@ -4,12 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
 import { ProductTableService } from 'src/app/core/services/api-service/product-table-service';
 import { ExcelProcessingService } from 'src/app/core/services/excel-processing.service';
-
-// Импортируем компонент подтверждения. 
-// Если у вас его нет, используйте ConfirmationDeleteComponent или создайте простой ConfirmationDialogComponent
 import { ConfirmationDeleteComponent } from '../confirmation-delete/confirmation-delete.component';
-// ИЛИ, если у вас есть общий диалог, используйте его. В примере ниже я использую ConfirmationDeleteComponent как заглушку, 
-// но лучше создать отдельный ConfirmationDialogComponent (код для него в конце ответа).
+import { ImportPreviewResponse } from '../../models/import.interfaces';
+
+type ImportStep = 'upload' | 'preview';
 
 @Component({
   selector: 'app-import-dialog',
@@ -20,6 +18,10 @@ export class ImportDialogComponent {
   files: File[] = [];
   isLoading = false;
   isDragOver = false;
+  step: ImportStep = 'upload';
+
+  preview: ImportPreviewResponse | null = null;
+  isCommitting = false;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -29,7 +31,7 @@ export class ImportDialogComponent {
     private snackBar: MatSnackBar,
     private excelService: ExcelProcessingService,
     private productTableService: ProductTableService
-  ) { }
+  ) {}
 
   triggerFileUpload(): void {
     this.fileInput.nativeElement.click();
@@ -75,12 +77,12 @@ export class ImportDialogComponent {
     this.files = this.files.filter(file => file !== fileToRemove);
   }
 
+  // Step 1: Parse files and get preview from backend
   async onImport(): Promise<void> {
     if (this.files.length === 0) return;
 
     this.isLoading = true;
 
-    // 1. Сначала обрабатываем Excel/CSV файлы локально, чтобы получить JSON
     let processingResult;
     try {
       processingResult = await this.excelService.processFiles(this.files);
@@ -98,84 +100,161 @@ export class ImportDialogComponent {
 
     const dataToSend = processingResult.mergedData;
 
-    // 2. Отправляем данные на бэкенд (первая попытка, approved = false)
     try {
-      await firstValueFrom(this.productTableService.sendImportDataToBackend(dataToSend, false));
-
-      // Если успех (бэкенд вернул 200 OK) - возвращаем success: true для перезагрузки таблицы
-      this.dialogRef.close({ success: true });
-
-    } catch (error: any) {
-      console.error('Ошибка отправки на сервер:', error);
-
-      // Логика обработки дубликатов
-      // Проверяем ответ от бэкенда на наличие сообщения "поля повторяються"
-      // Адаптируйте проверку (error.error?.massege) под точную структуру вашего ответа от API
-      const responseMsg = error.error?.massege || error.error?.message || '';
-
-      if (responseMsg.toLowerCase().includes('поля повторяються') || error.status === 409) {
-
-        // Запускаем сценарий подтверждения
-        await this.handleDuplicateConflict(dataToSend);
-
-      } else if (error.status === 403) {
-        // Доступ запрещен (например, для менеджера)
-        const errorMsg = error.error?.error || 'Доступ запрещен';
-        this.snackBar.open(errorMsg, 'Закрыть', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
-        this.isLoading = false;
+      // Try preview endpoint first
+      const previewResponse = await firstValueFrom(
+        this.productTableService.previewImport(dataToSend)
+      );
+      this.preview = previewResponse;
+      this.step = 'preview';
+      this.isLoading = false;
+    } catch (previewError: any) {
+      // Fallback to old import flow if preview endpoint doesn't exist (404)
+      if (previewError.status === 404) {
+        await this.legacyImport(dataToSend);
       } else {
-        // Какая-то другая ошибка
-        const errorMsg = error.error?.error || error.message || 'Произошла ошибка';
-        this.snackBar.open(errorMsg, 'Закрыть', {
-          duration: 5000,
-          panelClass: ['error-snackbar']
-        });
+        console.error('Ошибка предпросмотра:', previewError);
+        const errorMsg = previewError.error?.error || previewError.message || 'Произошла ошибка';
+        this.snackBar.open(errorMsg, 'Закрыть', { duration: 5000 });
         this.isLoading = false;
       }
     }
-    // finally здесь не нужен, так как isLoading управляется внутри веток
   }
 
-  /**
-   * Обработка конфликта дубликатов
-   */
-  private async handleDuplicateConflict(data: any): Promise<void> {
-    this.isLoading = false; // Снимаем лоадер, чтобы показать диалог
+  // Step 2: Confirm and commit import
+  async onCommit(): Promise<void> {
+    if (!this.preview || this.isCommitting) return;
+
+    // Check for mass change warnings
+    if (this.preview.warnings && this.preview.warnings.length > 0) {
+      const confirmed = await this.confirmMassChanges();
+      if (!confirmed) return;
+    }
+
+    this.isCommitting = true;
+
+    try {
+      await firstValueFrom(
+        this.productTableService.commitImport(this.preview.session_id, true)
+      );
+      this.dialogRef.close({ success: true });
+    } catch (error: any) {
+      console.error('Ошибка коммита импорта:', error);
+
+      const responseMsg = error.error?.massege || error.error?.message || '';
+      if (responseMsg.toLowerCase().includes('поля повторяються') || error.status === 409) {
+        await this.handleDuplicateConflictForCommit();
+      } else {
+        const errorMsg = error.error?.error || error.message || 'Произошла ошибка';
+        this.snackBar.open(errorMsg, 'Закрыть', { duration: 5000 });
+        this.isCommitting = false;
+      }
+    }
+  }
+
+  private async confirmMassChanges(): Promise<boolean> {
+    const warnings = this.preview!.warnings;
+    const message = warnings.map(w => w.message).join('\n');
+
     const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
       width: '450px',
       data: {
-        title: 'Замена данных', // Заголовок
-        message: 'Найдены повторяющиеся поля. Заменить их новыми данными из файла?', // Основной текст
-        subtext: 'Старые значения будут потеряны', // Можно добавить предупреждение
-        confirmText: 'Заменить', // Текст кнопки "Да"
-        cancelText: 'Оставить старые', // Текст кнопки "Нет"
-        confirmColor: 'primary' // Важно: делает кнопку синей (не пугает как красная warn)
+        title: 'Предупреждение',
+        message: message,
+        confirmText: 'Продолжить',
+        cancelText: 'Отмена'
+      }
+    });
+
+    return (await firstValueFrom(dialogRef.afterClosed())) === true;
+  }
+
+  private async handleDuplicateConflictForCommit(): Promise<void> {
+    this.isCommitting = false;
+    const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
+      width: '450px',
+      data: {
+        title: 'Замена данных',
+        message: 'Найдены повторяющиеся поля. Заменить их новыми данными из файла?',
+        confirmText: 'Заменить',
+        cancelText: 'Оставить старые',
+        confirmColor: 'primary'
+      }
+    });
+
+    const result = await firstValueFrom(dialogRef.afterClosed());
+    if (result === true && this.preview) {
+      this.isCommitting = true;
+      try {
+        await firstValueFrom(
+          this.productTableService.commitImport(this.preview.session_id, true)
+        );
+        this.dialogRef.close({ success: true });
+      } catch (retryError) {
+        console.error('Ошибка при повторной отправке:', retryError);
+        this.isCommitting = false;
+      }
+    }
+  }
+
+  // Fallback: legacy import flow (no preview endpoint)
+  private async legacyImport(dataToSend: any[]): Promise<void> {
+    try {
+      await firstValueFrom(this.productTableService.sendImportDataToBackend(dataToSend, false));
+      this.dialogRef.close({ success: true });
+    } catch (error: any) {
+      console.error('Ошибка отправки на сервер:', error);
+      const responseMsg = error.error?.massege || error.error?.message || '';
+
+      if (responseMsg.toLowerCase().includes('поля повторяються') || error.status === 409) {
+        await this.handleDuplicateConflict(dataToSend);
+      } else if (error.status === 403) {
+        const errorMsg = error.error?.error || 'Доступ запрещен';
+        this.snackBar.open(errorMsg, 'Закрыть', { duration: 5000, panelClass: ['error-snackbar'] });
+        this.isLoading = false;
+      } else {
+        const errorMsg = error.error?.error || error.message || 'Произошла ошибка';
+        this.snackBar.open(errorMsg, 'Закрыть', { duration: 5000, panelClass: ['error-snackbar'] });
+        this.isLoading = false;
+      }
+    }
+  }
+
+  private async handleDuplicateConflict(data: any): Promise<void> {
+    this.isLoading = false;
+    const dialogRef = this.dialog.open(ConfirmationDeleteComponent, {
+      width: '450px',
+      data: {
+        title: 'Замена данных',
+        message: 'Найдены повторяющиеся поля. Заменить их новыми данными из файла?',
+        subtext: 'Старые значения будут потеряны',
+        confirmText: 'Заменить',
+        cancelText: 'Оставить старые',
+        confirmColor: 'primary'
       }
     });
     const result = await firstValueFrom(dialogRef.afterClosed());
 
     if (result === true) {
-      // Пользователь нажал "ДА" (Заменить)
       this.isLoading = true;
       try {
-        // Повторная отправка с approved = true
         await firstValueFrom(this.productTableService.sendImportDataToBackend(data, true));
-
-        // Успех после подтверждения - возвращаем success: true для перезагрузки таблицы
         this.dialogRef.close({ success: true });
-
       } catch (retryError) {
         console.error('Ошибка при повторной отправке (после апрува):', retryError);
         this.isLoading = false;
       }
-    } else {
-      // Пользователь нажал "НЕТ" (Оставить как есть)
-      // Ничего не делаем, файлы остаются в списке, пользователь может их изменить
-      console.log('Пользователь отменил замену дубликатов');
     }
+  }
+
+  backToUpload(): void {
+    this.step = 'upload';
+    this.preview = null;
+    this.isCommitting = false;
+  }
+
+  get hasPreviewErrors(): boolean {
+    return (this.preview?.error_count ?? 0) > 0;
   }
 
   onCancel(): void {

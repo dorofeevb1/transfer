@@ -1,5 +1,5 @@
-<div class="table-container">
-    <table mat-table [dataSource]="dataSource" matSort class="custom-products-table">
+<div class="table-viewport">
+    <table mat-table [dataSource]="dataSource" matSort class="custom-products-table" [trackBy]="trackByFn">
 
         <!-- Checkbox Column -->
         <ng-container matColumnDef="select" sticky>

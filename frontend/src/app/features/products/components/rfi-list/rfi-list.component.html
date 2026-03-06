@@ -1,0 +1,140 @@
+<div class="rfi-page-layout">
+
+    <!-- Controls -->
+    <div class="rfi-controls">
+        <div class="left-group">
+            <div class="search-field">
+                <input type="text"
+                       [placeholder]="'PRODUCTS.SEARCH_PLACEHOLDER' | translate"
+                       (keyup)="onSearch($event)">
+                <button class="search-btn" disabled>
+                    <mat-icon>search</mat-icon>
+                </button>
+            </div>
+
+            <mat-form-field appearance="outline" class="status-filter">
+                <mat-select [value]="statusFilter"
+                            (selectionChange)="onStatusFilter($event.value)"
+                            [placeholder]="'RFI.ALL_STATUSES' | translate">
+                    <mat-option value="">{{ 'RFI.ALL_STATUSES' | translate }}</mat-option>
+                    <mat-option value="draft">{{ 'RFI.STATUS.DRAFT' | translate }}</mat-option>
+                    <mat-option value="ready_to_send">{{ 'RFI.STATUS.READY_TO_SEND' | translate }}</mat-option>
+                    <mat-option value="sent">{{ 'RFI.STATUS.SENT' | translate }}</mat-option>
+                    <mat-option value="in_progress">{{ 'RFI.STATUS.IN_PROGRESS' | translate }}</mat-option>
+                    <mat-option value="completed">{{ 'RFI.STATUS.COMPLETED' | translate }}</mat-option>
+                    <mat-option value="cancelled">{{ 'RFI.STATUS.CANCELLED' | translate }}</mat-option>
+                    <mat-option value="rejected">{{ 'RFI.STATUS.REJECTED' | translate }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+
+        <div class="right-group">
+            <button class="btn-delete" *ngIf="selection.hasValue()" (click)="deleteSelected()">
+                <mat-icon>delete</mat-icon>
+                {{ 'PRODUCTS.DELETE' | translate }}
+            </button>
+            <button class="btn-create" (click)="openCreateDialog()">
+                <mat-icon>add</mat-icon>
+                {{ 'RFI.CREATE_BUTTON' | translate }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="rfi-table-wrapper">
+        <table mat-table [dataSource]="dataSource" class="rfi-table">
+
+            <!-- Checkbox -->
+            <ng-container matColumnDef="select" sticky>
+                <th mat-header-cell *matHeaderCellDef class="checkbox-col">
+                    <mat-checkbox (change)="masterToggle()"
+                                  [checked]="selection.hasValue() && isAllSelected()"
+                                  [indeterminate]="selection.hasValue() && !isAllSelected()"
+                                  color="primary">
+                    </mat-checkbox>
+                </th>
+                <td mat-cell *matCellDef="let row" class="checkbox-col">
+                    <mat-checkbox (click)="$event.stopPropagation()"
+                                  (change)="selection.toggle(row)"
+                                  [checked]="selection.isSelected(row)"
+                                  color="primary">
+                    </mat-checkbox>
+                </td>
+            </ng-container>
+
+            <!-- Number -->
+            <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.NUMBER' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="rfi-number">{{ row.number }}</span>
+                </td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.STATUS' | translate }}</th>
+                <td mat-cell *matCellDef="let row">
+                    <span class="status-badge" [ngClass]="getStatusClass(row.status)">
+                        {{ 'RFI.STATUS.' + row.status.toUpperCase() | translate }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Supplier -->
+            <ng-container matColumnDef="supplier">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.SUPPLIER' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.supplier || '—' }}</td>
+            </ng-container>
+
+            <!-- Created -->
+            <ng-container matColumnDef="created_at">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.CREATED_AT' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.created_at | date:'dd.MM.yyyy' }}</td>
+            </ng-container>
+
+            <!-- Deadline -->
+            <ng-container matColumnDef="deadline">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.DEADLINE' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.deadline | date:'dd.MM.yyyy' }}</td>
+            </ng-container>
+
+            <!-- Author -->
+            <ng-container matColumnDef="author">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.AUTHOR' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.author || '—' }}</td>
+            </ng-container>
+
+            <!-- Lines count -->
+            <ng-container matColumnDef="lines_count">
+                <th mat-header-cell *matHeaderCellDef>{{ 'RFI.COLUMNS.LINES_COUNT' | translate }}</th>
+                <td mat-cell *matCellDef="let row">{{ row.lines_count }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                (click)="openDetail(row)"
+                class="clickable-row">
+            </tr>
+
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                    <div class="no-data-content">
+                        <mat-icon>search_off</mat-icon>
+                        <span>{{ 'TABLE.NO_DATA' | translate }}</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Paginator -->
+    <mat-paginator
+        [length]="totalCount"
+        [pageSize]="100"
+        [pageSizeOptions]="[100, 250, 500, 800, 1000]"
+        showFirstLastButtons
+        class="rfi-paginator"
+        (page)="onPageChange($event)">
+    </mat-paginator>
+
+</div>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 40" width="220" height="40">
+  <!-- Red diamond/rhombus icon -->
+  <g transform="translate(20, 20)">
+    <rect x="-10" y="-10" width="20" height="20" rx="2" fill="#D91F26" transform="rotate(45)"/>
+    <!-- White lines inside diamond -->
+    <line x1="-5" y1="-2" x2="5" y2="-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    <line x1="-5" y1="2" x2="5" y2="2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Text -->
+  <text x="42" y="16" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">BRIO TRADE</text>
+  <text x="42" y="31" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" fill="#1A1A1A" letter-spacing="0.5">&amp; LOGISTIC</text>
+</svg>

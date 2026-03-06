@@ -8,62 +8,161 @@
         </button>
     </div>
 
-    <!-- CONTENT -->
-    <div class="dialog-content">
-        <!-- Область загрузки -->
-        <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
-            (drop)="onDrop($event)" (click)="triggerFileUpload()" [class.drag-over]="isDragOver"
-            [class.loading]="isLoading">
+    <!-- STEP 1: UPLOAD -->
+    <ng-container *ngIf="step === 'upload'">
+        <div class="dialog-content">
+            <!-- Upload area -->
+            <div class="upload-area" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
+                (drop)="onDrop($event)" (click)="triggerFileUpload()" [class.drag-over]="isDragOver"
+                [class.loading]="isLoading">
 
-            <div *ngIf="!isLoading" class="upload-placeholder">
-                <mat-icon class="upload-icon">cloud_upload</mat-icon>
-                <h3 class="upload-title">{{ 'DIALOGS.DROP_FILES_HERE' | translate }}</h3>
-                <p class="upload-subtitle">{{ 'DIALOGS.FILE_INFO' | translate }}</p>
+                <div *ngIf="!isLoading" class="upload-placeholder">
+                    <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                    <h3 class="upload-title">{{ 'DIALOGS.DROP_FILES_HERE' | translate }}</h3>
+                    <p class="upload-subtitle">{{ 'DIALOGS.FILE_INFO' | translate }}</p>
 
-                <!-- Кнопка выбора файлов -->
-                <!-- stopPropagation важен, чтобы клик по кнопке не вызывал клик по родителю (upload-area) -->
-                <button type="button" class="btn-select-files" (click)="triggerFileUpload(); $event.stopPropagation()">
-                    {{ 'DIALOGS.SELECT_FILES' | translate }}
-                </button>
-
-                <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden
-                    accept=".xlsx, .xls, .csv">
-            </div>
-
-            <!-- Индикатор загрузки -->
-            <div *ngIf="isLoading" class="loading-state">
-                <mat-spinner diameter="40" color="warn"></mat-spinner>
-                <p class="loading-text">{{ 'DIALOGS.PROCESSING' | translate }}...</p>
-            </div>
-        </div>
-
-        <!-- Список файлов -->
-        <div class="file-list-container" *ngIf="files.length > 0">
-            <h4 class="list-title">Выбранные файлы ({{ files.length }})</h4>
-            <div class="file-list">
-                <div *ngFor="let file of files" class="file-item">
-                    <div class="file-icon-wrapper">
-                        <mat-icon>description</mat-icon>
-                    </div>
-                    <div class="file-info">
-                        <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
-                        <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
-                    </div>
-                    <button mat-icon-button class="remove-btn" (click)="removeFile(file)">
-                        <mat-icon>close</mat-icon>
+                    <button type="button" class="btn-select-files" (click)="triggerFileUpload(); $event.stopPropagation()">
+                        {{ 'DIALOGS.SELECT_FILES' | translate }}
                     </button>
+
+                    <input type="file" #fileInput (change)="onFileSelected($event)" multiple hidden
+                        accept=".xlsx, .xls, .csv">
+                </div>
+
+                <div *ngIf="isLoading" class="loading-state">
+                    <mat-spinner diameter="40" color="warn"></mat-spinner>
+                    <p class="loading-text">{{ 'DIALOGS.PROCESSING' | translate }}...</p>
+                </div>
+            </div>
+
+            <!-- File list -->
+            <div class="file-list-container" *ngIf="files.length > 0">
+                <h4 class="list-title">{{ 'IMPORT.SELECTED_FILES' | translate }} ({{ files.length }})</h4>
+                <div class="file-list">
+                    <div *ngFor="let file of files" class="file-item">
+                        <div class="file-icon-wrapper">
+                            <mat-icon>description</mat-icon>
+                        </div>
+                        <div class="file-info">
+                            <span class="file-name" [matTooltip]="file.name">{{ file.name }}</span>
+                            <span class="file-size">{{ (file.size / 1024 / 1024).toFixed(2) }} MB</span>
+                        </div>
+                        <button mat-icon-button class="remove-btn" (click)="removeFile(file)">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- ACTIONS -->
-    <div class="dialog-actions">
-        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
-            {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
-        </button>
-        <button mat-flat-button class="btn-process" (click)="onImport()" [disabled]="!files.length || isLoading">
-            {{ 'DIALOGS.PROCESS_BUTTON' | translate }}
-        </button>
-    </div>
+        <div class="dialog-actions">
+            <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+                {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+            </button>
+            <button mat-flat-button class="btn-process" (click)="onImport()" [disabled]="!files.length || isLoading">
+                {{ 'DIALOGS.PROCESS_BUTTON' | translate }}
+            </button>
+        </div>
+    </ng-container>
+
+    <!-- STEP 2: PREVIEW -->
+    <ng-container *ngIf="step === 'preview' && preview">
+        <div class="dialog-content">
+
+            <!-- Summary cards -->
+            <div class="preview-summary">
+                <div class="summary-card create">
+                    <mat-icon>add_circle</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.create_count }}</span>
+                        <span class="summary-label">{{ 'IMPORT.CREATE' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card update">
+                    <mat-icon>edit</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.update_count }}</span>
+                        <span class="summary-label">{{ 'IMPORT.UPDATE' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card error" *ngIf="preview.error_count > 0">
+                    <mat-icon>error</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.error_count }}</span>
+                        <span class="summary-label">{{ 'IMPORT.ERRORS' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card conflict" *ngIf="preview.conflict_count > 0">
+                    <mat-icon>warning</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.conflict_count }}</span>
+                        <span class="summary-label">{{ 'IMPORT.CONFLICTS' | translate }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warnings -->
+            <div class="warnings-section" *ngIf="preview.warnings && preview.warnings.length > 0">
+                <div class="warning-item" *ngFor="let w of preview.warnings">
+                    <mat-icon>warning_amber</mat-icon>
+                    <span>{{ w.message }}</span>
+                </div>
+            </div>
+
+            <!-- Errors by row -->
+            <div class="errors-section" *ngIf="preview.errors.length > 0">
+                <h4>{{ 'IMPORT.ERROR_LIST' | translate }}</h4>
+                <div class="error-list">
+                    <div class="error-item" *ngFor="let err of preview.errors">
+                        <span class="error-row">{{ 'IMPORT.ROW' | translate }} {{ err.row_index + 1 }}</span>
+                        <span class="error-detail">{{ err.field }}: {{ err.message }}</span>
+                        <span class="error-value" *ngIf="err.value">({{ err.value }})</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts -->
+            <div class="conflicts-section" *ngIf="preview.conflicts.length > 0">
+                <h4>{{ 'IMPORT.CONFLICT_LIST' | translate }}</h4>
+                <div class="conflict-list">
+                    <div class="conflict-item" *ngFor="let c of preview.conflicts">
+                        <span class="conflict-row">[{{ c.article }}] {{ c.field }}</span>
+                        <span class="conflict-change">{{ c.old_value }} → {{ c.new_value }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview rows with generated articles -->
+            <div class="preview-rows-section" *ngIf="preview.preview_rows.length > 0">
+                <h4>{{ 'IMPORT.PREVIEW_ROWS' | translate }}</h4>
+                <div class="preview-rows-list">
+                    <div class="preview-row" *ngFor="let row of preview.preview_rows"
+                         [ngClass]="'action-' + row.action">
+                        <span class="row-action-badge">{{ row.action | uppercase }}</span>
+                        <span class="row-article">
+                            {{ row.generated_article || row.article || '—' }}
+                            <span class="generated-tag" *ngIf="row.generated_article">{{ 'IMPORT.GENERATED' | translate }}</span>
+                        </span>
+                        <span class="row-name">{{ row.name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dialog-actions">
+            <button mat-stroked-button class="btn-back" (click)="backToUpload()">
+                <mat-icon>arrow_back</mat-icon>
+                {{ 'IMPORT.BACK' | translate }}
+            </button>
+            <div class="action-spacer"></div>
+            <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+                {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+            </button>
+            <button mat-flat-button class="btn-process" (click)="onCommit()"
+                    [disabled]="hasPreviewErrors || isCommitting">
+                <mat-spinner *ngIf="isCommitting" diameter="18" class="btn-spinner"></mat-spinner>
+                {{ 'IMPORT.COMMIT' | translate }}
+            </button>
+        </div>
+    </ng-container>
 </div>

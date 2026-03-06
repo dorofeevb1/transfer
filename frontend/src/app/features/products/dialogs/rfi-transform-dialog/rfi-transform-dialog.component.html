@@ -1,0 +1,97 @@
+<div class="dialog-container">
+    <!-- HEADER -->
+    <div class="dialog-header">
+        <h2 class="dialog-title">{{ 'RFI.TRANSFORM_TITLE' | translate }}</h2>
+        <button mat-icon-button class="close-button" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="dialog-content">
+
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="loading-state">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>{{ 'RFI.ANALYZING' | translate }}</p>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="errorMessage && !isLoading" class="error-state">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ errorMessage }}</p>
+        </div>
+
+        <!-- Preview -->
+        <ng-container *ngIf="preview && !isLoading">
+            <div class="preview-summary">
+                <div class="summary-card create">
+                    <mat-icon>add_circle</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.create_count }}</span>
+                        <span class="summary-label">{{ 'RFI.TRANSFORM_CREATE' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card update">
+                    <mat-icon>edit</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.update_count }}</span>
+                        <span class="summary-label">{{ 'RFI.TRANSFORM_UPDATE' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card error" *ngIf="preview.error_count > 0">
+                    <mat-icon>error</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.error_count }}</span>
+                        <span class="summary-label">{{ 'RFI.TRANSFORM_ERRORS' | translate }}</span>
+                    </div>
+                </div>
+                <div class="summary-card conflict" *ngIf="preview.conflict_count > 0">
+                    <mat-icon>warning</mat-icon>
+                    <div class="summary-info">
+                        <span class="summary-count">{{ preview.conflict_count }}</span>
+                        <span class="summary-label">{{ 'RFI.TRANSFORM_CONFLICTS' | translate }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Errors list -->
+            <div class="errors-section" *ngIf="preview.errors.length > 0">
+                <h4>{{ 'RFI.TRANSFORM_ERRORS' | translate }}</h4>
+                <div class="error-list">
+                    <div class="error-item" *ngFor="let err of preview.errors">
+                        <span class="error-line">{{ 'RFI.LINE' | translate }} {{ err.line_index + 1 }}</span>
+                        <span class="error-field" *ngIf="err.article">[{{ err.article }}]</span>
+                        <span class="error-msg">{{ err.field }}: {{ err.message }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conflicts list -->
+            <div class="conflicts-section" *ngIf="preview.conflicts.length > 0">
+                <h4>{{ 'RFI.TRANSFORM_CONFLICTS' | translate }}</h4>
+                <div class="conflict-list">
+                    <div class="conflict-item" *ngFor="let c of preview.conflicts">
+                        <span class="conflict-line">{{ 'RFI.LINE' | translate }} {{ c.line_index + 1 }} [{{ c.article }}]</span>
+                        <span class="conflict-detail">
+                            {{ c.field }}: {{ c.old_value }} → {{ c.new_value }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="dialog-actions" *ngIf="!isLoading">
+        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+            {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+        </button>
+        <button mat-flat-button class="btn-confirm"
+                (click)="onConfirm()"
+                [disabled]="hasErrors || isTransforming || !preview">
+            <mat-spinner *ngIf="isTransforming" diameter="18" class="btn-spinner"></mat-spinner>
+            {{ 'RFI.TRANSFORM_CONFIRM' | translate }}
+        </button>
+    </div>
+</div>

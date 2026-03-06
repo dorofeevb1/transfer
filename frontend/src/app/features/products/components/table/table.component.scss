@@ -1,58 +1,54 @@
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
+    overflow: hidden;
 }
 
 .page-sidenav-container {
     width: 100%;
     height: 100%;
+    flex: 1;
+    min-height: 0;
     background-color: #F5F7F9;
 
+    /* Переопределяем Material overflow: auto на mat-sidenav-content,
+       чтобы скролл был только в .table-wrapper, а не на уровне sidenav */
     ::ng-deep .mat-drawer-content {
         display: flex;
         flex-direction: column;
         height: 100% !important;
+        overflow: hidden !important;
     }
-}
-
-.page-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    height: 100%;
-    overflow: hidden;
 }
 
 .table-page-layout {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
     height: 100%;
     width: 100%;
     overflow: hidden;
 }
 
 /* --- ФИКСИРОВАННЫЕ БЛОКИ (НЕ СЖИМАЮТСЯ) --- */
-app-page-header,
 app-table-controls,
 .sticky-paginator {
     flex-shrink: 0;
-    /* Запрещаем сжатие */
     z-index: 10;
 }
 
 /* --- ОБЕРТКА ТАБЛИЦЫ --- */
 .table-wrapper {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: 100%;
+    height: calc(100vh - 280px);
     overflow: auto;
     background: white;
     position: relative;
 
     app-products-table {
         display: block;
-        height: 100%;
     }
 
     /* Кастомный скроллбар */
@@ -78,7 +74,6 @@ app-table-controls,
 /* Стилизация сайдбара фильтров */
 .filter-sidenav {
     width: 400px;
-    height: 100vh !important;
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
     border-left: none;
 

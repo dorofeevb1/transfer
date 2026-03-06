@@ -1,0 +1,132 @@
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #F0F0F0;
+    flex-shrink: 0;
+
+    .dialog-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1A1A1A;
+    }
+
+    .close-button {
+        color: #999;
+
+        &:hover {
+            color: #1A1A1A;
+        }
+    }
+}
+
+.dialog-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.full-width {
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.loading-state {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+
+/* Lines */
+.lines-section {
+    margin-top: 8px;
+}
+
+.lines-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+
+    h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: #1A1A1A;
+    }
+}
+
+.add-line-btn {
+    font-size: 12px;
+    height: 32px;
+
+    mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        margin-right: 4px;
+    }
+}
+
+.line-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    margin-bottom: 4px;
+}
+
+.line-field {
+    &.name-field {
+        flex: 2;
+    }
+
+    &.small-field {
+        flex: 1;
+    }
+}
+
+.remove-line-btn {
+    margin-top: 8px;
+    color: #999;
+
+    &:hover {
+        color: #D91F26;
+    }
+}
+
+/* Actions */
+.dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #F0F0F0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.btn-cancel {
+    border-color: #E0E0E0 !important;
+    color: #333 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.btn-save {
+    background-color: #D91F26 !important;
+    color: white !important;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &:disabled {
+        background-color: #E0E0E0 !important;
+        color: #999 !important;
+    }
+}

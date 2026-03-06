@@ -46,7 +46,82 @@
         "SAVE": "保存",
         "CANCEL": "取消",
         "DELETE": "删除",
-        "APPLY": "应用"
+        "APPLY": "应用",
+        "RFI_TAB": "询价单",
+        "CATALOG_TAB": "产品目录"
+    },
+    "RFI": {
+        "COMING_SOON": "该模块正在开发中",
+        "CREATE_TITLE": "创建询价单 (RFI)",
+        "CREATE_BUTTON": "创建询价单",
+        "ALL_STATUSES": "所有状态",
+        "TEMPLATE": "模板",
+        "NO_TEMPLATE": "无模板",
+        "COMMENT": "备注",
+        "LINES_TITLE": "明细行",
+        "ADD_LINE": "添加明细行",
+        "HISTORY_TITLE": "变更历史",
+        "LINE": "行",
+        "CONFIRM_DELETE_TITLE": "删除 {{count}} 个询价单?",
+        "CONFIRM_DELETE_MESSAGE": "此操作无法撤销。",
+        "CONFIRM_DELETE_SINGLE": "删除此询价单?",
+        "TRANSFORM_TITLE": "RFI 转换为产品目录",
+        "TRANSFORM_SUCCESS": "转换成功",
+        "TRANSFORM_CONFIRM": "确认",
+        "TRANSFORM_CREATE": "创建",
+        "TRANSFORM_UPDATE": "更新",
+        "TRANSFORM_ERRORS": "错误",
+        "TRANSFORM_CONFLICTS": "冲突",
+        "ANALYZING": "正在分析数据...",
+        "COLUMNS": {
+            "NUMBER": "RFI编号",
+            "STATUS": "状态",
+            "SUPPLIER": "供应商",
+            "CREATED_AT": "创建日期",
+            "DEADLINE": "截止日期",
+            "AUTHOR": "创建人",
+            "LINES_COUNT": "明细数"
+        },
+        "LINE_COLUMNS": {
+            "ARTICLE": "货号",
+            "NAME": "名称",
+            "QUANTITY": "数量",
+            "PRICE": "价格",
+            "COMMENT": "备注"
+        },
+        "STATUS": {
+            "DRAFT": "草稿",
+            "READY_TO_SEND": "待发送",
+            "SENT": "已发送",
+            "IN_PROGRESS": "处理中",
+            "COMPLETED": "已完成",
+            "CANCELLED": "已取消",
+            "REJECTED": "已拒绝"
+        },
+        "ACTION": {
+            "MARK_READY": "标记为待发送",
+            "SEND": "发送",
+            "START_PROGRESS": "开始处理",
+            "COMPLETE": "完成",
+            "CANCEL": "取消",
+            "REJECT": "拒绝",
+            "BACK_TO_DRAFT": "退回草稿",
+            "TRANSFORM": "转换"
+        }
+    },
+    "IMPORT": {
+        "SELECTED_FILES": "已选文件",
+        "CREATE": "创建",
+        "UPDATE": "更新",
+        "ERRORS": "错误",
+        "CONFLICTS": "冲突",
+        "ERROR_LIST": "错误详情",
+        "CONFLICT_LIST": "版本冲突",
+        "ROW": "行",
+        "PREVIEW_ROWS": "预览",
+        "GENERATED": "已生成",
+        "BACK": "返回",
+        "COMMIT": "导入"
     },
     "USERS_TABLE": {
         "PAGE_TITLE": "用户",

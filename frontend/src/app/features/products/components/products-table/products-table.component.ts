@@ -24,6 +24,8 @@ export class ProductsTableComponent implements AfterViewInit {
   @Output() sortChange = new EventEmitter<MatSort>();
 
   @ViewChild(MatSort) sort!: MatSort;
+
+  trackByFn = (_: number, item: any) => item.id;
   constructor(
     private translate: TranslateService
   ) { }

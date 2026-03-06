@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { ApiService } from './api-service';
 import { HttpParams } from '@angular/common/http';
+import { ImportPreviewResponse } from 'src/app/features/products/models/import.interfaces';
 
 export interface ExportPayload {
     ids: string[];
@@ -144,6 +145,16 @@ export class ProductTableService {
 
     searchTableData(query: string): Observable<Row[]> {
         return this.apiService.post<Row[]>('api/products/search/', { query });
+    }
+
+    // --- IMPORT PREVIEW ---
+
+    previewImport(data: any[]): Observable<ImportPreviewResponse> {
+        return this.apiService.post<ImportPreviewResponse>('api/products/import/preview/', { data });
+    }
+
+    commitImport(sessionId: string, approved: boolean = false): Observable<{ success: boolean; message?: string }> {
+        return this.apiService.post('api/products/import/commit/', { session_id: sessionId, approved });
     }
 
     // --- ФИЛЬТРЫ ---

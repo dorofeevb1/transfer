@@ -15,19 +15,12 @@ $text-muted: #999999;
    HOST & LAYOUT
    ========================================= */
 :host {
-    display: flex;
-    flex-direction: column;
+    display: block;
     width: 100%;
-    min-height: 0;
 }
 
-.table-container {
-    flex: 1 1 auto;
-    overflow: visible;
+.table-viewport {
     background: #fff;
-    position: relative;
-    width: 100%;
-    min-height: 0;
 }
 
 table {

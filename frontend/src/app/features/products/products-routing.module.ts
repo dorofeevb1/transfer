@@ -1,14 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-// Импортируем компонент, который будет отображаться по этому маршруту
+import { ProductsContainerComponent } from './components/products-container/products-container.component';
 import { TableComponent } from './components/table/table.component';
+import { RfiListComponent } from './components/rfi-list/rfi-list.component';
+import { RfiDetailComponent } from './components/rfi-detail/rfi-detail.component';
 
-// Определяем маршруты для этого модуля
 const routes: Routes = [
     {
         path: '',
-        component: TableComponent
+        component: ProductsContainerComponent,
+        children: [
+            { path: '', redirectTo: 'catalog', pathMatch: 'full' },
+            { path: 'catalog', component: TableComponent },
+            { path: 'rfi', component: RfiListComponent },
+            { path: 'rfi/:id', component: RfiDetailComponent }
+        ]
     }
 ];
 

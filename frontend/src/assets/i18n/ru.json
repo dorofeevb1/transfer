@@ -46,7 +46,82 @@
         "SAVE": "Сохранить",
         "CANCEL": "Отмена",
         "DELETE": "Удалить",
-        "APPLY": "Применить"
+        "APPLY": "Применить",
+        "RFI_TAB": "Заявки",
+        "CATALOG_TAB": "Каталог"
+    },
+    "RFI": {
+        "COMING_SOON": "Раздел в разработке",
+        "CREATE_TITLE": "Создание заявки (RFI)",
+        "CREATE_BUTTON": "Создать заявку",
+        "ALL_STATUSES": "Все статусы",
+        "TEMPLATE": "Шаблон",
+        "NO_TEMPLATE": "Без шаблона",
+        "COMMENT": "Комментарий",
+        "LINES_TITLE": "Позиции",
+        "ADD_LINE": "Добавить позицию",
+        "HISTORY_TITLE": "История изменений",
+        "LINE": "Строка",
+        "CONFIRM_DELETE_TITLE": "Удалить {{count}} заявок?",
+        "CONFIRM_DELETE_MESSAGE": "Это действие нельзя отменить.",
+        "CONFIRM_DELETE_SINGLE": "Удалить эту заявку?",
+        "TRANSFORM_TITLE": "Трансформация RFI в каталог",
+        "TRANSFORM_SUCCESS": "Трансформация выполнена успешно",
+        "TRANSFORM_CONFIRM": "Подтвердить",
+        "TRANSFORM_CREATE": "Создать",
+        "TRANSFORM_UPDATE": "Обновить",
+        "TRANSFORM_ERRORS": "Ошибки",
+        "TRANSFORM_CONFLICTS": "Конфликты",
+        "ANALYZING": "Анализ данных...",
+        "COLUMNS": {
+            "NUMBER": "Номер RFI",
+            "STATUS": "Статус",
+            "SUPPLIER": "Поставщик",
+            "CREATED_AT": "Дата создания",
+            "DEADLINE": "Дедлайн",
+            "AUTHOR": "Автор",
+            "LINES_COUNT": "Позиций"
+        },
+        "LINE_COLUMNS": {
+            "ARTICLE": "Артикул",
+            "NAME": "Наименование",
+            "QUANTITY": "Кол-во",
+            "PRICE": "Цена",
+            "COMMENT": "Комментарий"
+        },
+        "STATUS": {
+            "DRAFT": "Черновик",
+            "READY_TO_SEND": "Готов к отправке",
+            "SENT": "Отправлен",
+            "IN_PROGRESS": "В работе",
+            "COMPLETED": "Завершен",
+            "CANCELLED": "Отменен",
+            "REJECTED": "Отклонен"
+        },
+        "ACTION": {
+            "MARK_READY": "Готов к отправке",
+            "SEND": "Отправить",
+            "START_PROGRESS": "Взять в работу",
+            "COMPLETE": "Завершить",
+            "CANCEL": "Отменить",
+            "REJECT": "Отклонить",
+            "BACK_TO_DRAFT": "Вернуть в черновик",
+            "TRANSFORM": "Трансформировать"
+        }
+    },
+    "IMPORT": {
+        "SELECTED_FILES": "Выбранные файлы",
+        "CREATE": "Создать",
+        "UPDATE": "Обновить",
+        "ERRORS": "Ошибки",
+        "CONFLICTS": "Конфликты",
+        "ERROR_LIST": "Ошибки по строкам",
+        "CONFLICT_LIST": "Конфликты версий",
+        "ROW": "Строка",
+        "PREVIEW_ROWS": "Предпросмотр",
+        "GENERATED": "сгенерирован",
+        "BACK": "Назад",
+        "COMMIT": "Импортировать"
     },
     "USERS_TABLE": {
         "PAGE_TITLE": "Пользователи",

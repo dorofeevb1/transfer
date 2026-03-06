@@ -1,0 +1,53 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+.tabs-header {
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    background: #fff;
+    border-bottom: 2px solid #E0E0E0;
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #999;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        color: #333;
+    }
+
+    &.active {
+        color: #D32F2F;
+        border-bottom-color: #D32F2F;
+    }
+}
+
+.tab-content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    // Angular router-outlet вставляет компонент как sibling — нужно растянуть его
+    ::ng-deep > *:not(router-outlet) {
+        flex: 1;
+        min-height: 0;
+    }
+}

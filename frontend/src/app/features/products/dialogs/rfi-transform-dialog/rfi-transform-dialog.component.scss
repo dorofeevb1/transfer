@@ -1,0 +1,221 @@
+.dialog-container {
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #F0F0F0;
+    flex-shrink: 0;
+
+    .dialog-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1A1A1A;
+    }
+
+    .close-button {
+        color: #999;
+
+        &:hover {
+            color: #1A1A1A;
+        }
+    }
+}
+
+.dialog-content {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px 0;
+
+    p {
+        color: #666;
+        font-size: 14px;
+    }
+}
+
+.error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 40px 0;
+    color: #C62828;
+
+    mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+    }
+}
+
+/* Summary cards */
+.preview-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 8px;
+
+    mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+    }
+
+    &.create {
+        background: #E8F5E9;
+        color: #2E7D32;
+    }
+
+    &.update {
+        background: #E3F2FD;
+        color: #1565C0;
+    }
+
+    &.error {
+        background: #FFEBEE;
+        color: #C62828;
+    }
+
+    &.conflict {
+        background: #FFF3E0;
+        color: #E65100;
+    }
+}
+
+.summary-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-count {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.summary-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Errors & conflicts */
+.errors-section,
+.conflicts-section {
+    margin-bottom: 16px;
+
+    h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        color: #1A1A1A;
+    }
+}
+
+.error-list,
+.conflict-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #F0F0F0;
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.error-item,
+.conflict-item {
+    font-size: 13px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+}
+
+.error-item {
+    background: #FFF5F5;
+}
+
+.conflict-item {
+    background: #FFFBF0;
+}
+
+.error-line,
+.conflict-line {
+    font-weight: 600;
+    white-space: nowrap;
+    color: #666;
+}
+
+.error-field {
+    color: #999;
+    font-size: 12px;
+}
+
+.error-msg {
+    color: #C62828;
+}
+
+.conflict-detail {
+    color: #E65100;
+}
+
+/* Actions */
+.dialog-actions {
+    padding: 16px 24px;
+    border-top: 1px solid #F0F0F0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.btn-cancel {
+    border-color: #E0E0E0 !important;
+    color: #333 !important;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.btn-confirm {
+    background-color: #D91F26 !important;
+    color: white !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:disabled {
+        background-color: #E0E0E0 !important;
+        color: #999 !important;
+    }
+
+    .btn-spinner {
+        ::ng-deep circle {
+            stroke: white;
+        }
+    }
+}

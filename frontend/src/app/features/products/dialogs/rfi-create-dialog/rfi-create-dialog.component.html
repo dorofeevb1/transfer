@@ -1,0 +1,98 @@
+<div class="dialog-container">
+    <!-- HEADER -->
+    <div class="dialog-header">
+        <h2 class="dialog-title">{{ 'RFI.CREATE_TITLE' | translate }}</h2>
+        <button mat-icon-button class="close-button" (click)="onCancel()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="dialog-content" [formGroup]="form">
+
+        <!-- Loading templates -->
+        <div *ngIf="isLoading" class="loading-state">
+            <mat-spinner diameter="32"></mat-spinner>
+        </div>
+
+        <ng-container *ngIf="!isLoading">
+            <!-- Supplier -->
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>{{ 'RFI.COLUMNS.SUPPLIER' | translate }}</mat-label>
+                <input matInput formControlName="supplier">
+            </mat-form-field>
+
+            <!-- Deadline -->
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>{{ 'RFI.COLUMNS.DEADLINE' | translate }}</mat-label>
+                <input matInput [matDatepicker]="deadlinePicker" formControlName="deadline">
+                <mat-datepicker-toggle matSuffix [for]="deadlinePicker"></mat-datepicker-toggle>
+                <mat-datepicker #deadlinePicker></mat-datepicker>
+            </mat-form-field>
+
+            <!-- Template -->
+            <mat-form-field appearance="outline" class="full-width" *ngIf="templates.length > 0">
+                <mat-label>{{ 'RFI.TEMPLATE' | translate }}</mat-label>
+                <mat-select formControlName="template_id" (selectionChange)="onTemplateChange($event.value)">
+                    <mat-option value="">{{ 'RFI.NO_TEMPLATE' | translate }}</mat-option>
+                    <mat-option *ngFor="let tpl of templates" [value]="tpl.id">
+                        {{ tpl.name }} (v{{ tpl.version }})
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <!-- Comment -->
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>{{ 'RFI.COMMENT' | translate }}</mat-label>
+                <textarea matInput formControlName="comment" rows="2"></textarea>
+            </mat-form-field>
+
+            <!-- Lines -->
+            <div class="lines-section">
+                <div class="lines-header">
+                    <h3>{{ 'RFI.LINES_TITLE' | translate }} ({{ linesArray.length }})</h3>
+                    <button mat-stroked-button type="button" (click)="addLine()" class="add-line-btn">
+                        <mat-icon>add</mat-icon>
+                        {{ 'RFI.ADD_LINE' | translate }}
+                    </button>
+                </div>
+
+                <div formArrayName="lines">
+                    <div *ngFor="let line of linesArray.controls; let i = index"
+                         [formGroupName]="i"
+                         class="line-row">
+                        <mat-form-field appearance="outline" class="line-field name-field">
+                            <mat-label>{{ 'RFI.LINE_COLUMNS.NAME' | translate }}</mat-label>
+                            <input matInput formControlName="name">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="line-field small-field">
+                            <mat-label>{{ 'RFI.LINE_COLUMNS.QUANTITY' | translate }}</mat-label>
+                            <input matInput type="number" formControlName="quantity">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="line-field small-field">
+                            <mat-label>{{ 'RFI.LINE_COLUMNS.PRICE' | translate }}</mat-label>
+                            <input matInput type="number" formControlName="price">
+                        </mat-form-field>
+
+                        <button mat-icon-button (click)="removeLine(i)" class="remove-line-btn">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="dialog-actions">
+        <button mat-stroked-button class="btn-cancel" (click)="onCancel()">
+            {{ 'DIALOGS.CANCEL_BUTTON' | translate }}
+        </button>
+        <button mat-flat-button class="btn-save" (click)="onSave()"
+                [disabled]="form.invalid || isSaving">
+            {{ 'RFI.CREATE_BUTTON' | translate }}
+        </button>
+    </div>
+</div>

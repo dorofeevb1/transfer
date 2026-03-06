@@ -54,7 +54,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   isExporting = false;
   private editCache = new Map<string, any>();
-  private currentPageSize = 10;
+  private currentPageSize = 100;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('filterSidenav') filterSidenav!: MatSidenav;
@@ -77,7 +77,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.productTableService.loadTableStructure();
 
     // Загружаем данные
-    this.productTableService.loadTableData(0, 10);
+    this.productTableService.loadTableData(0, 100);
     this.productTableService.rows$.subscribe(data => {
       this.dataSource.data = data || [];
     });
@@ -101,7 +101,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.productTableService.loadTableStructure();
 
       const pageIndex = this.paginator?.pageIndex ?? 0;
-      const pageSize = this.paginator?.pageSize ?? 10;
+      const pageSize = this.paginator?.pageSize ?? 100;
       const sortField = this.dataSource.sort?.active;
       const sortDir = this.dataSource.sort?.direction;
       const filters = this.filterForm.value;
@@ -216,7 +216,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       if (result && result.success) {
         // После успешного импорта перезагружаем данные с сервера
         const pageIndex = this.paginator?.pageIndex ?? 0;
-        const pageSize = this.paginator?.pageSize ?? 10;
+        const pageSize = this.paginator?.pageSize ?? 100;
         this.productTableService.loadTableData(pageIndex, pageSize);
       }
     });
@@ -284,7 +284,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           // Когда все запросы завершены - перезагружаем данные
           if (completedCount === totalCount) {
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 100;
             this.productTableService.loadTableData(pageIndex, pageSize);
           }
         },
@@ -294,7 +294,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           // Даже при ошибке проверяем завершение
           if (completedCount === totalCount) {
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 100;
             this.productTableService.loadTableData(pageIndex, pageSize);
           }
         }
@@ -342,7 +342,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.productTableService.deleteRows(idsToDelete).subscribe(() => {
             // Перезагружаем данные после удаления
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 100;
             this.productTableService.loadTableData(pageIndex, pageSize);
             this.clearSelection();
           });
@@ -429,7 +429,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     // Отправляем запрос на бэкенд
     const pageIndex = this.paginator?.pageIndex ?? 0;
-    const pageSize = this.paginator?.pageSize ?? 10;
+    const pageSize = this.paginator?.pageSize ?? 100;
 
     this.productTableService.loadTableDataWithFilters(
       pageIndex,
@@ -458,7 +458,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     // Перезагружаем данные без фильтров
     const pageIndex = this.paginator?.pageIndex ?? 0;
-    const pageSize = this.paginator?.pageSize ?? 10;
+    const pageSize = this.paginator?.pageSize ?? 100;
     this.productTableService.loadTableData(pageIndex, pageSize);
   }
 
@@ -483,7 +483,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
       // Перезапрашиваем данные с обновленными фильтрами
       const pageIndex = this.paginator?.pageIndex ?? 0;
-      const pageSize = this.paginator?.pageSize ?? 10;
+      const pageSize = this.paginator?.pageSize ?? 100;
 
       if (this.activeFilterCount > 0) {
         this.productTableService.loadTableDataWithFilters(
