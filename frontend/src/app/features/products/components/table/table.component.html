@@ -42,8 +42,8 @@
             <!-- 4. Пагинация (Закреплена внизу или идет следом) -->
             <mat-paginator
                 [length]="totalCount"
-                [pageSize]="10"
-                [pageSizeOptions]="[10, 25, 50]"
+                [pageSize]="250"
+                [pageSizeOptions]="[250, 500, 750, 1000]"
                 showFirstLastButtons
                 class="sticky-paginator"
                 (page)="onPageChange($event)">

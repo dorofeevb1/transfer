@@ -54,7 +54,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   isExporting = false;
   private editCache = new Map<string, any>();
-  private currentPageSize = 10;
+  private currentPageSize = 250;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild('filterSidenav') filterSidenav!: MatSidenav;
@@ -77,7 +77,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.productTableService.loadTableStructure();
 
     // Загружаем данные
-    this.productTableService.loadTableData(0, 10);
+    this.productTableService.loadTableData(0, 250);
     this.productTableService.rows$.subscribe(data => {
       this.dataSource.data = data || [];
     });
@@ -101,7 +101,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.productTableService.loadTableStructure();
 
       const pageIndex = this.paginator?.pageIndex ?? 0;
-      const pageSize = this.paginator?.pageSize ?? 10;
+      const pageSize = this.paginator?.pageSize ?? 250;
       const sortField = this.dataSource.sort?.active;
       const sortDir = this.dataSource.sort?.direction;
       const filters = this.filterForm.value;
@@ -216,7 +216,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       if (result && result.success) {
         // После успешного импорта перезагружаем данные с сервера
         const pageIndex = this.paginator?.pageIndex ?? 0;
-        const pageSize = this.paginator?.pageSize ?? 10;
+        const pageSize = this.paginator?.pageSize ?? 250;
         this.productTableService.loadTableData(pageIndex, pageSize);
       }
     });
@@ -284,7 +284,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           // Когда все запросы завершены - перезагружаем данные
           if (completedCount === totalCount) {
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 250;
             this.productTableService.loadTableData(pageIndex, pageSize);
           }
         },
@@ -294,7 +294,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           // Даже при ошибке проверяем завершение
           if (completedCount === totalCount) {
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 250;
             this.productTableService.loadTableData(pageIndex, pageSize);
           }
         }
@@ -342,7 +342,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.productTableService.deleteRows(idsToDelete).subscribe(() => {
             // Перезагружаем данные после удаления
             const pageIndex = this.paginator?.pageIndex ?? 0;
-            const pageSize = this.paginator?.pageSize ?? 10;
+            const pageSize = this.paginator?.pageSize ?? 250;
             this.productTableService.loadTableData(pageIndex, pageSize);
             this.clearSelection();
           });
@@ -429,7 +429,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     // Отправляем запрос на бэкенд
     const pageIndex = this.paginator?.pageIndex ?? 0;
-    const pageSize = this.paginator?.pageSize ?? 10;
+    const pageSize = this.paginator?.pageSize ?? 250;
 
     this.productTableService.loadTableDataWithFilters(
       pageIndex,
@@ -458,7 +458,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
     // Перезагружаем данные без фильтров
     const pageIndex = this.paginator?.pageIndex ?? 0;
-    const pageSize = this.paginator?.pageSize ?? 10;
+    const pageSize = this.paginator?.pageSize ?? 250;
     this.productTableService.loadTableData(pageIndex, pageSize);
   }
 
@@ -483,7 +483,7 @@ export class TableComponent implements OnInit, AfterViewInit {
 
       // Перезапрашиваем данные с обновленными фильтрами
       const pageIndex = this.paginator?.pageIndex ?? 0;
-      const pageSize = this.paginator?.pageSize ?? 10;
+      const pageSize = this.paginator?.pageSize ?? 250;
 
       if (this.activeFilterCount > 0) {
         this.productTableService.loadTableDataWithFilters(
@@ -520,7 +520,7 @@ export class TableComponent implements OnInit, AfterViewInit {
         error: (err) => console.error('Ошибка поиска на сервере: ', err),
       });
     } else {
-      this.productTableService.loadTableData(0, 100);
+      this.productTableService.loadTableData(0, this.currentPageSize);
     }
   }
 
@@ -743,12 +743,30 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.selectAllRecords = false;
     this.showSelectAllBanner = false;
 
-    // Получаем текущие фильтры и сортировку
-    const sortField = this.dataSource.sort?.active;
-    const sortDir = this.dataSource.sort?.direction;
-    const filters = this.filterForm.value;
+    // Если есть активные фильтры боковой панели - используем loadTableDataWithFilters
+    if (this.currentFilters && this.activeFilterCount > 0) {
+      this.productTableService.loadTableDataWithFilters(
+        actualPageIndex,
+        pageSize,
+        this.currentFilters
+      ).subscribe({
+        next: (response) => {
+          this.dataSource.data = response.rows || [];
+          this.totalCount = response.totalCount || 0;
+          if (this.paginator) {
+            this.paginator.length = this.totalCount;
+          }
+        },
+        error: (err) => console.error('Ошибка фильтрации:', err)
+      });
+    } else {
+      // Получаем текущие фильтры и сортировку
+      const sortField = this.dataSource.sort?.active;
+      const sortDir = this.dataSource.sort?.direction;
+      const filters = this.filterForm.value;
 
-    this.productTableService.loadTableData(actualPageIndex, pageSize, sortField, sortDir, filters);
+      this.productTableService.loadTableData(actualPageIndex, pageSize, sortField, sortDir, filters);
+    }
 
     // Обновляем paginator если сбросили страницу
     if (pageSizeChanged && actualPageIndex !== pageIndex) {
@@ -757,6 +775,12 @@ export class TableComponent implements OnInit, AfterViewInit {
           this.paginator.pageIndex = 0;
         }
       });
+    }
+
+    // Скроллим таблицу наверх при смене страницы
+    const tableWrapper = document.querySelector('.table-wrapper');
+    if (tableWrapper) {
+      tableWrapper.scrollTop = 0;
     }
   }
 

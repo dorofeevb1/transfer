@@ -2,13 +2,17 @@
 :host {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .main-content {
-    flex: 1; // Pushes footer down
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     width: 100%;
-    max-width: 100%; // Rubber width
-    padding: 0; // Remove padding here, let child components handle it
-    overflow-x: hidden;
+    max-width: 100%;
+    padding: 0;
+    overflow: hidden;
 }
