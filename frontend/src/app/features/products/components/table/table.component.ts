@@ -197,6 +197,11 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     // Не назначаем paginator на dataSource — используем серверную пагинацию
     // this.dataSource.paginator = this.paginator;
+
+    // Принудительно устанавливаем pageSize чтобы paginator не возвращал дефолтные 10
+    if (this.paginator) {
+      this.paginator.pageSize = this.currentPageSize;
+    }
   }
 
   ngOnDestroy(): void {
