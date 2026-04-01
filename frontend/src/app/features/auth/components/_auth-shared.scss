@@ -73,6 +73,7 @@ $page-background: #ffffff;
 // Стилизация полей ввода
 .form-control {
     width: 100%;
+    box-sizing: border-box;
     padding: 12px;
     background-color: $input-bg-color;
     border: 1px solid $input-bg-color;
@@ -137,6 +138,7 @@ $page-background: #ffffff;
 // Основная кнопка
 .btn {
     width: 100%;
+    box-sizing: border-box;
     padding: 14px;
     border-radius: 6px;
     border: none;
