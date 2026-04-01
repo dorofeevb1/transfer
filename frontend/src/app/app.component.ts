@@ -12,11 +12,13 @@ export class AppComponent {
   showHeader = true; // По умолчанию хедер показывается
 
   constructor(private router: Router, private translate: TranslateService) {
+    // Регистрируем доступные языки
+    this.translate.addLangs(['ru', 'zh']);
+    this.translate.setDefaultLang('ru');
+
     // Восстанавливаем язык из localStorage при загрузке
     const savedLang = localStorage.getItem('lang');
-    if (savedLang) {
-      this.translate.use(savedLang);
-    }
+    this.translate.use(savedLang || 'ru');
     // Подписываемся на события навигации роутера
     this.router.events.pipe(
       // Фильтруем события, оставляя только NavigationEnd

@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../../shared/shared.module';
 
+import { TranslateModule } from '@ngx-translate/core';
 import { AuthComponent } from './components/auth/auth.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { PasswordResetConfirmationComponent } from './components/password-reset-confirmation/password-reset-confirmation.component';
@@ -20,8 +21,9 @@ import { PasswordResetConfirmationComponent } from './components/password-reset-
         CommonModule,
         ReactiveFormsModule,
         RouterModule,
-        SharedModule, // Импортируем SharedModule
-        AuthRoutingModule
+        SharedModule,
+        AuthRoutingModule,
+        TranslateModule.forChild()
     ]
 })
 export class AuthModule { }

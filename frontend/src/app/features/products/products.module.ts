@@ -15,7 +15,7 @@ import { ConfirmationDeleteComponent } from './dialogs/confirmation-delete/confi
 import { AddPhotoDialogComponent } from './dialogs/add-photo-dialog/add-photo-dialog.component';
 import { AddColumnDialogComponent } from './dialogs/add-column-dialog/add-column-dialog.component';
 import { FilterFormComponent } from './dialogs/filter-form/filter-form.component';
-
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -38,8 +38,8 @@ import { FilterFormComponent } from './dialogs/filter-form/filter-form.component
     imports: [
         CommonModule,
         SharedModule,
-        ProductsRoutingModule
-
+        ProductsRoutingModule,
+        TranslateModule.forChild()
     ],
     // Экспортировать компонент не обязательно, если он используется только внутри этого модуля через роутинг
 })

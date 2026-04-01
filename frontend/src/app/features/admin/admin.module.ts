@@ -9,6 +9,7 @@ import { UserDialogComponent } from './components/dialogs/user-dialog/user-dialo
 import { ChangeEmailDialogComponent } from './components/dialogs/change-email-dialog/change-email-dialog.component';
 import { ChangePasswordDialogComponent } from './components/dialogs/change-password-dialog/change-password-dialog.component';
 import { SuccessDialogComponent } from './components/dialogs/success-dialog/success-dialog.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { SuccessDialogComponent } from './components/dialogs/success-dialog/succ
   imports: [
     CommonModule,
     AdminRoutingModule,
-    SharedModule 
+    SharedModule,
+    TranslateModule.forChild()
   ]
 })
 export class AdminModule { }
