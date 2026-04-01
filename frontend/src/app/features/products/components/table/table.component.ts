@@ -657,7 +657,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       searchQuery: currentSearch || '',
       selectAll: this.selectAllRecords // Флаг для бэкенда
     };
-
+    
     this.productTableService.downloadExcel(payload).subscribe({
       next: (blob: Blob) => {
         const prefix = this.selectAllRecords ? 'all_' : (selectedIds.length > 0 ? 'selected_' : '');
