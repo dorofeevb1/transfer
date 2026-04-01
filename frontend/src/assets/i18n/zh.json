@@ -95,6 +95,18 @@
         "REQUIRED_FIELD": "此字段不能为空。",
         "PASSWORDS_MISMATCH": "两次输入的密码不一致"
     },
+    "FILTER": {
+        "TITLE": "筛选",
+        "SELECT_PERIOD": "选择日期范围",
+        "DATE_FROM": "从",
+        "DATE_TO": "到",
+        "CATEGORY_1": "一级分类",
+        "CATEGORY_2": "二级分类",
+        "PACKAGE": "产品包装",
+        "SELECT_ALL": "全选",
+        "RESET": "重置筛选",
+        "APPLY": "应用筛选"
+    },
     "DIALOGS": {
         "CHANGE_EMAIL_INSTRUCTION": "请输入新的电子邮件，它将用作个人帐户的登录名",
         "CHANGE_PASSWORD_INSTRUCTION": "请输入新密码，密码长度至少为 6 个字符",

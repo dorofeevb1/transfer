@@ -95,6 +95,18 @@
         "REQUIRED_FIELD": "Это поле обязательно для заполнения.",
         "PASSWORDS_MISMATCH": "Пароли не совпадают"
     },
+    "FILTER": {
+        "TITLE": "Фильтр",
+        "SELECT_PERIOD": "Выберите период",
+        "DATE_FROM": "С",
+        "DATE_TO": "По",
+        "CATEGORY_1": "Категория. Уровень 1",
+        "CATEGORY_2": "Категория. Уровень 2",
+        "PACKAGE": "Упаковка товара",
+        "SELECT_ALL": "Выбрать все",
+        "RESET": "Сбросить фильтр",
+        "APPLY": "Применить фильтр"
+    },
     "DIALOGS": {
         "CHANGE_PASSWORD_INSTRUCTION": "Введите новый пароль, он должен содержать не менее 6 любых символов",
         "CONFIRM_PASSWORD_LABEL": "Подтвердите пароль",

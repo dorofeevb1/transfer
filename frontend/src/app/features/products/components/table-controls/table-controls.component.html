@@ -13,7 +13,7 @@
 
         <!-- Экспорт -->
         <div class="export-wrapper">
-            <button class="btn-outline" [matMenuTriggerFor]="exportMenu">
+            <button class="btn-outline" [matMenuTriggerFor]="exportMenu" [disabled]="!selectionHasValue">
                 <mat-icon class="icon-left">ios_share</mat-icon>
                 {{ 'PRODUCTS.EXPORT' | translate }}
                 <mat-icon class="chevron">expand_more</mat-icon>

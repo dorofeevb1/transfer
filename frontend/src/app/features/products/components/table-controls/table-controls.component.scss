@@ -103,6 +103,12 @@
         background-color: #F5F5F5;
     }
 
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
     .icon-left {
         color: #1A1A1A;
         font-size: 18px;

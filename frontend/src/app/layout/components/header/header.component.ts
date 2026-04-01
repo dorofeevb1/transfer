@@ -22,7 +22,7 @@ export class HeaderComponent implements OnInit {
     private translate: TranslateService,
     private authService: AuthService
   ) {
-    this.currentLang = this.translate.currentLang || 'ru';
+    this.currentLang = localStorage.getItem('lang') || this.translate.currentLang || 'ru';
 
     // Проверка прав админа
     this.isAdmin$ = this.authService.currentUserRole$.pipe(

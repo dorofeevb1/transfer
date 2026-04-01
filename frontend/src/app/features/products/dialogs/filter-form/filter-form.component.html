@@ -1,7 +1,7 @@
 <div class="filter-container">
     <!-- HEADER -->
     <div class="filter-header">
-        <h2 class="filter-title">Фильтр</h2>
+        <h2 class="filter-title">{{ 'FILTER.TITLE' | translate }}</h2>
         <button mat-icon-button (click)="onClose()" class="close-button">
             <mat-icon>close</mat-icon>
         </button>
@@ -13,10 +13,10 @@
         <!-- Выбор диапазона дат -->
         <div class="date-section">
             <mat-form-field appearance="outline" class="full-width custom-field">
-                <mat-label>Выберите период</mat-label>
+                <mat-label>{{ 'FILTER.SELECT_PERIOD' | translate }}</mat-label>
                 <mat-date-range-input [rangePicker]="picker">
-                    <input matStartDate [(ngModel)]="dateFrom" placeholder="С">
-                    <input matEndDate [(ngModel)]="dateTo" placeholder="По">
+                    <input matStartDate [(ngModel)]="dateFrom" [placeholder]="'FILTER.DATE_FROM' | translate">
+                    <input matEndDate [(ngModel)]="dateTo" [placeholder]="'FILTER.DATE_TO' | translate">
                 </mat-date-range-input>
                 <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                 <mat-date-range-picker #picker></mat-date-range-picker>
@@ -29,12 +29,12 @@
             <!-- Категория. Уровень 1 -->
             <mat-expansion-panel class="filter-panel">
                 <mat-expansion-panel-header>
-                    <mat-panel-title>Категория. Уровень 1</mat-panel-title>
+                    <mat-panel-title>{{ 'FILTER.CATEGORY_1' | translate }}</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="panel-content">
                     <div class="checkbox-list">
                         <mat-checkbox [(ngModel)]="category1All" (change)="toggleAllCategory1()"
-                            class="checkbox-item">Выбрать все</mat-checkbox>
+                            class="checkbox-item">{{ 'FILTER.SELECT_ALL' | translate }}</mat-checkbox>
                         <mat-checkbox *ngFor="let cat of category1Options"
                             [(ngModel)]="cat.selected"
                             (change)="onCategory1Change()"
@@ -46,12 +46,12 @@
             <!-- Категория. Уровень 2 -->
             <mat-expansion-panel class="filter-panel">
                 <mat-expansion-panel-header>
-                    <mat-panel-title>Категория. Уровень 2</mat-panel-title>
+                    <mat-panel-title>{{ 'FILTER.CATEGORY_2' | translate }}</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="panel-content">
                     <div class="checkbox-list">
                         <mat-checkbox [(ngModel)]="category2All" (change)="toggleAllCategory2()"
-                            class="checkbox-item">Выбрать все</mat-checkbox>
+                            class="checkbox-item">{{ 'FILTER.SELECT_ALL' | translate }}</mat-checkbox>
                         <mat-checkbox *ngFor="let cat of category2Options"
                             [(ngModel)]="cat.selected"
                             (change)="onCategory2Change()"
@@ -63,12 +63,12 @@
             <!-- Упаковка товара -->
             <mat-expansion-panel class="filter-panel">
                 <mat-expansion-panel-header>
-                    <mat-panel-title>Упаковка товара</mat-panel-title>
+                    <mat-panel-title>{{ 'FILTER.PACKAGE' | translate }}</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="panel-content">
                     <div class="checkbox-list">
                         <mat-checkbox [(ngModel)]="packageAll" (change)="toggleAllPackage()"
-                            class="checkbox-item">Выбрать все</mat-checkbox>
+                            class="checkbox-item">{{ 'FILTER.SELECT_ALL' | translate }}</mat-checkbox>
                         <mat-checkbox *ngFor="let pkg of packageOptions"
                             [(ngModel)]="pkg.selected"
                             (change)="onPackageChange()"
@@ -83,10 +83,10 @@
     <!-- FOOTER -->
     <div class="filter-footer">
         <button mat-stroked-button class="btn-reset" (click)="onReset()">
-            Сбросить фильтр
+            {{ 'FILTER.RESET' | translate }}
         </button>
         <button mat-flat-button class="btn-apply" (click)="onApply()">
-            Применить фильтр
+            {{ 'FILTER.APPLY' | translate }}
         </button>
     </div>
 </div>
